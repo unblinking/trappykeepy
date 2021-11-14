@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using TrappyKeepy.Api.Models;
 
-namespace TrappyKeepy.Api.Models
+namespace TrappyKeepy.Api.Data
 {
     public class KeepyContext : DbContext
     {

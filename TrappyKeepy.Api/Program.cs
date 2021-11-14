@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using TrappyKeepy.Api.Models;
+using TrappyKeepy.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
