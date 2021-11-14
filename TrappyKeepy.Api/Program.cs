@@ -6,7 +6,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<KeepyContext>(opt => opt.UseInMemoryDatabase("TrappyKeepy"));
+
+// OpenAPI.
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<KeepyContext>(opt =>
+{
+    string connectionString = builder.Configuration.GetConnectionString("TrappyKeepy");
+    opt.UseNpgsql(connectionString);
+    opt.UseSnakeCaseNamingConvention();
+
+    // TODO: Remove these two before production.
+    opt.UseLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()));
+    opt.EnableSensitiveDataLogging();
+});
 
 var app = builder.Build();
 
@@ -14,6 +28,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c => {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TrappyKeepy");
+        c.RoutePrefix = "";
+    });
 }
 
 app.UseHttpsRedirection();
