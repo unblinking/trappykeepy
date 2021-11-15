@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TrappyKeepy.Api.Models;
 using TrappyKeepy.Api.Data;
+using TrappyKeepy.Api.Models;
 
 namespace TrappyKeepy.Api.Controllers
 {

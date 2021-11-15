@@ -13,7 +13,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<KeepyContext>(opt =>
 {
-    string connectionString = builder.Configuration.GetConnectionString("TrappyKeepy");
+    var connectionString = builder.Configuration.GetConnectionString("TrappyKeepy");
     opt.UseNpgsql(connectionString);
     opt.UseSnakeCaseNamingConvention();
 
@@ -29,7 +29,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI(c => {
+    app.UseSwaggerUI(c =>
+    {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "TrappyKeepy");
         c.RoutePrefix = "";
     });

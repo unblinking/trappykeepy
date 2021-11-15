@@ -5,7 +5,8 @@ namespace TrappyKeepy.Api.Data
 {
     public class KeepyContext : DbContext
     {
-        public KeepyContext(DbContextOptions<KeepyContext> options) : base(options){
+        public KeepyContext(DbContextOptions<KeepyContext> options) : base(options)
+        {
 
         }
 
