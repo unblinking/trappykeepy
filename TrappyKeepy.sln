@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Data", "TrappyKeepy.Data\TrappyKeepy.Data.csproj", "{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Domain", "TrappyKeepy.Domain\TrappyKeepy.Domain.csproj", "{637B795A-F071-4B03-94F9-06B306D01173}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Service", "TrappyKeepy.Service\TrappyKeepy.Service.csproj", "{F0F1CBCB-AA38-4B40-8711-7DFF5BEA866E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Test", "TrappyKeepy.Test\TrappyKeepy.Test.csproj", "{795F7B43-370B-4CA0-97E1-3738D665ADA6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{637B795A-F071-4B03-94F9-06B306D01173}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{637B795A-F071-4B03-94F9-06B306D01173}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{637B795A-F071-4B03-94F9-06B306D01173}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{637B795A-F071-4B03-94F9-06B306D01173}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0F1CBCB-AA38-4B40-8711-7DFF5BEA866E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0F1CBCB-AA38-4B40-8711-7DFF5BEA866E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0F1CBCB-AA38-4B40-8711-7DFF5BEA866E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0F1CBCB-AA38-4B40-8711-7DFF5BEA866E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{795F7B43-370B-4CA0-97E1-3738D665ADA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{795F7B43-370B-4CA0-97E1-3738D665ADA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{795F7B43-370B-4CA0-97E1-3738D665ADA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{795F7B43-370B-4CA0-97E1-3738D665ADA6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
