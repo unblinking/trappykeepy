@@ -455,3 +455,6 @@ $RECYCLE.BIN/
 
 # Vagrant
 .vagrant
+
+# Flyway
+flyway*/
