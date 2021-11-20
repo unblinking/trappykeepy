@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Api", "TrappyKeepy.Api\TrappyKeepy.Api.csproj", "{9BC580A0-CACE-4161-8271-EB6D71E0595B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Data", "TrappyKeepy.Data\TrappyKeepy.Data.csproj", "{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Domain", "TrappyKeepy.Domain\TrappyKeepy.Domain.csproj", "{637B795A-F071-4B03-94F9-06B306D01173}"
@@ -11,6 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Service", "Trap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrappyKeepy.Test", "TrappyKeepy.Test\TrappyKeepy.Test.csproj", "{795F7B43-370B-4CA0-97E1-3738D665ADA6}"
 EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +23,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9BC580A0-CACE-4161-8271-EB6D71E0595B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BC580A0-CACE-4161-8271-EB6D71E0595B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BC580A0-CACE-4161-8271-EB6D71E0595B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BC580A0-CACE-4161-8271-EB6D71E0595B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59DFE9CB-89D1-44A5-B7CE-D3A5519564C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
