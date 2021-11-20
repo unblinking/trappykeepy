@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <ItemGroup>
+    <ProjectReference Include="..\TrappyKeepy.Domain\TrappyKeepy.Domain.csproj" />
+    <ProjectReference Include="..\TrappyKeepy.Data\TrappyKeepy.Data.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
