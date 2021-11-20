@@ -1,24 +1,39 @@
 /**
  * tk schema.
- * The namespace for the TrappyKeepy stuff in the database.
+ * The namespace for TrappyKeepy.
  */
 CREATE SCHEMA IF NOT EXISTS tk;
 
 /**
- * Users table.
- * id: Going with UUID. Very low probability that a UUID will be duplicated.
- *   I know, sort order issues, but I won't sort on it.
+ * user type.
+ * id: Very low probability that a UUID will be duplicated.
  * name: Limiting to 50 characters for display purposes mostly.
- * password: Going with salted/hashed passwords using pgcrypto.
+ * password: Salted/hashed passwords using pgcrypto.
  */
-CREATE TABLE IF NOT EXISTS tk.users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR (50) UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    date_created TIMESTAMPTZ NOT NULL,
+CREATE TYPE tk.user_type AS (
+    id UUID,
+    name VARCHAR ( 50 ),
+    password TEXT,
+    email TEXT,
+    date_created TIMESTAMPTZ,
     date_activated TIMESTAMPTZ,
     date_last_login TIMESTAMPTZ
+);
+
+/**
+ * users table.
+ * id: Primary key with default using the gen_random_uuid() function.
+ * name: Unique, and not null.
+ * password: Not null.
+ * email: Unique, and not null.
+ * date_created: Not null.
+ */
+CREATE TABLE IF NOT EXISTS tk.users OF tk.user_type (
+    id WITH OPTIONS PRIMARY KEY DEFAULT gen_random_uuid(),
+    name WITH OPTIONS UNIQUE NOT NULL,
+    password WITH OPTIONS NOT NULL,
+    email WITH OPTIONS UNIQUE NOT NULL,
+    date_created WITH OPTIONS NOT NULL
 );
 COMMENT ON TABLE tk.users IS 'Individual user records including login credentials.';
 COMMENT ON COLUMN tk.users.id IS 'UUID/GUID primary key of the user record.';
@@ -28,3 +43,11 @@ COMMENT ON COLUMN tk.users.email IS 'Unique email address for the user.';
 COMMENT ON COLUMN tk.users.date_created IS 'The datetime when the user record was created in the database.';
 COMMENT ON COLUMN tk.users.date_activated IS 'The datetime when the user record was activated for login.';
 COMMENT ON COLUMN tk.users.date_last_login IS 'The datetime when the user last logged into the system successfully.';
+
+/**
+ * users function to return all records from the users table.
+ */
+CREATE OR REPLACE FUNCTION tk.users_ReadAll ()
+RETURNS SETOF tk.users
+AS 'SELECT * FROM tk.users;'
+LANGUAGE SQL;
