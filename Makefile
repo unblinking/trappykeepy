@@ -15,6 +15,10 @@ clean:
 .PHONY: restore
 restore:
 	dotnet restore TrappyKeepy.Api
+	dotnet clean TrappyKeepy.Data
+	dotnet clean TrappyKeepy.Domain
+	dotnet clean TrappyKeepy.Service
+	dotnet clean TrappyKeepy.Test
 
 .PHONY: migrate
 migrate:
@@ -29,22 +33,30 @@ else
 	# Environment is development 
 	# Environment variables are hard coded into the development migration command.
 	# Migrating the database
-	FLYWAY_URL="jdbc:postgresql://localhost:15432/keepydb" DB_USER="dbuser" DB_PASSWORD="dbpass" FLYWAY_LOCATIONS="filesystem:./Migrations" ./flyway-8.0.4/flyway -configFiles=flyway.conf migrate
+	DB_URL="jdbc:postgresql://localhost:15432/keepydb" DB_USER="dbuser" DB_PASSWORD="dbpass" MIGRATIONS="filesystem:./TrappyKeepy.Data/Migrations" ./flyway-8.0.4/flyway -configFiles=flyway.conf migrate
 endif
 
-.PHONY: build
-build:
+.PHONY: dbscaffold
+dbscaffold:
 	@# This will create or overwrite the database context class and model classes
 	@# based on the current database structure.
 	# ----------
 	# Scaffolding the database context and model classes
-	dotnet ef dbcontext scaffold Name=ConnectionStrings:keepydb --project TrappyKeepy.Api --data-annotations --schema tk --context-dir Data --output-dir Models --force Npgsql.EntityFrameworkCore.PostgreSQL
+	dotnet ef dbcontext scaffold Name=ConnectionStrings:keepydb --project TrappyKeepy.Api --context-namespace TrappyKeepy.Data --namespace TrappyKeepy.Domain --data-annotations --schema tk --context KeepyDbContext --context-dir ../TrappyKeepy.Data/DbContexts --output-dir ../TrappyKeepy.Domain/Models --force Npgsql.EntityFrameworkCore.PostgreSQL
 
+.PHONY: format
+format:
 	@# This will format the code to match the .editorconfig file settings.
 	# ----------
 	# Applying code formatting
 	dotnet format TrappyKeepy.Api
+	dotnet format TrappyKeepy.Data
+	dotnet format TrappyKeepy.Domain
+	dotnet format TrappyKeepy.Service
+	dotnet format TrappyKeepy.Test
 
+.PHONY: build
+build:
 	@# This will build the TrappyKeepy.Api project.
 	# ----------
 	# Building the TrappyKeepy.Api project
@@ -52,8 +64,10 @@ build:
 
 .PHONY: test
 test:
-	dotnet test TrappyKeepy.Api
+	dotnet test TrappyKeepy.Test
 
 .PHONY: run
 run:
+	@# This will run the TrappyKeepy.Api project.
+	# Running the TrappyKeepy.Api project
 	dotnet run --project TrappyKeepy.Api
