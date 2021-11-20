@@ -1,19 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TrappyKeepy.Api.Data;
+﻿using TrappyKeepy.Domain.Interfaces;
+using TrappyKeepy.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-var connectionString = builder.Configuration["ConnectionStrings.keepydb"];
-builder.Services.AddDbContext<keepydbContext>(opt => {
-    opt.UseNpgsql(connectionString);
-});
+builder.Services.AddTransient<IUserService, UserService>();
+
 builder.Services.AddControllers();
 
 // OpenAPI.
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(opt =>
+{
+    opt.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
+        Title = "TrappyKeepy", Version = "v1"
+    });
+});
 
 var app = builder.Build();
 

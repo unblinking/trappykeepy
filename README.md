@@ -6,33 +6,9 @@ A Simple Document Storage API
 
 The database is PostgreSQL.  
 
-Connectivity to the PostgreSQL database from .NET is provided by the Npgsql.EntityFrameworkCore.PostgreSQL libarary.  
+Connectivity to the PostgreSQL database from .NET is provided by the Npgsql libarary. Set the database connection string using the environment variable `TKDB`.  
 
 For development, a Vagrant box is setup to create a fresh PostgreSQL database instance that is ready to go. Read about [installing Vagrant](https://www.vagrantup.com/docs/installation) if needed. Once installed, run `vagrant up` from the root directory of this code repository where the `Vagrantfile` is located, which will create and configure the guest machine using the `Vagrant-setup/bootstrap.sh` shell script. Some helpful details for accessing this database are available in `Vagrant-setup/access.md`.  
-
-## Secrets  
-
-Secrets are managed using the [Secrets Manager tool](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-6.0&tabs=linux#secret-manager).  
-
-To enable secret storage for the project, run the following command:  
-
-```bash
-dotnet user-secrets init --project TrappyKeepy.Api
-```
-
-This adds the secret storage ID to the project's `csproj` file.  
-
-As an example, the database connection string for development is stored as a secret by running the following command.  
-
-```bash
-dotnet user-secrets set ConnectionStrings:keepydb "Host=localhost;Database=keepydb;Port=15432;Username=dbuser;Password=dbpass" --project TrappyKeepy.Api
-```
-
-That secret connection string is accessed in the `Program.cs` file like this:  
-
-```csharp
-var connectionString = builder.Configuration["ConnectionStrings.keepydb"];
-```
 
 ## Makefile  
 
