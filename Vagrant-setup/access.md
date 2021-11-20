@@ -36,3 +36,9 @@ Local command to access the database via psql:
 ```bash
 PGUSER=dbuser PGPASSWORD=dbpass psql -h localhost -p 15432 keepydb
 ```
+
+Connection string:
+
+```
+Host=localhost;Database=keepydb;Port=15432;Username=dbuser;Password=dbpass
+```
