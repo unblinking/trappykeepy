@@ -34,6 +34,7 @@ namespace TrappyKeepy.Data
         public void Commit(){
             if (transaction is not null){
                 transaction.Commit();
+                connection.Close();
             }
         }
 
@@ -52,7 +53,10 @@ namespace TrappyKeepy.Data
         {
             if (!disposed)
             {
-                if (transaction is not null) transaction.Rollback();
+                // If we are in a transaction, but the connection wasn't closed,
+                // then something went wrong. The connection should be closed
+                // immediately after the transaction commit.
+                if (transaction is not null && transaction.Connection is not null) transaction.Rollback();
                 if (connection is not null)
                 {
                     connection.Close();
