@@ -42,3 +42,36 @@ Connection string:
 ```
 Host=localhost;Database=keepydb;Port=15432;Username=dbuser;Password=dbpass
 ```
+
+# User Defined Functions  
+
+In development, the grantee adding the functions is currently `dbuser`.  
+
+To list all functions created by `dbuser`:  
+
+```sql
+SELECT routine_name
+FROM information_schema.routine_privileges
+WHERE grantee = 'dbuser';
+```
+
+To see the source of a function in the database:  
+
+```psql
+\sf tk.get_table_types
+```
+
+# Migrations  
+
+## V1  
+
+To rollback the V1 migration:  
+
+```sql
+DROP FUNCTION tk.get_table_types(text);
+DROP FUNCTION tk.users_read_all();
+DROP TABLE tk.users;
+DROP TYPE tk.user_type;
+DROP SCHEMA tk;
+DROP TABLE flyway_schema_history;
+```
