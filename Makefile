@@ -10,10 +10,16 @@ flyway:
 
 .PHONY: clean
 clean:
+	@# This will clean the output (both the intermediate (obj) and final output (bin) folders) of the project.
+	# ----------
+	# Cleaning the output of the previous build.
 	dotnet clean TrappyKeepy.Api
 
 .PHONY: restore
 restore:
+	@# This will restore the dependencies and tools of each project.
+	# ----------
+	# Restoring dependencies and tools.
 	dotnet restore TrappyKeepy.Api
 	dotnet clean TrappyKeepy.Data
 	dotnet clean TrappyKeepy.Domain
@@ -22,19 +28,10 @@ restore:
 
 .PHONY: migrate
 migrate:
-ifeq ($(origin ASPNETCORE_ENVIRONMENT), 'Production')
+	@# This will migrate the database using [Flyway](https://flywaydb.org) based on the SQL migration scripts.
 	# ----------
-	# Environment is production
-	# Environment variables need to be setup properly in production for this to work
 	# Migrating the database
 	./flyway-8.0.4/flyway -configFiles=flyway.conf migrate
-else
-	# ----------
-	# Environment is development 
-	# Environment variables are hard coded into the development migration command.
-	# Migrating the database
-	DB_URL="jdbc:postgresql://localhost:15432/keepydb" DB_USER="dbuser" DB_PASSWORD="dbpass" MIGRATIONS="filesystem:./TrappyKeepy.Data/Migrations" ./flyway-8.0.4/flyway -configFiles=flyway.conf migrate
-endif
 
 .PHONY: dbscaffold
 dbscaffold:
@@ -42,7 +39,7 @@ dbscaffold:
 	@# based on the current database structure.
 	# ----------
 	# Scaffolding the database context and model classes
-	dotnet ef dbcontext scaffold Name=ConnectionStrings:keepydb --project TrappyKeepy.Api --context-namespace TrappyKeepy.Data --namespace TrappyKeepy.Domain --data-annotations --schema tk --context KeepyDbContext --context-dir ../TrappyKeepy.Data/DbContexts --output-dir ../TrappyKeepy.Domain/Models --force Npgsql.EntityFrameworkCore.PostgreSQL
+	dotnet ef dbcontext scaffold Name=ConnectionStrings:TKDB_CONN_STRING --project TrappyKeepy.Api --context-namespace TrappyKeepy.Data --namespace TrappyKeepy.Domain --data-annotations --schema tk --context KeepyDbContext --context-dir ../TrappyKeepy.Data/DbContexts --output-dir ../TrappyKeepy.Domain/Models --force Npgsql.EntityFrameworkCore.PostgreSQL
 
 .PHONY: format
 format:
@@ -64,10 +61,14 @@ build:
 
 .PHONY: test
 test:
+	@# This will execute unit tests.
+	# ----------
+	# Running unit tests.
 	dotnet test TrappyKeepy.Test
 
 .PHONY: run
 run:
 	@# This will run the TrappyKeepy.Api project.
+	# ----------
 	# Running the TrappyKeepy.Api project
 	dotnet run --project TrappyKeepy.Api
