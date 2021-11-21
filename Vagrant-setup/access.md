@@ -61,6 +61,15 @@ To see the source of a function in the database:
 \sf tk.get_table_types
 ```
 
+# Seed data  
+
+Seed a couple of user records:  
+
+```sql
+INSERT INTO tk.users (name, password, email, date_created) VALUES ('foo', 'passwordfoo', 'foo@example.com', '2021-10-10 10:10:10-10');
+INSERT INTO tk.users (name, password, email, date_created) VALUES ('bar', 'passwordbar', 'bar@example.com', '2021-10-10 10:10:10-10');
+```
+
 # Migrations  
 
 ## V1  

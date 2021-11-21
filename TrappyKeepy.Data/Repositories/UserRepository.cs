@@ -31,7 +31,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = "SELECT * FROM tk.users_ReadAll()";
+                command.CommandText = "SELECT * FROM tk.users_read_all()";
                 var reader = await RunQuery(command);
                 var users = new List<User>();
                 while (await reader.ReadAsync())
