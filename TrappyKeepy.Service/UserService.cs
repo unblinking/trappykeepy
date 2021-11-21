@@ -9,7 +9,7 @@ namespace TrappyKeepy.Service
         private string connectionString;
 
         public UserService() {
-            var envVar = $"{Environment.GetEnvironmentVariable("TKDB")}";
+            var envVar = $"{Environment.GetEnvironmentVariable("TKDB_CONN_STRING")}";
             this.connectionString = envVar;
         }
 
@@ -22,12 +22,18 @@ namespace TrappyKeepy.Service
         */
 
         public async Task<List<User>> ReadAll() {
+            var users = new List<User>();
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
-                var users = await unitOfWork.UserRepository.ReadAll();
-                unitOfWork.Commit();
-                return users;
+                try {
+                    users = await unitOfWork.UserRepository.ReadAll();
+                    unitOfWork.Commit();
+                } catch (Exception) {
+                    unitOfWork.Rollback();
+                    throw;
+                }
             }
+            return users;
         }
 
         /*
