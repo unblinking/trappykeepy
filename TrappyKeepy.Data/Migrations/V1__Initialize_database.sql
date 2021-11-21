@@ -18,6 +18,33 @@ CREATE SCHEMA IF NOT EXISTS tk;
 COMMENT ON SCHEMA tk IS 'The namespace for TrappyKeepy types, tables, and functions.';
 
 /**
+ * Function:    tk.get_table_types
+ * Created:     2021-11-20
+ * Author:      Joshua Gray
+ * Description: Function to return table column types.
+ * Parameters:  table_name TEXT - The name of the table without the schema.
+ * Usage:       SELECT * FROM tk.get_table_types('users');
+ * Returns:     column_name, data_type
+ */
+CREATE OR REPLACE FUNCTION tk.get_table_types (table_name TEXT)
+RETURNS TABLE (column_name VARCHAR ( 255 ), data_type VARCHAR ( 255 ))
+AS $$
+DECLARE
+    BEGIN
+        CREATE TEMP TABLE IF NOT EXISTS users_information_schema_columns(
+            column_name VARCHAR ( 255 ),
+            data_type VARCHAR ( 255 )
+        ) ON COMMIT DROP;
+        INSERT INTO users_information_schema_columns ( column_name, data_type )
+        SELECT isc.column_name, isc.data_type
+        FROM information_schema.columns as isc
+        WHERE isc.table_name = $1;
+        RETURN QUERY SELECT * FROM users_information_schema_columns;
+    END;
+$$ LANGUAGE PLPGSQL;
+COMMENT ON FUNCTION tk.get_table_types IS 'Function to return table column types.';
+
+/**
  * Type:        tk.user_type
  * Created:     2021-11-20
  * Author:      Joshua Gray
@@ -26,9 +53,9 @@ COMMENT ON SCHEMA tk IS 'The namespace for TrappyKeepy types, tables, and functi
  *              name VARCHAR(50) - 50 char limit for display purposes.
  *              password TEXT - Salted/hashed passwords using pgcrypto.
  *              email TEXT - 
- *              date_created - 
- *              date_activated - 
- *              date_last_login - 
+ *              date_created TIMESTAMPTZ - 
+ *              date_activated TIMESTAMPTZ - 
+ *              date_last_login TIMESTAMPTZ - 
  */
 CREATE TYPE tk.user_type AS (
     id UUID,
@@ -61,15 +88,42 @@ CREATE TABLE IF NOT EXISTS tk.users OF tk.user_type (
     email WITH OPTIONS UNIQUE NOT NULL,
     date_created WITH OPTIONS NOT NULL
 );
-COMMENT ON TABLE tk.users IS 'Individual user records including login credentials.';
-COMMENT ON COLUMN tk.users.id IS 'UUID primary key of the user record.';
-COMMENT ON COLUMN tk.users.name IS 'Unique user display name.';
-COMMENT ON COLUMN tk.users.password IS 'Encrypted user password using the pgcrypto crypt function, and gen_salt with the blowfish algorithm and iteration count of 8.';
-COMMENT ON COLUMN tk.users.email IS 'Unique email address for the user.';
-COMMENT ON COLUMN tk.users.date_created IS 'The datetime when the user record was created in the database.';
-COMMENT ON COLUMN tk.users.date_activated IS 'The datetime when the user record was activated for login.';
-COMMENT ON COLUMN tk.users.date_last_login IS 'The datetime when the user last logged into the system successfully.';
+COMMENT ON TABLE tk.users IS 'User records including login credentials.';
+COMMENT ON COLUMN tk.users.id IS 'UUID primary key.';
+COMMENT ON COLUMN tk.users.name IS 'Unique display name.';
+COMMENT ON COLUMN tk.users.password IS 'Salted/Hashed password using the pgcrypto crypt function, and gen_salt with the blowfish algorithm and iteration count of 8.';
+COMMENT ON COLUMN tk.users.email IS 'Unique email address.';
+COMMENT ON COLUMN tk.users.date_created IS 'Datetime the user was created in the database.';
+COMMENT ON COLUMN tk.users.date_activated IS 'Datetime the user was activated for login.';
+COMMENT ON COLUMN tk.users.date_last_login IS 'Datetime the user last logged into the system successfully.';
 
+/**
+ * Function:   tk.users_create
+ * Created:     2021-11-21
+ * Author:      Joshua Gray
+ * Description: Function to create one record in the users table.
+ * Parameters:  name VARCHAR(50) - Unique user display name.
+ *              password TEXT - Plain text user password that will be salted/hashed.
+ *              email TEXT - The user's 
+ *              date_created TIMESTAMPTZ -
+ * Usage:       SELECT * FROM tk.users_insert('foo', 'passwordfoo', 'foo@example.com', '2021-10-10 10:10:10-10');
+ * Returns:     
+ */
+CREATE OR REPLACE FUNCTION tk.users_insert (
+    name VARCHAR( 50 ),
+    password TEXT,
+    email TEXT,
+    date_created TIMESTAMPTZ
+)
+RETURNS VOID
+AS $$
+DECLARE saltedhash TEXT;
+    BEGIN
+        SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
+        INSERT INTO tk.users (name, password, email, date_created) VALUES ($1, saltedhash, $3, $4);
+    END;
+$$ LANGUAGE PLPGSQL;
+COMMENT ON FUNCTION tk.users_insert IS 'Function to create one record in the users table.';
 
 /**
  * Function:    tk.users_read_all
@@ -86,29 +140,4 @@ AS 'SELECT * FROM tk.users;'
 LANGUAGE SQL;
 COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from the users table.';
 
-/**
- * Function:    tk.get_table_types
- * Created:     2021-11-20
- * Author:      Joshua Gray
- * Description: Function to return table column types.
- * Parameters:  table_name - The name of the table without the schema.
- * Usage:       SELECT * FROM tk.get_table_types('users');
- * Returns:     column_name, data_type
- */
-CREATE OR REPLACE FUNCTION tk.get_table_types (table_name TEXT)
-RETURNS TABLE (column_name VARCHAR ( 255 ), data_type VARCHAR ( 255 ))
-AS $$
-DECLARE
-    BEGIN
-        CREATE TEMP TABLE IF NOT EXISTS users_information_schema_columns(
-            column_name VARCHAR ( 255 ),
-            data_type VARCHAR ( 255 )
-        ) ON COMMIT DROP;
-        INSERT INTO users_information_schema_columns ( column_name, data_type )
-        SELECT isc.column_name, isc.data_type
-        FROM information_schema.columns as isc
-        WHERE isc.table_name = $1;
-        RETURN QUERY SELECT * FROM users_information_schema_columns;
-    END;
-$$ LANGUAGE PLPGSQL;
-COMMENT ON FUNCTION tk.get_table_types IS 'Function to return table column types.';
+
