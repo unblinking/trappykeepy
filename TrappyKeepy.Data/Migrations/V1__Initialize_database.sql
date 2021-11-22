@@ -115,14 +115,19 @@ CREATE OR REPLACE FUNCTION tk.users_insert (
     email TEXT,
     date_created TIMESTAMPTZ
 )
-RETURNS VOID
-AS $$
+    RETURNS TABLE (id UUID)
+    LANGUAGE PLPGSQL
+    AS
+$$
 DECLARE saltedhash TEXT;
-    BEGIN
-        SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
-        INSERT INTO tk.users (name, password, email, date_created) VALUES ($1, saltedhash, $3, $4);
-    END;
-$$ LANGUAGE PLPGSQL;
+BEGIN
+    SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
+    RETURN QUERY
+    INSERT INTO tk.users (name, password, email, date_created)
+    VALUES ($1, saltedhash, $3, $4)
+    RETURNING tk.users.id;
+END;
+$$;
 COMMENT ON FUNCTION tk.users_insert IS 'Function to create one record in the users table.';
 
 /**
