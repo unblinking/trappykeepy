@@ -27,21 +27,25 @@ COMMENT ON SCHEMA tk IS 'The namespace for TrappyKeepy types, tables, and functi
  * Returns:     column_name, data_type
  */
 CREATE OR REPLACE FUNCTION tk.get_table_types (table_name TEXT)
-RETURNS TABLE (column_name VARCHAR ( 255 ), data_type VARCHAR ( 255 ))
-AS $$
-DECLARE
-    BEGIN
-        CREATE TEMP TABLE IF NOT EXISTS users_information_schema_columns(
-            column_name VARCHAR ( 255 ),
-            data_type VARCHAR ( 255 )
-        ) ON COMMIT DROP;
-        INSERT INTO users_information_schema_columns ( column_name, data_type )
-        SELECT isc.column_name, isc.data_type
-        FROM information_schema.columns as isc
-        WHERE isc.table_name = $1;
-        RETURN QUERY SELECT * FROM users_information_schema_columns;
-    END;
-$$ LANGUAGE PLPGSQL;
+    RETURNS TABLE (column_name VARCHAR ( 255 ), data_type VARCHAR ( 255 ))
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    CREATE TEMP TABLE IF NOT EXISTS users_information_schema_columns(
+        column_name VARCHAR ( 255 ),
+        data_type VARCHAR ( 255 )
+    ) ON COMMIT DROP;
+
+    INSERT INTO users_information_schema_columns ( column_name, data_type )
+    SELECT isc.column_name, isc.data_type
+    FROM information_schema.columns as isc
+    WHERE isc.table_name = $1;
+
+    RETURN QUERY
+    SELECT * FROM users_information_schema_columns;
+END;
+$$;
 COMMENT ON FUNCTION tk.get_table_types IS 'Function to return table column types.';
 
 /**
@@ -119,9 +123,11 @@ CREATE OR REPLACE FUNCTION tk.users_insert (
     LANGUAGE PLPGSQL
     AS
 $$
-DECLARE saltedhash TEXT;
+DECLARE
+    saltedhash TEXT;
 BEGIN
     SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
+
     RETURN QUERY
     INSERT INTO tk.users (name, password, email, date_created)
     VALUES ($1, saltedhash, $3, $4)
@@ -140,9 +146,15 @@ COMMENT ON FUNCTION tk.users_insert IS 'Function to create one record in the use
  * Returns:     All columns for all records from the tk.users table.
  */
 CREATE OR REPLACE FUNCTION tk.users_read_all ()
-RETURNS SETOF tk.users
-AS 'SELECT * FROM tk.users;'
-LANGUAGE SQL;
+    RETURNS SETOF tk.users
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT * FROM tk.users;
+END;
+$$;
 COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from the users table.';
 
 /**
@@ -151,12 +163,15 @@ COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from th
 CREATE OR REPLACE FUNCTION tk.users_count_by_name (
     name VARCHAR( 50 )
 )
-RETURNS integer
-AS $$
-DECLARE rowcount integer;
-    BEGIN
-        SELECT COUNT(*) FROM tk.users WHERE tk.users.name = $1 INTO rowcount;
-        RETURN rowcount;
-    END;
-$$ LANGUAGE PLPGSQL;
+    RETURNS integer
+    LANGUAGE PLPGSQL
+    AS
+$$
+DECLARE
+    rowcount integer;
+BEGIN
+    SELECT COUNT(*) FROM tk.users WHERE tk.users.name = $1 INTO rowcount;
+    RETURN rowcount;
+END;
+$$;
 COMMENT ON FUNCTION tk.users_count_by_name IS 'Function to count records from the users table by the name column.'
