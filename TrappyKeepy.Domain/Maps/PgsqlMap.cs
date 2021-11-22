@@ -10,7 +10,8 @@ namespace TrappyKeepy.Domain
     {
         public User User(NpgsqlDataReader reader)
         {
-            return new User(){
+            return new User()
+            {
                 Id = Guid.Parse($"{reader["id"].ToString()}"),
                 Name = $"{reader["name"].ToString()}",
                 Password = $"{reader["password"].ToString()}",

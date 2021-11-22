@@ -3,7 +3,8 @@ using TrappyKeepy.Domain.Interfaces;
 
 namespace TrappyKeepy.Data.Repositories
 {
-    public abstract class BaseRepository : IBaseRepository {
+    public abstract class BaseRepository : IBaseRepository
+    {
         protected NpgsqlConnection connection;
 
         public BaseRepository(NpgsqlConnection connection)
@@ -24,6 +25,13 @@ namespace TrappyKeepy.Data.Repositories
             command.Connection = this.connection;
             await command.PrepareAsync();
             await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task<object?> RunScalar(NpgsqlCommand command)
+        {
+            command.Connection = this.connection;
+            object? result = await command.ExecuteScalarAsync();
+            return result;
         }
     }
 }

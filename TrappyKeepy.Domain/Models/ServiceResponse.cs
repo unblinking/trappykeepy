@@ -18,6 +18,7 @@ namespace TrappyKeepy.Domain.Models
     {
         public OutcomeType Outcome { get; set; } = OutcomeType.Error;
         public string? ErrorMessage { get; set; }
+        public Guid? Id { get; set; }
         public T? Item { get; set; }
         public List<T>? List { get; set; }
     }

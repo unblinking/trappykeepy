@@ -4,26 +4,26 @@ using TrappyKeepy.Domain.Interfaces;
 
 namespace TrappyKeepy.Data.Repositories
 {
-    public class UserRepository : BaseRepository, IUserRepository {
+    public class UserRepository : BaseRepository, IUserRepository
+    {
         public UserRepository(NpgsqlConnection connection) : base(connection)
         {
 
         }
 
-        public async Task<User> Create(User user)
+        public async Task<Guid> Create(User user)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = ""; // TODO: Supply the SQL that executes the stored procedure for this.
-                var reader = await RunQuery(command);
-                var newUser = new User();
-                while (await reader.ReadAsync())
+                // TODO: Do this without SQL injection risk.
+                command.CommandText = $"SELECT * FROM tk.users_insert('{user.Name}', '{user.Password}', '{user.Email}', '{user.DateCreated}');";
+                var result = await RunScalar(command);
+                var newId = Guid.Empty;
+                if (result is not null)
                 {
-                    var map = new PgsqlMap();
-                    newUser = map.User(reader);
+                    newId = Guid.Parse($"{result.ToString()}");
                 }
-                reader.Close();
-                return newUser;
+                return newId;
             }
         }
 
@@ -31,7 +31,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = "SELECT * FROM tk.users_read_all()";
+                command.CommandText = "SELECT * FROM tk.users_read_all();";
                 var reader = await RunQuery(command);
                 var users = new List<User>();
                 while (await reader.ReadAsync())
@@ -58,6 +58,22 @@ namespace TrappyKeepy.Data.Repositories
                 }
                 reader.Close();
                 return user;
+            }
+        }
+
+        public async Task<int> CountByUsername(string name)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                // TODO: Do this without SQL injection risk.
+                command.CommandText = $"SELECT * FROM tk.users_count_by_name('{name}');";
+                var result = await RunScalar(command);
+                int count = 0;
+                if (result is not null)
+                {
+                    count = int.Parse($"{result.ToString()}");
+                }
+                return count;
             }
         }
 
