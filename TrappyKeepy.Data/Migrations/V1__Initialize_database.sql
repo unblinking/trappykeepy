@@ -140,4 +140,18 @@ AS 'SELECT * FROM tk.users;'
 LANGUAGE SQL;
 COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from the users table.';
 
-
+/**
+ *
+ */
+CREATE OR REPLACE FUNCTION tk.users_count_by_name (
+    name VARCHAR( 50 )
+)
+RETURNS integer
+AS $$
+DECLARE rowcount integer;
+    BEGIN
+        SELECT COUNT(*) FROM tk.users WHERE tk.users.name = $1 INTO rowcount;
+        RETURN rowcount;
+    END;
+$$ LANGUAGE PLPGSQL;
+COMMENT ON FUNCTION tk.users_count_by_name IS 'Function to count records from the users table by the name column.'
