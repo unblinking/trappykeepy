@@ -56,7 +56,7 @@ namespace TrappyKeepy.Api.Controllers
                     response.Fail(serviceResponse.ErrorMessage);
                     return BadRequest(response);
                 case OutcomeType.Success:
-                    response.Success(serviceResponse.List);
+                    response.Success(serviceResponse.Id);
                     return Ok(response);
             }
             // Default to error if unknown outcome from the service.
