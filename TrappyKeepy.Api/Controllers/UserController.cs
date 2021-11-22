@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TrappyKeepy.Domain;
 using TrappyKeepy.Domain.Interfaces;
+using TrappyKeepy.Domain.Models;
 
 
 namespace TrappyKeepy.Api.Controllers
 {
+    /// <summary>
+    /// The user controller.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -16,10 +20,47 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<List<User>>> ReadAll()
+        public async Task<ActionResult> ReadAll()
         {
-            var users = await userService.ReadAll();
-            return Ok(users);
+            var serviceRequest = new UserServiceRequest();
+            var serviceResponse = await userService.ReadAll(serviceRequest);
+            var response = new ControllerResponse();
+            switch (serviceResponse.Outcome)
+            {
+                case OutcomeType.Error:
+                    response.Error();
+                    return StatusCode(500, response);
+                case OutcomeType.Fail:
+                    response.Fail(serviceResponse.ErrorMessage);
+                    return BadRequest(response);
+                case OutcomeType.Success:
+                    response.Success(serviceResponse.List);
+                    return Ok(response);
+            }
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpPost("")]
+        public async Task<ActionResult> Create([FromBody] User user)
+        {
+            var serviceRequest = new UserServiceRequest(user);
+            var serviceResponse = await userService.Create(serviceRequest);
+            var response = new ControllerResponse();
+            switch (serviceResponse.Outcome)
+            {
+                case OutcomeType.Error:
+                    response.Error();
+                    return StatusCode(500, response);
+                case OutcomeType.Fail:
+                    response.Fail(serviceResponse.ErrorMessage);
+                    return BadRequest(response);
+                case OutcomeType.Success:
+                    response.Success(serviceResponse.List);
+                    return Ok(response);
+            }
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
         }
     }
 }
