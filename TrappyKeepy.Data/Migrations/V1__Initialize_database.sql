@@ -105,7 +105,7 @@ COMMENT ON COLUMN tk.users.date_last_login IS 'Datetime the user last logged int
  * Function:   tk.users_create
  * Created:     2021-11-21
  * Author:      Joshua Gray
- * Description: Function to create one record in the users table.
+ * Description: Function to create a record in the users table.
  * Parameters:  name VARCHAR(50) - Unique user display name.
  *              password TEXT - Plain text user password that will be salted/hashed.
  *              email TEXT - The user's 
@@ -134,7 +134,7 @@ BEGIN
     RETURNING tk.users.id;
 END;
 $$;
-COMMENT ON FUNCTION tk.users_insert IS 'Function to create one record in the users table.';
+COMMENT ON FUNCTION tk.users_insert IS 'Function to create a record in the users table.';
 
 /**
  * Function:    tk.users_read_all
@@ -164,7 +164,7 @@ COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from th
  * Description: Function to return a record from the users table by id.
  * Parameters:  id_value UUID - The id of the user record.
  * Usage:       SELECT * FROM tk.users_read_by_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
- * Returns:     All columns for one record from the tk.users table.
+ * Returns:     All columns for a record from the tk.users table.
  */
 CREATE OR REPLACE FUNCTION tk.users_read_by_id (
     id_value UUID
@@ -215,7 +215,7 @@ COMMENT ON FUNCTION tk.users_count_by_column_value_text IS 'Function to count re
  * Function:    tk.users_update
  * Created:     2021-11-22
  * Author:      Joshua Gray
- * Description: Function to update one record in the users table. The Id cannot be changed. The password can only be changed via tk.users_update_password(). The date_created cannot be changed.
+ * Description: Function to update a record in the users table. The Id cannot be changed. The password can only be changed via tk.users_update_password(). The date_created cannot be changed.
  * Parameters:  id UUID - Primary key id for the record to be updated.
  *              name VARCHAR(50)
  *              email TEXT
@@ -245,13 +245,13 @@ BEGIN
     RETURN FOUND;
 END;
 $$;
-COMMENT ON FUNCTION tk.users_update IS 'Function to update one record in the users table. ';
+COMMENT ON FUNCTION tk.users_update IS 'Function to update a record in the users table. ';
 
 /**
  * Function:    tk.users_update_password
  * Created:     2021-11-22
  * Author:      Joshua Gray
- * Description: Function to update one record in the users table with a new password.
+ * Description: Function to update a record in the users table with a new password.
  * Parameters:  id UUID - Primary key id for the record to be updated.
  *              password TEXT - The new password to be salted/hashed and saved.
  * Usage:       SELECT * FROM tk.users_update_password('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'passwordfoo');
@@ -276,4 +276,28 @@ BEGIN
     RETURN FOUND;
 END;
 $$;
-COMMENT ON FUNCTION tk.users.update_password IS 'Function to update one record in the users table with a new password.';
+COMMENT ON FUNCTION tk.users.update_password IS 'Function to update a record in the users table with a new password.';
+
+/**
+ * Function:    tk.users_delete_by_id
+ * Created:     2021-11-23
+ * Author:      Joshua Gray
+ * Description: Function to delete a record from the users table by id.
+ * Parameters:  id UUID - Primary key id for the record to be deleted.
+ * Usage:       SELECT * FROM tk.users_delete_by_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Returns:     True if the user was deleted, and false if not.
+ */
+CREATE OR REPLACE FUNCTION tk.users_delete_by_id (
+    id_value UUID
+)
+    RETURNS BOOLEAN
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    DELETE FROM tk.users
+    WHERE tk.users.id = $1;
+    RETURN FOUND;
+END;
+$$;
+COMMENT ON FUNCTION tk.users_delete_by_id IS 'Function to delete a record from the users table by id.';

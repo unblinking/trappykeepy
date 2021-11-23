@@ -143,5 +143,34 @@ namespace TrappyKeepy.Api.Controllers
         // TODO: UpdatePasswordById
 
         // TODO: DeleteById
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteById(Guid id)
+        {
+            try
+            {
+                var serviceRequest = new UserServiceRequest(id);
+                var serviceResponse = await userService.DeleteById(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("User deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                // TODO: Log exception somewhere?
+                return StatusCode(500);
+            }
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
     }
 }

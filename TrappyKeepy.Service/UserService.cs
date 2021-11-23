@@ -227,12 +227,43 @@ namespace TrappyKeepy.Service
             return response;
         }
 
-        /*
         public async Task<UserServiceResponse> DeleteById(UserServiceRequest request)
         {
-
+            var response = new UserServiceResponse();
+            // TODO: Verify requesting user has permission to make this request.
+            if (request.Id is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Requested user Id was not defined.";
+                return response;
+            }
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            {
+                try
+                {
+                    // TODO: Verify that the user exists first?
+                    var successful = await unitOfWork.UserRepository.DeleteById((Guid)request.Id);
+                    unitOfWork.Commit();
+                    if (successful)
+                    {
+                        response.Outcome = OutcomeType.Success;
+                    }
+                    else
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "User was not deleted.";
+                    }
+                }
+                catch (Exception)
+                {
+                    unitOfWork.Rollback();
+                    unitOfWork.Dispose();
+                    // TODO: Log exception somewhere?
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+            }
             return response;
         }
-        */
     }
 }
