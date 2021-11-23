@@ -119,14 +119,47 @@ namespace TrappyKeepy.Service
             return response;
         }
 
-        /*
-        public async Task<UserServiceResponse> Update(User user)
+        public async Task<UserServiceResponse> UpdateById(UserServiceRequest request)
         {
-
+            var response = new UserServiceResponse();
+            // TODO: Verify requesting user has permission to make this request.
+            if (request.Item is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Requested user to be updated was not defined.";
+                return response;
+            }
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            {
+                try
+                {
+                    // TODO: Verify that the user exists first?
+                    var successful = await unitOfWork.UserRepository.UpdateById(request.Item);
+                    unitOfWork.Commit();
+                    if (successful)
+                    {
+                        response.Outcome = OutcomeType.Success;
+                    }
+                    else
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "User was not updated.";
+                    }
+                }
+                catch (Exception)
+                {
+                    unitOfWork.Rollback();
+                    unitOfWork.Dispose();
+                    // TODO: Log exception somewhere?
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+            }
             return response;
         }
 
-        public async Task<UserServiceResponse> Delete(Guid id)
+        /*
+        public async Task<UserServiceResponse> DeleteById(UserServiceRequest request)
         {
 
             return response;

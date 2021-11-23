@@ -108,5 +108,40 @@ namespace TrappyKeepy.Api.Controllers
             // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
+
+        // TODO: UpdateById
+        [HttpPut("")]
+        public async Task<ActionResult> UpdateById([FromBody] User user)
+        {
+            try
+            {
+                var serviceRequest = new UserServiceRequest(user);
+                var serviceResponse = await userService.UpdateById(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("User updated.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                // TODO: Log exception somewhere?
+                return StatusCode(500);
+            }
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        // TODO: UpdatePasswordById
+
+        // TODO: DeleteById
     }
 }

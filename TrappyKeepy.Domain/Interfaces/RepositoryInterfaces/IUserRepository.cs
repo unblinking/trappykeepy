@@ -10,7 +10,7 @@ namespace TrappyKeepy.Domain.Interfaces
         Task<Guid> Create(User user);
         Task<List<User>> ReadAll();
         Task<User> ReadById(Guid id);
-        Task<User> Update(User user);
-        Task<bool> Delete(Guid id);
+        Task<bool> UpdateById(User user);
+        Task<bool> DeleteById(Guid id);
     }
 }

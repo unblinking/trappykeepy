@@ -211,3 +211,66 @@ END;
 $$;
 COMMENT ON FUNCTION tk.users_count_by_column_value_text IS 'Function to count records from the users table by the specified column/value.';
 
+/**
+ * Function:    tk.users_update
+ * Created:     2021-11-22
+ * Author:      Joshua Gray
+ * Description: Function to update one record in the users table. The Id cannot be changed. The password can only be changed via tk.users_update_password(). The date_created cannot be changed.
+ * Parameters:  id UUID - Primary key id for the record to be updated.
+ *              name VARCHAR(50)
+ *              email TEXT
+ *              date_activated TIMESTAMPTZ
+ * Usage:       SELECT * FROM tk.users_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo', 'foo@example.com', '2021-10-10T13:10:10');
+ * Returns:     True if the user was updated, and false if not.
+ */
+CREATE OR REPLACE FUNCTION tk.users_update (
+    id UUID,
+    name VARCHAR( 50 ) DEFAULT NULL,
+    email TEXT DEFAULT NULL,
+    date_activated TIMESTAMPTZ DEFAULT NULL
+)
+    RETURNS BOOLEAN
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    UPDATE tk.users
+    SET name = COALESCE($2, tk.users.name),
+        email = COALESCE($3, tk.users.email),
+        date_activated = COALESCE($4, tk.users.date_activated)
+    WHERE tk.users.id = $1;
+    RETURN FOUND;
+END;
+$$;
+COMMENT ON FUNCTION tk.users_update IS 'Function to update one record in the users table. ';
+
+/**
+ * Function:    tk.users_update_password
+ * Created:     2021-11-22
+ * Author:      Joshua Gray
+ * Description: Function to update one record in the users table with a new password.
+ * Parameters:  id UUID - Primary key id for the record to be updated.
+ *              password TEXT - The new password to be salted/hashed and saved.
+ * Usage:       SELECT * FROM tk.users_update_password('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'passwordfoo');
+ * Returns:     True if the user password was updated, and false if not.
+ */
+CREATE OR REPLACE FUNCTION tk.users.update_password (
+    id UUID,
+    password TEXT
+)
+    RETURNS BOOLEAN
+    LANGUAGE PLPGSQL
+    AS
+$$
+DECLARE
+    saltedhash TEXT;
+BEGIN
+    SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
+
+    UPDATE tk.users
+    SET password = saltedhash
+    WHERE tk.users.id = $1
+    RETURN FOUND;
+END;
+$$;
+COMMENT ON FUNCTION tk.users.update_password IS 'Function to update one record in the users table with a new password.';

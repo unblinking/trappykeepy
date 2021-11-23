@@ -8,7 +8,7 @@ namespace TrappyKeepy.Data.Repositories
     {
         public UserRepository(NpgsqlConnection connection) : base(connection)
         {
-
+            this.connection = connection;
         }
 
         public async Task<Guid> Create(User user)
@@ -60,28 +60,32 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<User> Update(User user)
+        public async Task<bool> UpdateById(User user)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $""; // TODO: Supply the SQL that executes the stored procedure for this.
-                var reader = await RunQuery(command);
-                var updatedUser = new User();
-                while (await reader.ReadAsync())
+                command.CommandText = $"SELECT * FROM tk.users_update('{user.Id}', '{user.Name}', '{user.Email}'";
+                if (user.DateActivated is not null)
                 {
-                    var map = new PgsqlMap();
-                    updatedUser = map.User(reader);
+                    command.CommandText += $", '{user.DateActivated}'";
                 }
-                reader.Close();
-                return updatedUser;
+                command.CommandText += ");";
+                var result = await RunScalar(command);
+                var success = false;
+                if (result is not null)
+                {
+                    success = bool.Parse($"{result.ToString()}");
+                }
+                return success;
             }
         }
 
-        public async Task<bool> Delete(Guid id)
+        public async Task<bool> DeleteById(Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $""; // TODO: Supply the SQL that executes the stored procedure for this.
+                // TODO: Supply the SQL that executes the stored procedure for this.
+                command.CommandText = $"";
                 var reader = await RunQuery(command);
                 var success = false;
                 while (await reader.ReadAsync())
