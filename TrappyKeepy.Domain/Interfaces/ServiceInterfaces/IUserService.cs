@@ -8,6 +8,7 @@ namespace TrappyKeepy.Domain.Interfaces
         Task<UserServiceResponse> ReadAll(UserServiceRequest request);
         Task<UserServiceResponse> ReadById(UserServiceRequest request);
         Task<UserServiceResponse> UpdateById(UserServiceRequest request);
+        Task<UserServiceResponse> UpdatePasswordById(UserServiceRequest request);
         Task<UserServiceResponse> DeleteById(UserServiceRequest request);
     }
 }

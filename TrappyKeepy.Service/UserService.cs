@@ -179,13 +179,13 @@ namespace TrappyKeepy.Service
             if (request.Item is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user to be updated was not defined.";
+                response.ErrorMessage = "Requested user for update was not defined.";
                 return response;
             }
             if (request.Item.Id is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Id for the requested user to be updated was not defined.";
+                response.ErrorMessage = "Requested user id for update was not defined.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
@@ -213,6 +213,64 @@ namespace TrappyKeepy.Service
                     {
                         response.Outcome = OutcomeType.Fail;
                         response.ErrorMessage = "User was not updated.";
+                    }
+                }
+                catch (Exception)
+                {
+                    unitOfWork.Rollback();
+                    unitOfWork.Dispose();
+                    // TODO: Log exception somewhere?
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+            }
+            return response;
+        }
+
+        public async Task<UserServiceResponse> UpdatePasswordById(UserServiceRequest request)
+        {
+            var response = new UserServiceResponse();
+            // TODO: Verify requesting user has permission to make this request.
+            if (request.Item is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Requested user for update was not defined.";
+                return response;
+            }
+            if (request.Item.Id is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Requested user id for update was not defined.";
+                return response;
+            }
+            if (request.Item.Password is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Requested new user password was not defined.";
+                return response;
+            }
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            {
+                try
+                {
+                    // TODO: Verify that the user exists first?
+                    // Received a UserDto from the controller. Turn that into a User.
+                    var dto = request.Item;
+                    var updatee = new Domain.User();
+                    if (dto.Id is not null) updatee.Id = (Guid)dto.Id;
+                    if (dto.Password is not null) updatee.Password = dto.Password;
+
+                    // The updater updates the updatee.
+                    var successful = await unitOfWork.UserRepository.UpdatePasswordById(updatee);
+                    unitOfWork.Commit();
+                    if (successful)
+                    {
+                        response.Outcome = OutcomeType.Success;
+                    }
+                    else
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "User password was not updated.";
                     }
                 }
                 catch (Exception)

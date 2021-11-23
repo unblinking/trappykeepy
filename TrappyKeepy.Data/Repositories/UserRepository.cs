@@ -84,6 +84,21 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
+        public async Task<bool> UpdatePasswordById(User user)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.users_update_password('{user.Id}', '{user.Password}');";
+                var result = await RunScalar(command);
+                var success = false;
+                if (result is not null)
+                {
+                    success = bool.Parse($"{result.ToString()}");
+                }
+                return success;
+            }
+        }
+
         public async Task<bool> DeleteById(Guid id)
         {
             using (var command = new NpgsqlCommand())

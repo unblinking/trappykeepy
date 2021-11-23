@@ -140,9 +140,36 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        // TODO: UpdatePasswordById
+        [HttpPut("/password")]
+        public async Task<ActionResult> UpdatePasswordById([FromBody] UserDto userDto)
+        {
+            try
+            {
+                var serviceRequest = new UserServiceRequest(userDto);
+                var serviceResponse = await userService.UpdatePasswordById(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("User password updated.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                // TODO: Log exception somewhere?
+                return StatusCode(500);
+            }
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
 
-        // TODO: DeleteById
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteById(Guid id)
         {
@@ -172,5 +199,7 @@ namespace TrappyKeepy.Api.Controllers
             // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
+
+        // TODO: Authenticate
     }
 }
