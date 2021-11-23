@@ -32,14 +32,22 @@ namespace TrappyKeepy.Service
             {
                 try
                 {
-                    var existingUserCount = await unitOfWork.UserRepository.CountByUsername(request.Item.Name);
-                    if (existingUserCount > 0)
+                    var existingNameCount = await unitOfWork.UserRepository
+                        .CountByColumnValue("name", request.Item.Name);
+                    if (existingNameCount > 0)
                     {
                         response.Outcome = OutcomeType.Fail;
                         response.ErrorMessage = "Requested new user name already in use.";
                         return response;
                     }
-                    // TODO: Verify user with email doesn't already exist.
+                    var existingEmailCount = await unitOfWork.UserRepository
+                        .CountByColumnValue("email", request.Item.Email);
+                    if (existingEmailCount > 0)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Requested new user email already in use.";
+                        return response;
+                    }
                     var newId = await unitOfWork.UserRepository.Create(request.Item);
                     unitOfWork.Commit();
                     response.Id = newId;

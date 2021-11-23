@@ -77,7 +77,7 @@ INSERT INTO tk.users (name, password, email, date_created) VALUES ('bar', 'passw
 To rollback the V1 migration:  
 
 ```sql
-DROP FUNCTION tk.users_count_by_name(varchar(50));
+DROP FUNCTION tk.users_count_by_column_value_text(text, text);
 DROP FUNCTION tk.users_insert(varchar(50), text, text, timestamptz);
 DROP FUNCTION tk.get_table_types(text);
 DROP FUNCTION tk.users_read_all();

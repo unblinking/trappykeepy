@@ -158,20 +158,32 @@ $$;
 COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from the users table.';
 
 /**
- *
+ * Function:    tk.users_count_by_column_value_text
+ * Created:     2021-11-22
+ * Author:      Joshua Gray
+ * Description: Function to return the count of user records that match a given column/value.
+ * Parameters:  column_name TEXT - The name of the column to match on.
+ *              column_value TEXT - The value of the column to match on.
+ * Usage:       SELECT * FROM tk.users_count_by_column_value_text('name', 'foo');
+ * Returns:     An integer count of the number of matching records found.
  */
-CREATE OR REPLACE FUNCTION tk.users_count_by_name (
-    name VARCHAR( 50 )
+CREATE OR REPLACE FUNCTION tk.users_count_by_column_value_text (
+    column_name TEXT,
+    column_value TEXT
 )
     RETURNS integer
     LANGUAGE PLPGSQL
     AS
 $$
 DECLARE
-    rowcount integer;
+    row_count integer;
+    query text := 'SELECT COUNT(*) FROM tk.users';
 BEGIN
-    SELECT COUNT(*) FROM tk.users WHERE tk.users.name = $1 INTO rowcount;
-    RETURN rowcount;
+    IF column_name IS NOT NULL THEN
+        query := query || ' WHERE ' || quote_ident(column_name) || ' = $1';
+    END IF;
+    EXECUTE query USING column_value INTO row_count;
+    RETURN row_count;
 END;
 $$;
-COMMENT ON FUNCTION tk.users_count_by_name IS 'Function to count records from the users table by the name column.'
+COMMENT ON FUNCTION tk.users_count_by_email IS 'Function to count records from the users table by the specified column/value.';

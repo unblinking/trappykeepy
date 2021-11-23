@@ -61,22 +61,6 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<int> CountByUsername(string name)
-        {
-            using (var command = new NpgsqlCommand())
-            {
-                // TODO: Do this without SQL injection risk.
-                command.CommandText = $"SELECT * FROM tk.users_count_by_name('{name}');";
-                var result = await RunScalar(command);
-                int count = 0;
-                if (result is not null)
-                {
-                    count = int.Parse($"{result.ToString()}");
-                }
-                return count;
-            }
-        }
-
         public async Task<User> Update(User user)
         {
             using (var command = new NpgsqlCommand())
@@ -107,6 +91,22 @@ namespace TrappyKeepy.Data.Repositories
                 }
                 reader.Close();
                 return success;
+            }
+        }
+
+        public async Task<int> CountByColumnValue(string column, string value)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                // TODO: Do this without SQL injection risk.
+                command.CommandText = $"SELECT * FROM tk.users_count_by_column_value_text('{column}', '{value}');";
+                var result = await RunScalar(command);
+                int count = 0;
+                if (result is not null)
+                {
+                    count = int.Parse($"{result.ToString()}");
+                }
+                return count;
             }
         }
     }
