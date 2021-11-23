@@ -20,11 +20,11 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult> Create([FromBody] User user)
+        public async Task<ActionResult> Create([FromBody] UserDto userDto)
         {
             try
             {
-                var serviceRequest = new UserServiceRequest(user);
+                var serviceRequest = new UserServiceRequest(userDto);
                 var serviceResponse = await userService.Create(serviceRequest);
                 var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
@@ -36,7 +36,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Id);
+                        response.Success(serviceResponse.Item); // UserDto with new id from db insert.
                         return Ok(response);
                 }
             }
@@ -66,7 +66,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.List);
+                        response.Success(serviceResponse.List); // UserDto objects.
                         return Ok(response);
                 }
             }
@@ -96,7 +96,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item);
+                        response.Success(serviceResponse.Item); // UserDto object.
                         return Ok(response);
                 }
             }
@@ -111,11 +111,11 @@ namespace TrappyKeepy.Api.Controllers
 
         // TODO: UpdateById
         [HttpPut("")]
-        public async Task<ActionResult> UpdateById([FromBody] User user)
+        public async Task<ActionResult> UpdateById([FromBody] UserDto userDto)
         {
             try
             {
-                var serviceRequest = new UserServiceRequest(user);
+                var serviceRequest = new UserServiceRequest(userDto);
                 var serviceResponse = await userService.UpdateById(serviceRequest);
                 var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)

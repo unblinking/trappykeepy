@@ -26,14 +26,14 @@ namespace TrappyKeepy.Domain.Models
     /// <summary>
     /// User service response class.
     /// </summary>
-    public class UserServiceResponse : ServiceResponse<User>
+    public class UserServiceResponse : ServiceResponse<UserDto>
     {
         /// <summary>
         /// If no user is provided, instantiate a new one in the Item.
         /// </summary>
         public UserServiceResponse()
         {
-            this.Item = new User();
+            this.Item = new UserDto();
         }
 
         /// <summary>
@@ -41,9 +41,9 @@ namespace TrappyKeepy.Domain.Models
         /// Example could be a lookup for a single user by Id.
         /// </summary>
         /// <param name="user"></param>
-        public UserServiceResponse(User user)
+        public UserServiceResponse(UserDto userDto)
         {
-            this.Item = user;
+            this.Item = userDto;
         }
 
         /// <summary>
@@ -51,9 +51,9 @@ namespace TrappyKeepy.Domain.Models
         /// Example could be a lookup for all users.
         /// </summary>
         /// <param name="users"></param>
-        public UserServiceResponse(List<User> users)
+        public UserServiceResponse(List<UserDto> userDtos)
         {
-            this.List = users;
+            this.List = userDtos;
         }
     }
 }

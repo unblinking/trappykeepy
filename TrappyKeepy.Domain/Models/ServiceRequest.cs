@@ -12,12 +12,14 @@ namespace TrappyKeepy.Domain.Models
         /// The item contains the details needed to complete the request.
         /// </summary>
         public T? Item { get; set; }
+
+        // TODO: Also have a token that identifies the requester?
     }
 
     /// <summary>
     /// User service request.
     /// </summary>
-    public class UserServiceRequest : ServiceRequest<User>
+    public class UserServiceRequest : ServiceRequest<UserDto>
     {
         /// <summary>
         ///  If no user is provided, instantiate a new one.
@@ -32,9 +34,9 @@ namespace TrappyKeepy.Domain.Models
         /// Example could be a request to create a new user.
         /// </summary>
         /// <param name="user"></param>
-        public UserServiceRequest(User user)
+        public UserServiceRequest(UserDto userDto)
         {
-            this.Item = user;
+            this.Item = userDto;
         }
 
         public UserServiceRequest(Guid id)

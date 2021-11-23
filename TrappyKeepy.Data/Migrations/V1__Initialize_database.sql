@@ -220,6 +220,7 @@ COMMENT ON FUNCTION tk.users_count_by_column_value_text IS 'Function to count re
  *              name VARCHAR(50)
  *              email TEXT
  *              date_activated TIMESTAMPTZ
+ *              date_last_login TIMESTAMPTZ
  * Usage:       SELECT * FROM tk.users_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo', 'foo@example.com', '2021-10-10T13:10:10');
  * Returns:     True if the user was updated, and false if not.
  */
@@ -227,7 +228,8 @@ CREATE OR REPLACE FUNCTION tk.users_update (
     id UUID,
     name VARCHAR( 50 ) DEFAULT NULL,
     email TEXT DEFAULT NULL,
-    date_activated TIMESTAMPTZ DEFAULT NULL
+    date_activated TIMESTAMPTZ DEFAULT NULL,
+    date_last_login TIMESTAMPTZ DEFAULT NULL,
 )
     RETURNS BOOLEAN
     LANGUAGE PLPGSQL
@@ -237,7 +239,8 @@ BEGIN
     UPDATE tk.users
     SET name = COALESCE($2, tk.users.name),
         email = COALESCE($3, tk.users.email),
-        date_activated = COALESCE($4, tk.users.date_activated)
+        date_activated = COALESCE($4, tk.users.date_activated),
+        date_last_login = COALESCE($5, tk.users.date_last_login)
     WHERE tk.users.id = $1;
     RETURN FOUND;
 END;

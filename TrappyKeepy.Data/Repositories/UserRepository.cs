@@ -69,6 +69,10 @@ namespace TrappyKeepy.Data.Repositories
                 {
                     command.CommandText += $", '{user.DateActivated}'";
                 }
+                if (user.DateLastLogin is not null)
+                {
+                    command.CommandText += $", '{user.DateLastLogin}'";
+                }
                 command.CommandText += ");";
                 var result = await RunScalar(command);
                 var success = false;
