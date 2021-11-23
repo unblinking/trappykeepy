@@ -6,6 +6,8 @@ namespace TrappyKeepy.Domain.Models
     /// <typeparam name="T"></typeparam>
     public class ServiceRequest<T>
     {
+        public Guid? Id { get; set; }
+
         /// <summary>
         /// The item contains the details needed to complete the request.
         /// </summary>
@@ -22,7 +24,7 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         public UserServiceRequest()
         {
-            this.Item = new User();
+
         }
 
         /// <summary>
@@ -33,6 +35,11 @@ namespace TrappyKeepy.Domain.Models
         public UserServiceRequest(User user)
         {
             this.Item = user;
+        }
+
+        public UserServiceRequest(Guid id)
+        {
+            this.Id = id;
         }
     }
 }

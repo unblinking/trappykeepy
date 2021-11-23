@@ -21,13 +21,13 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> Create(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
+            // TODO: Verify requesting user has permission to make this request.
             if (request.Item is null)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "Requested new user was not defined.";
                 return response;
             }
-            // TODO: Verify requesting user has permission to make this request.
             using (var unitOfWork = new UnitOfWork(connectionString, false))
             {
                 try
@@ -89,23 +89,47 @@ namespace TrappyKeepy.Service
             return response;
         }
 
+        public async Task<UserServiceResponse> ReadById(UserServiceRequest request)
+        {
+            var response = new UserServiceResponse();
+            // TODO: Verify requesting user has permission to make this request.
+            if (request.Id is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Requested user Id was not defined.";
+                return response;
+            }
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            {
+                try
+                {
+                    response.Item = await unitOfWork.UserRepository.ReadById((Guid)request.Id);
+                    unitOfWork.Commit();
+                    response.Outcome = OutcomeType.Success;
+                }
+                catch (Exception)
+                {
+                    unitOfWork.Rollback();
+                    unitOfWork.Dispose();
+                    // TODO: Log exception somewhere?
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+            }
+            return response;
+        }
+
         /*
-        public async Task<User> ReadById(Guid id)
+        public async Task<UserServiceResponse> Update(User user)
         {
 
-            return user;
+            return response;
         }
 
-        public async Task<User> Update(User user)
+        public async Task<UserServiceResponse> Delete(Guid id)
         {
 
-            return updatedUser;
-        }
-
-        public async Task<User> Delete(Guid id)
-        {
-
-            return deletedUser;
+            return response;
         }
         */
     }

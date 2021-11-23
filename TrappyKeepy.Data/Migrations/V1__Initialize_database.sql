@@ -158,6 +158,29 @@ $$;
 COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from the users table.';
 
 /**
+ * Function:    tk.users_read_by_id
+ * Created:     2021-11-22
+ * Author:      Joshua Gray
+ * Description: Function to return a record from the users table by id.
+ * Parameters:  id_value UUID - The id of the user record.
+ * Usage:       SELECT * FROM tk.users_read_by_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Returns:     All columns for one record from the tk.users table.
+ */
+CREATE OR REPLACE FUNCTION tk.users_read_by_id (
+    id_value UUID
+)
+    RETURNS SETOF tk.users
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT * FROM tk.users WHERE tk.users.id = $1;
+END;
+$$;
+COMMENT ON FUNCTION tk.users_read_by_id IS 'Function to return a record from the users table by id.';
+
+/**
  * Function:    tk.users_count_by_column_value_text
  * Created:     2021-11-22
  * Author:      Joshua Gray
@@ -186,4 +209,5 @@ BEGIN
     RETURN row_count;
 END;
 $$;
-COMMENT ON FUNCTION tk.users_count_by_email IS 'Function to count records from the users table by the specified column/value.';
+COMMENT ON FUNCTION tk.users_count_by_column_value_text IS 'Function to count records from the users table by the specified column/value.';
+

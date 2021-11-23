@@ -15,7 +15,6 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                // TODO: Do this without SQL injection risk.
                 command.CommandText = $"SELECT * FROM tk.users_insert('{user.Name}', '{user.Password}', '{user.Email}', '{user.DateCreated}');";
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
@@ -48,7 +47,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = ""; // TODO: Supply the SQL that executes the stored procedure for this.
+                command.CommandText = $"SELECT * FROM tk.users_read_by_id('{id}');";
                 var reader = await RunQuery(command);
                 var user = new User();
                 while (await reader.ReadAsync())
@@ -65,7 +64,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = ""; // TODO: Supply the SQL that executes the stored procedure for this.
+                command.CommandText = $""; // TODO: Supply the SQL that executes the stored procedure for this.
                 var reader = await RunQuery(command);
                 var updatedUser = new User();
                 while (await reader.ReadAsync())
@@ -82,7 +81,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = ""; // TODO: Supply the SQL that executes the stored procedure for this.
+                command.CommandText = $""; // TODO: Supply the SQL that executes the stored procedure for this.
                 var reader = await RunQuery(command);
                 var success = false;
                 while (await reader.ReadAsync())
@@ -98,7 +97,6 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                // TODO: Do this without SQL injection risk.
                 command.CommandText = $"SELECT * FROM tk.users_count_by_column_value_text('{column}', '{value}');";
                 var result = await RunScalar(command);
                 int count = 0;
