@@ -320,13 +320,9 @@ CREATE OR REPLACE FUNCTION tk.users_authenticate (
     LANGUAGE PLPGSQL
     AS
 $$
-DECLARE
-    saltedhash TEXT;
 BEGIN
-    SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
-
     RETURN QUERY
-    SELECT id FROM tk.users WHERE tk.users.email = $1 and tk.users.password = saltedhash;
+    SELECT tk.users.id FROM tk.users WHERE tk.users.email = $1 and tk.users.password = crypt($2, tk.users.password);
 END;
 $$;
 COMMENT ON FUNCTION tk.users_authenticate IS 'Function to authenticate a user by email and password.';

@@ -77,11 +77,11 @@ INSERT INTO tk.users (name, password, email, date_created) VALUES ('bar', 'passw
 To rollback the V1 migration:  
 
 ```sql
-DROP FUNCTION tk.users_authenticate(text, text));
+DROP FUNCTION tk.users_authenticate(text, text);
 DROP FUNCTION tk.users_count_by_column_value_text(text, text);
 DROP FUNCTION tk.users_delete_by_id(uuid);
 DROP FUNCTION tk.users_update_password(uuid, text);
-DROP FUNCTION tk.users_update(uuid, varchar(50), text, timestamptz);
+DROP FUNCTION tk.users_update(uuid, varchar(50), text, timestamptz, timestamptz);
 DROP FUNCTION tk.users_read_by_id(uuid);
 DROP FUNCTION tk.users_read_all();
 DROP FUNCTION tk.users_insert(varchar(50), text, text, timestamptz);

@@ -231,22 +231,10 @@ namespace TrappyKeepy.Service
         {
             var response = new UserServiceResponse();
             // TODO: Verify requesting user has permission to make this request.
-            if (request.Item is null)
+            if (request.Item is null || request.Item.Id is null || request.Item.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user for update was not defined.";
-                return response;
-            }
-            if (request.Item.Id is null)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user id for update was not defined.";
-                return response;
-            }
-            if (request.Item.Password is null)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested new user password was not defined.";
+                response.ErrorMessage = "Required fields were not defined. Please include user id and password and try again.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
@@ -346,6 +334,13 @@ namespace TrappyKeepy.Service
 
                     var authenticatedId = await unitOfWork.UserRepository.Authenticate(authenticatingUser);
                     unitOfWork.Commit();
+
+                    if (authenticatedId == Guid.Empty)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "No match found for email and password. Please correct the email or password and try again.";
+                        return response;
+                    }
 
                     // Create a JWT with encrypted payload values.
                     var jwtService = new JwtService();

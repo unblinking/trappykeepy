@@ -9,7 +9,7 @@ namespace TrappyKeepy.Api.Controllers
     /// <summary>
     /// The user controller.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("v1/user")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -140,7 +140,7 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        [HttpPut("/password")]
+        [HttpPut("/v1/user/password")]
         public async Task<ActionResult> UpdatePasswordById([FromBody] UserDto userDto)
         {
             try
@@ -201,7 +201,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         // TODO: Authenticate
-        [HttpPost("/authentication")]
+        [HttpPost("/v1/user/session")]
         public async Task<ActionResult> Authenticate([FromBody] UserDto userDto)
         {
             try
