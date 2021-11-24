@@ -229,7 +229,7 @@ CREATE OR REPLACE FUNCTION tk.users_update (
     name VARCHAR( 50 ) DEFAULT NULL,
     email TEXT DEFAULT NULL,
     date_activated TIMESTAMPTZ DEFAULT NULL,
-    date_last_login TIMESTAMPTZ DEFAULT NULL,
+    date_last_login TIMESTAMPTZ DEFAULT NULL
 )
     RETURNS BOOLEAN
     LANGUAGE PLPGSQL
@@ -257,7 +257,7 @@ COMMENT ON FUNCTION tk.users_update IS 'Function to update a record in the users
  * Usage:       SELECT * FROM tk.users_update_password('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'passwordfoo');
  * Returns:     True if the user password was updated, and false if not.
  */
-CREATE OR REPLACE FUNCTION tk.users.update_password (
+CREATE OR REPLACE FUNCTION tk.users_update_password (
     id UUID,
     password TEXT
 )
@@ -272,11 +272,11 @@ BEGIN
 
     UPDATE tk.users
     SET password = saltedhash
-    WHERE tk.users.id = $1
+    WHERE tk.users.id = $1;
     RETURN FOUND;
 END;
 $$;
-COMMENT ON FUNCTION tk.users.update_password IS 'Function to update a record in the users table with a new password.';
+COMMENT ON FUNCTION tk.users_update_password IS 'Function to update a record in the users table with a new password.';
 
 /**
  * Function:    tk.users_delete_by_id
@@ -301,3 +301,32 @@ BEGIN
 END;
 $$;
 COMMENT ON FUNCTION tk.users_delete_by_id IS 'Function to delete a record from the users table by id.';
+
+/**
+ * Function:    tk.users_authenticate
+ * Created:     2021-11-23
+ * Author:      Joshua Gray
+ * Description: Function to authenticate a user by email and password.
+ * Parameters:  email TEXT - 
+ *              password TEXT -
+ * Usage:       SELECT * FROM tk.users_authenticate('foo@example.com', 'passwordfoo');
+ * Returns:     True if the user was deleted, and false if not.
+ */
+CREATE OR REPLACE FUNCTION tk.users_authenticate (
+    email TEXT,
+    password TEXT
+)
+    RETURNS TABLE (id UUID)
+    LANGUAGE PLPGSQL
+    AS
+$$
+DECLARE
+    saltedhash TEXT;
+BEGIN
+    SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
+
+    RETURN QUERY
+    SELECT id FROM tk.users WHERE tk.users.email = $1 and tk.users.password = saltedhash;
+END;
+$$;
+COMMENT ON FUNCTION tk.users_authenticate IS 'Function to authenticate a user by email and password.';

@@ -21,6 +21,7 @@ namespace TrappyKeepy.Domain.Models
         public Guid? Id { get; set; }
         public T? Item { get; set; }
         public List<T>? List { get; set; }
+        public string? Token { get; set; }
     }
 
     /// <summary>

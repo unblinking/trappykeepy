@@ -129,5 +129,20 @@ namespace TrappyKeepy.Data.Repositories
                 return count;
             }
         }
+
+        public async Task<Guid> Authenticate(User user)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.users_authenticate('{user.Email}', '{user.Password}');";
+                var result = await RunScalar(command);
+                var authenticatedId = Guid.Empty;
+                if (result is not null)
+                {
+                    authenticatedId = Guid.Parse($"{result.ToString()}");
+                }
+                return authenticatedId;
+            }
+        }
     }
 }

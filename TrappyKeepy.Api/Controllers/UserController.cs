@@ -201,5 +201,34 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         // TODO: Authenticate
+        [HttpPost("/authentication")]
+        public async Task<ActionResult> Authenticate([FromBody] UserDto userDto)
+        {
+            try
+            {
+                var serviceRequest = new UserServiceRequest(userDto);
+                var serviceResponse = await userService.Authenticate(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.Token);
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                // TODO: Log exception somewhere?
+                return StatusCode(500);
+            }
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
     }
 }

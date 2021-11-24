@@ -11,4 +11,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="EasyEncrypt" Version="2.2.1" />
+    <PackageReference Include="SimpleJWT" Version="1.1.0" />
+  </ItemGroup>
+
 </Project>

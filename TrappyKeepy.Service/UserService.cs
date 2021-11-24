@@ -97,7 +97,7 @@ namespace TrappyKeepy.Service
 
                     // Pass userDto objects back to the controller.
                     var userDtos = new List<Domain.UserDto>();
-                    foreach(Domain.User user in userList)
+                    foreach (Domain.User user in userList)
                     {
                         var userDto = new Domain.UserDto()
                         {
@@ -311,6 +311,48 @@ namespace TrappyKeepy.Service
                         response.Outcome = OutcomeType.Fail;
                         response.ErrorMessage = "User was not deleted.";
                     }
+                }
+                catch (Exception)
+                {
+                    unitOfWork.Rollback();
+                    unitOfWork.Dispose();
+                    // TODO: Log exception somewhere?
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+            }
+            return response;
+        }
+
+        public async Task<UserServiceResponse> Authenticate(UserServiceRequest request)
+        {
+            var response = new UserServiceResponse();
+            if (request.Item is null || request.Item.Email is null || request.Item.Password is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Requested user for authentication was not defined. Please provide a user email and password and try again.";
+                return response;
+            }
+            using (var unitOfWork = new UnitOfWork(connectionString, false))
+            {
+                try
+                {
+                    // Received a UserDto from the controller. Turn that into a User.
+                    var authenticatingUser = new Domain.User()
+                    {
+                        Password = request.Item.Password, // Plaintext password here from the request Dto.
+                        Email = request.Item.Email,
+                    };
+
+                    var authenticatedId = await unitOfWork.UserRepository.Authenticate(authenticatingUser);
+                    unitOfWork.Commit();
+
+                    // Create a JWT with encrypted payload values.
+                    var jwtService = new JwtService();
+                    var jwt = jwtService.EncodeJwt(authenticatedId, JwtTokenType.ACCESS);
+
+                    response.Token = jwt;
+                    response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {

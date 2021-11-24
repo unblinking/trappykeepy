@@ -19,11 +19,9 @@ Command|Description
 `make test` | Execute the unit tests, but running the `dotnet test` command for the TrappyKeepy.Test project.
 `make run` | Start the TrappyKeepy application by running the `dotnet run --project TrappyKeepy.Api` command.
 
-## Database  
+## Env vars  
 
-The database is PostgreSQL.  
-
-There are a few environment variables that must be set related to the database. Here are examples of the development database environment variable values set in the `/etc/environment` file on a Linux host system:  
+The following development environment variables with development values provide an example of the environment variables required in production. Environment variable values can be set in the `/etc/environment` file on a Linux host system:  
 
 ```bash
 export TKDB_URL="jdbc:postgresql://localhost:15432/keepydb"
@@ -31,7 +29,15 @@ export TKDB_USER="dbuser"
 export TKDB_PASSWORD="dbpass"
 export TKDB_MIGRATIONS="filesystem:./TrappyKeepy.Data/Migrations"
 export TKDB_CONN_STRING="Host=localhost;Database=keepydb;Port=15432;Username=dbuser;Password=dbpass"
+export TK_JWT_SECRET="devTestEnvironment"
+export TK_CRYPTO_KEY="MqSm0P5dMgFSZhEBKpCv4dVKgDrsgrmT"
 ```
+
+## Database  
+
+The database is PostgreSQL.  
+
+There are a few environment variables that must be set related to the database (see the Env vars section above).  
 
 For development, a Vagrant box is setup to create a fresh PostgreSQL database instance that is ready to go. Read about [installing Vagrant](https://www.vagrantup.com/docs/installation) if needed. Once installed, run `vagrant up` from the root directory of this code repository where the `Vagrantfile` is located, which will create and configure the guest machine using the `Vagrant-setup/bootstrap.sh` shell script. Some helpful details for accessing this database are available in `Vagrant-setup/access.md`.  
 
