@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using TrappyKeepy.Api.Models;
+using TrappyKeepy.Domain;
 
-namespace TrappyKeepy.Api.Data
+namespace TrappyKeepy.Data
 {
-    public partial class keepydbContext : DbContext
+    public partial class KeepyDbContext : DbContext
     {
-        public keepydbContext()
+        public KeepyDbContext()
         {
         }
 
-        public keepydbContext(DbContextOptions<keepydbContext> options)
+        public KeepyDbContext(DbContextOptions<KeepyDbContext> options)
             : base(options)
         {
         }
@@ -23,7 +23,7 @@ namespace TrappyKeepy.Api.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseNpgsql("Name=ConnectionStrings:keepydb");
+                optionsBuilder.UseNpgsql("Name=ConnectionStrings:TKDB_CONN_STRING");
             }
         }
 

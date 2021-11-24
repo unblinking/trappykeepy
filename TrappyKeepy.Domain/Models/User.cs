@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace TrappyKeepy.Api.Models
+namespace TrappyKeepy.Domain
 {
     /// <summary>
     /// Individual user records including login credentials.
