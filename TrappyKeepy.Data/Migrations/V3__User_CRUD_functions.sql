@@ -12,7 +12,7 @@
  ******************************************************************************/
 
 /**
- * Function:   tk.users_create
+ * Function:    tk.users_create
  * Created:     2021-11-21
  * Author:      Joshua Gray
  * Description: Function to create a record in the users table.
@@ -20,10 +20,10 @@
  *              password TEXT - Plain text user password that will be salted/hashed.
  *              email TEXT - The user's 
  *              date_created TIMESTAMPTZ -
- * Usage:       SELECT * FROM tk.users_insert('foo', 'passwordfoo', 'foo@example.com', '2021-10-10 10:10:10-10');
+ * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', '2021-10-10 10:10:10-10');
  * Returns:     
  */
-CREATE OR REPLACE FUNCTION tk.users_insert (
+CREATE OR REPLACE FUNCTION tk.users_create (
     name VARCHAR( 50 ),
     password TEXT,
     email TEXT,
@@ -44,7 +44,7 @@ BEGIN
     RETURNING tk.users.id;
 END;
 $$;
-COMMENT ON FUNCTION tk.users_insert IS 'Function to create a record in the users table.';
+COMMENT ON FUNCTION tk.users_create IS 'Function to create a record in the users table.';
 
 /**
  * Function:    tk.users_read_all

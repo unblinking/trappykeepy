@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace TrappyKeepy.Domain.Models
 {
     /// <summary>
-    /// Table to store document records worth keeping.
+    /// Table to store keeper/document metadata records.
     /// </summary>
     [Table("keepers", Schema = "tk")]
     [Index(nameof(Filename), Name = "keepers_filename_key", IsUnique = true)]
@@ -48,5 +48,7 @@ namespace TrappyKeepy.Domain.Models
         [ForeignKey(nameof(UserPosted))]
         [InverseProperty(nameof(User.Keepers))]
         public virtual User UserPostedNavigation { get; set; } = null!;
+        [InverseProperty("Keeper")]
+        public virtual Filebytea Filebytea { get; set; } = null!;
     }
 }
