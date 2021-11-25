@@ -1,5 +1,6 @@
 using Npgsql;
-using TrappyKeepy.Domain;
+using TrappyKeepy.Domain.Maps;
+using TrappyKeepy.Domain.Models;
 using TrappyKeepy.Domain.Interfaces;
 
 namespace TrappyKeepy.Data.Repositories
@@ -35,7 +36,7 @@ namespace TrappyKeepy.Data.Repositories
                 var users = new List<User>();
                 while (await reader.ReadAsync())
                 {
-                    var map = new PgsqlMap();
+                    var map = new PgsqlReaderMap();
                     users.Add(map.User(reader));
                 }
                 reader.Close();
@@ -52,7 +53,7 @@ namespace TrappyKeepy.Data.Repositories
                 var user = new User();
                 while (await reader.ReadAsync())
                 {
-                    var map = new PgsqlMap();
+                    var map = new PgsqlReaderMap();
                     user = map.User(reader);
                 }
                 reader.Close();

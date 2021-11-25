@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TrappyKeepy.Domain
+namespace TrappyKeepy.Domain.Models
 {
     public class UserDto
     {
