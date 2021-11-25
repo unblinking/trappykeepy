@@ -34,12 +34,12 @@ namespace TrappyKeepy.Service
                 response.ErrorMessage = "Name, Email, and Password are required to create a user.";
                 return response;
             }
-            using (var unitOfWork = new UnitOfWork(connectionString, false))
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
                     // Received a UserDto from the controller. Turn that into a User.
-                    var newUser = new Domain.User()
+                    var newUser = new User()
                     {
                         Name = request.Item.Name,
                         Password = request.Item.Password, // Plaintext password here from the request Dto.
@@ -66,7 +66,7 @@ namespace TrappyKeepy.Service
                     unitOfWork.Commit();
 
                     // Pass a UserDto back to the controller.
-                    response.Item = new Domain.UserDto()
+                    response.Item = new UserDto()
                     {
                         Id = newId // Id from the database insert.
                     };
@@ -96,10 +96,10 @@ namespace TrappyKeepy.Service
                     unitOfWork.Commit();
 
                     // Pass userDto objects back to the controller.
-                    var userDtos = new List<Domain.UserDto>();
-                    foreach (Domain.User user in userList)
+                    var userDtos = new List<UserDto>();
+                    foreach (User user in userList)
                     {
-                        var userDto = new Domain.UserDto()
+                        var userDto = new UserDto()
                         {
                             Id = user.Id,
                             Name = user.Name,
@@ -147,7 +147,7 @@ namespace TrappyKeepy.Service
                     // TODO: Don't include the password in the Dto.
 
 
-                    var userDto = new Domain.UserDto()
+                    var userDto = new UserDto()
                     {
                         Id = user.Id,
                         Name = user.Name,
@@ -195,7 +195,7 @@ namespace TrappyKeepy.Service
                     // TODO: Verify that the user exists first?
                     // Received a UserDto from the controller. Turn that into a User.
                     var dto = request.Item;
-                    var updatee = new Domain.User();
+                    var updatee = new User();
                     if (dto.Id is not null) updatee.Id = (Guid)dto.Id;
                     if (dto.Name is not null) updatee.Name = dto.Name;
                     if (dto.Email is not null) updatee.Email = dto.Email;
@@ -244,7 +244,7 @@ namespace TrappyKeepy.Service
                     // TODO: Verify that the user exists first?
                     // Received a UserDto from the controller. Turn that into a User.
                     var dto = request.Item;
-                    var updatee = new Domain.User();
+                    var updatee = new User();
                     if (dto.Id is not null) updatee.Id = (Guid)dto.Id;
                     if (dto.Password is not null) updatee.Password = dto.Password;
 
@@ -321,12 +321,12 @@ namespace TrappyKeepy.Service
                 response.ErrorMessage = "Requested user for authentication was not defined. Please provide a user email and password and try again.";
                 return response;
             }
-            using (var unitOfWork = new UnitOfWork(connectionString, false))
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
                     // Received a UserDto from the controller. Turn that into a User.
-                    var authenticatingUser = new Domain.User()
+                    var authenticatingUser = new User()
                     {
                         Password = request.Item.Password, // Plaintext password here from the request Dto.
                         Email = request.Item.Email,

@@ -14,6 +14,10 @@ clean:
 	# ----------
 	# Cleaning the output of the previous build.
 	dotnet clean TrappyKeepy.Api
+	dotnet clean TrappyKeepy.Data
+	dotnet clean TrappyKeepy.Domain
+	dotnet clean TrappyKeepy.Service
+	dotnet clean TrappyKeepy.Test
 
 .PHONY: restore
 restore:
@@ -21,10 +25,10 @@ restore:
 	# ----------
 	# Restoring dependencies and tools.
 	dotnet restore TrappyKeepy.Api
-	dotnet clean TrappyKeepy.Data
-	dotnet clean TrappyKeepy.Domain
-	dotnet clean TrappyKeepy.Service
-	dotnet clean TrappyKeepy.Test
+	dotnet restore TrappyKeepy.Data
+	dotnet restore TrappyKeepy.Domain
+	dotnet restore TrappyKeepy.Service
+	dotnet restore TrappyKeepy.Test
 
 .PHONY: migrate
 migrate:
@@ -39,7 +43,7 @@ dbscaffold:
 	@# based on the current database structure.
 	# ----------
 	# Scaffolding the database context and model classes
-	dotnet ef dbcontext scaffold Name=ConnectionStrings:TKDB_CONN_STRING --project TrappyKeepy.Api --context-namespace TrappyKeepy.Data --namespace TrappyKeepy.Domain --data-annotations --schema tk --context KeepyDbContext --context-dir ../TrappyKeepy.Data/DbContexts --output-dir ../TrappyKeepy.Domain/Models --force Npgsql.EntityFrameworkCore.PostgreSQL
+	dotnet ef dbcontext scaffold Name=ConnectionStrings:TKDB_CONN_STRING --project TrappyKeepy.Api --context-namespace TrappyKeepy.Data --namespace TrappyKeepy.Domain.Models --data-annotations --schema tk --context KeepyDbContext --context-dir ../TrappyKeepy.Data/DbContexts --output-dir ../TrappyKeepy.Domain/Models --force Npgsql.EntityFrameworkCore.PostgreSQL
 
 .PHONY: format
 format:

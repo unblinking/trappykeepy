@@ -4,52 +4,60 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace TrappyKeepy.Domain
+namespace TrappyKeepy.Domain.Models
 {
     /// <summary>
-    /// Individual user records including login credentials.
+    /// Table to store user records.
     /// </summary>
     [Table("users", Schema = "tk")]
     [Index(nameof(Email), Name = "users_email_key", IsUnique = true)]
     [Index(nameof(Name), Name = "users_name_key", IsUnique = true)]
     public partial class User
     {
+        public User()
+        {
+            Keepers = new HashSet<Keeper>();
+        }
+
         /// <summary>
-        /// UUID/GUID primary key of the user record.
+        /// UUID primary key.
         /// </summary>
         [Key]
         [Column("id")]
         public Guid Id { get; set; }
         /// <summary>
-        /// Unique user display name.
+        /// Unique display name.
         /// </summary>
         [Column("name")]
         [StringLength(50)]
         public string Name { get; set; } = null!;
         /// <summary>
-        /// Encrypted user password using the pgcrypto crypt function, and gen_salt with the blowfish algorithm and iteration count of 8.
+        /// Salted/Hashed password using the pgcrypto crypt function, and gen_salt with the blowfish algorithm and iteration count of 8.
         /// </summary>
         [Column("password")]
         public string Password { get; set; } = null!;
         /// <summary>
-        /// Unique email address for the user.
+        /// Unique email address.
         /// </summary>
         [Column("email")]
         public string Email { get; set; } = null!;
         /// <summary>
-        /// The datetime when the user record was created in the database.
+        /// Datetime the user was created in the database.
         /// </summary>
         [Column("date_created")]
         public DateTime DateCreated { get; set; }
         /// <summary>
-        /// The datetime when the user record was activated for login.
+        /// Datetime the user was activated for login.
         /// </summary>
         [Column("date_activated")]
         public DateTime? DateActivated { get; set; }
         /// <summary>
-        /// The datetime when the user last logged into the system successfully.
+        /// Datetime the user last logged into the system successfully.
         /// </summary>
         [Column("date_last_login")]
         public DateTime? DateLastLogin { get; set; }
+
+        [InverseProperty(nameof(Keeper.UserPostedNavigation))]
+        public virtual ICollection<Keeper> Keepers { get; set; }
     }
 }
