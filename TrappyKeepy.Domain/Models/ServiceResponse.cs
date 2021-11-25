@@ -41,7 +41,7 @@ namespace TrappyKeepy.Domain.Models
         /// If a user was provided, set the user to the response Item.
         /// Example could be a lookup for a single user by Id.
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="userDto"></param>
         public UserServiceResponse(UserDto userDto)
         {
             this.Item = userDto;
@@ -51,10 +51,44 @@ namespace TrappyKeepy.Domain.Models
         /// If a list of users was provided, set the list to the response Item.
         /// Example could be a lookup for all users.
         /// </summary>
-        /// <param name="users"></param>
+        /// <param name="userDtos"></param>
         public UserServiceResponse(List<UserDto> userDtos)
         {
             this.List = userDtos;
+        }
+    }
+
+    /// <summary>
+    /// Keeper service response class.
+    /// </summary>
+    public class KeeperServiceResponse : ServiceResponse<KeeperDto>
+    {
+        /// <summary>
+        /// If no keeper is provided, instantiate a new one in the Item.
+        /// </summary>
+        public KeeperServiceResponse()
+        {
+            this.Item = new KeeperDto();
+        }
+
+        /// <summary>
+        /// If a keeper was provided, set the keeper to the response Item.
+        /// Example could be a lookup for a single keeper by Id.
+        /// </summary>
+        /// <param name="keeperDto"></param>
+        public KeeperServiceResponse(KeeperDto keeperDto)
+        {
+            this.Item = keeperDto;
+        }
+
+        /// <summary>
+        /// If a list of keepers was provided, set the list to the response Item.
+        /// Example could be a lookup for all keepers.
+        /// </summary>
+        /// <param name="keeperDtos"></param>
+        public KeeperServiceResponse(List<KeeperDto> keeperDtos)
+        {
+            this.List = keeperDtos;
         }
     }
 }

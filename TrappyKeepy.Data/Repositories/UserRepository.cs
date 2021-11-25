@@ -16,7 +16,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_insert('{user.Name}', '{user.Password}', '{user.Email}', '{user.DateCreated}');";
+                command.CommandText = $"SELECT * FROM tk.users_create('{user.Name}', '{user.Password}', '{user.Email}', '{user.DateCreated}');";
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
                 if (result is not null)

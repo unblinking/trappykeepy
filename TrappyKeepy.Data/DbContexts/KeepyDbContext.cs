@@ -17,6 +17,7 @@ namespace TrappyKeepy.Data
         {
         }
 
+        public virtual DbSet<Filebytea> Filebyteas { get; set; } = null!;
         public virtual DbSet<Keeper> Keepers { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
@@ -33,9 +34,29 @@ namespace TrappyKeepy.Data
             modelBuilder.UseCollation("en_US.utf8")
                 .HasPostgresExtension("pgcrypto");
 
+            modelBuilder.Entity<Filebytea>(entity =>
+            {
+                entity.HasKey(e => e.KeeperId)
+                    .HasName("filebyteas_pkey");
+
+                entity.HasComment("Table to store keeper/document file/bytea/blob records.");
+
+                entity.Property(e => e.KeeperId)
+                    .ValueGeneratedNever()
+                    .HasComment("UUID primary key, and foreign key to the tk.keepers table.");
+
+                entity.Property(e => e.Filebytea1).HasComment("Bytea blob of the actual keeper/document uploaded.");
+
+                entity.HasOne(d => d.Keeper)
+                    .WithOne(p => p.Filebytea)
+                    .HasForeignKey<Filebytea>(d => d.KeeperId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_keeper_of_filebytea");
+            });
+
             modelBuilder.Entity<Keeper>(entity =>
             {
-                entity.HasComment("Table to store document records worth keeping.");
+                entity.HasComment("Table to store keeper/document metadata records.");
 
                 entity.Property(e => e.Id)
                     .HasDefaultValueSql("gen_random_uuid()")
