@@ -38,8 +38,7 @@ namespace TrappyKeepy.Service
             {
                 { "id", encrypter.Encrypt(id.ToString()) },
                 { "type", encrypter.Encrypt(type.ToString()) },
-                { "issued", encrypter.Encrypt(DateTime.Now.ToString()) },
-                { "expires", encrypter.Encrypt(DateTime.Now.AddHours(24).ToString()) }
+                { "issued", encrypter.Encrypt(DateTime.Now.ToString()) }
             };
 
             var jwtEncoder = new JwtEncoder();
@@ -63,8 +62,7 @@ namespace TrappyKeepy.Service
             {
                 { "id", encrypter.Decrypt(decodedPayload["id"].ToString()) },
                 { "type", encrypter.Decrypt(decodedPayload["type"].ToString()) },
-                { "issued", encrypter.Decrypt(decodedPayload["issued"].ToString()) },
-                { "expires", encrypter.Encrypt(decodedPayload["expires"].ToString()) }
+                { "issued", encrypter.Decrypt(decodedPayload["issued"].ToString()) }
             };
 
             return decryptedPayload;
