@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using System.Web;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
@@ -20,13 +21,29 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult> Create([FromBody] KeeperDto keeperDto)
+        public async Task<ActionResult> Create(IFormFile file)
         {
             try
             {
-                var serviceRequest = new KeeperServiceRequest(keeperDto);
-                serviceRequest.BearerToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+                // Prepare the service request.
+                var token = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+                var keeperDto = new KeeperDto();
+                using (var ms = new MemoryStream()) // TODO: Set the capacity here?
+                {
+                    await file.CopyToAsync(ms);
+                    keeperDto.Binarydata = ms.ToArray();
+                }
+                keeperDto.Filename = file.FileName;
+                var serviceRequest = new KeeperServiceRequest()
+                {
+                    Item = keeperDto,
+                    BearerToken = token
+                };
+
+                // Wait for the service response.
                 var serviceResponse = await keeperService.Create(serviceRequest);
+
+                // Prepare and send the controller response back to the client.
                 var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
@@ -46,6 +63,7 @@ namespace TrappyKeepy.Api.Controllers
                 // TODO: Log exception somewhere?
                 return StatusCode(500);
             }
+
             // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
