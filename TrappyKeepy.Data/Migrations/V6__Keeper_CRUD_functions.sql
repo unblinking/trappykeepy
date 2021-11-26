@@ -26,9 +26,9 @@
  */
 CREATE OR REPLACE FUNCTION tk.keepers_create (
     filename TEXT,
-    description TEXT,
-    category TEXT,
-    user_posted UUID
+    user_posted UUID,
+    description TEXT DEFAULT NULL,
+    category TEXT DEFAULT NULL
 )
     RETURNS TABLE (id UUID)
     LANGUAGE PLPGSQL
@@ -37,35 +37,35 @@ $$
 BEGIN
     RETURN QUERY
     INSERT INTO tk.keepers (filename, description, category, user_posted)
-    VALUES ($1, $2, $3, $4)
+    VALUES ($1, $3, $4, $2)
     RETURNING tk.keepers.id;
 END;
 $$;
 COMMENT ON FUNCTION tk.keepers_create IS 'Function to create a record in the keepers table.';
 
  /**
- * Function:    tk.filebyteas_create
+ * Function:    tk.filedatas_create
  * Created:     2021-11-21
  * Author:      Joshua Gray
- * Description: Function to create a record in the filebyteas table.
+ * Description: Function to create a record in the filedatas table.
  * Parameters:  keeper_id UUID - 
- *              filebytea BYTEA - 
- * Usage:       SELECT * FROM tk.filebyteas_create('foo.pdf', 'Important file.', 'Comedy', '204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ *              binary_data BYTEA - 
+ * Usage:       SELECT * FROM tk.filedatas_create('foo.pdf', 'Important file.', 'Comedy', '204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
  * Returns:     
  */
-CREATE OR REPLACE FUNCTION tk.filebyteas_create (
+CREATE OR REPLACE FUNCTION tk.filedatas_create (
     keeper_id UUID,
-    filebytea BYTEA
+    binary_data BYTEA
 )
     RETURNS UUID
     LANGUAGE PLPGSQL
     AS
 $$
 BEGIN
-    INSERT INTO tk.filebyteas (keeper_id, filebytea)
+    INSERT INTO tk.filedatas (keeper_id, binary_data)
     VALUES ($1, $2);
 
     RETURN keeper_id;
 END;
 $$;
-COMMENT ON FUNCTION tk.filebyteas_create IS 'Function to create a record in the filebyteas table.';
+COMMENT ON FUNCTION tk.filedatas_create IS 'Function to create a record in the filedatas table.';

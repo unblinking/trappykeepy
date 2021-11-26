@@ -8,7 +8,7 @@ namespace TrappyKeepy.Data
     {
         private UserRepository? userRepository;
         private KeeperRepository? keeperRepository;
-        private FilebyteaRepository? filebyteaRepository;
+        private FiledataRepository? filedataRepository;
         private string connectionString;
         private NpgsqlConnection connection;
         private NpgsqlTransaction? transaction;
@@ -30,10 +30,7 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.userRepository is null)
-                {
-                    userRepository = new UserRepository(connection);
-                }
+                if (this.userRepository is null) userRepository = new UserRepository(connection);
                 return userRepository;
             }
         }
@@ -42,23 +39,17 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.keeperRepository is null)
-                {
-                    keeperRepository = new KeeperRepository(connection);
-                }
+                if (this.keeperRepository is null) keeperRepository = new KeeperRepository(connection);
                 return keeperRepository;
             }
         }
 
-        public FilebyteaRepository FilebyteaRepository
+        public FiledataRepository FiledataRepository
         {
             get
             {
-                if (this.filebyteaRepository is null)
-                {
-                    filebyteaRepository = new FilebyteaRepository(connection);
-                }
-                return filebyteaRepository;
+                if (this.filedataRepository is null) filedataRepository = new FiledataRepository(connection);
+                return filedataRepository;
             }
         }
 
