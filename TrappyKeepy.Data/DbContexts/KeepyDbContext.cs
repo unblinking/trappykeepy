@@ -64,7 +64,9 @@ namespace TrappyKeepy.Data
 
                 entity.Property(e => e.Category).HasComment("Category of the document.");
 
-                entity.Property(e => e.DatePosted).HasComment("Datetime the document was created in the database.");
+                entity.Property(e => e.DatePosted)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .HasComment("Datetime the document was created in the database.");
 
                 entity.Property(e => e.Description).HasComment("Description of the document.");
 
@@ -89,7 +91,9 @@ namespace TrappyKeepy.Data
 
                 entity.Property(e => e.DateActivated).HasComment("Datetime the user was activated for login.");
 
-                entity.Property(e => e.DateCreated).HasComment("Datetime the user was created in the database.");
+                entity.Property(e => e.DateCreated)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .HasComment("Datetime the user was created in the database.");
 
                 entity.Property(e => e.DateLastLogin).HasComment("Datetime the user last logged into the system successfully.");
 
