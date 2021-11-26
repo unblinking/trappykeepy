@@ -49,6 +49,6 @@ namespace TrappyKeepy.Domain.Models
         [InverseProperty(nameof(User.Keepers))]
         public virtual User UserPostedNavigation { get; set; } = null!;
         [InverseProperty("Keeper")]
-        public virtual Filebytea Filebytea { get; set; } = null!;
+        public virtual Filedata Filedata { get; set; } = null!;
     }
 }

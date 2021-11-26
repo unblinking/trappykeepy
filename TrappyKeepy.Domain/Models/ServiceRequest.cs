@@ -13,7 +13,7 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         public T? Item { get; set; }
 
-        // TODO: Also have a token that identifies the requester?
+        public string? BearerToken { get; set; }
     }
 
     /// <summary>

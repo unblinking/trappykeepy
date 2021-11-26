@@ -14,27 +14,61 @@ namespace TrappyKeepy.Data.Repositories
 
         public async Task<Guid> Create(Keeper keeper)
         {
-            throw new NotImplementedException();
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.keepers_create('{keeper.Filename}'";
+                if (keeper.Description is not null)
+                {
+                    command.CommandText += $", '{keeper.Description}'";
+                }
+                if (keeper.Category is not null)
+                {
+                    command.CommandText += $", '{keeper.Category}'";
+                }
+                command.CommandText += $", '{keeper.UserPosted}');";
+                var result = await RunScalar(command);
+                var newId = Guid.Empty;
+                if (result is not null)
+                {
+                    newId = Guid.Parse($"{result.ToString()}");
+                }
+                return newId;
+            }
         }
 
-        public async Task<List<Keeper>> ReadAll()
+        public Task<List<Keeper>> ReadAll()
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Keeper> ReadById(Guid id)
+        public Task<Keeper> ReadById(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> UpdateById(Keeper keeper)
+        public Task<bool> UpdateById(Keeper keeper)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> DeleteById(Guid id)
+        public Task<bool> DeleteById(Guid id)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<int> CountByColumnValue(string column, string value)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.keepers_count_by_column_value_text('{column}', '{value}');";
+                var result = await RunScalar(command);
+                int count = 0;
+                if (result is not null)
+                {
+                    count = int.Parse($"{result.ToString()}");
+                }
+                return count;
+            }
         }
     }
 }

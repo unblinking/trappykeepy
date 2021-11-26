@@ -9,5 +9,6 @@ namespace TrappyKeepy.Domain.Interfaces
         Task<Keeper> ReadById(Guid id);
         Task<bool> UpdateById(Keeper keeper);
         Task<bool> DeleteById(Guid id);
+        Task<int> CountByColumnValue(string column, string value);
     }
 }
