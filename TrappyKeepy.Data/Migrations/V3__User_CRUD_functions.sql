@@ -18,16 +18,14 @@
  * Description: Function to create a record in the users table.
  * Parameters:  name VARCHAR(50) - Unique user display name.
  *              password TEXT - Plain text user password that will be salted/hashed.
- *              email TEXT - The user's 
- *              date_created TIMESTAMPTZ -
- * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', '2021-10-10 10:10:10-10');
+ *              email TEXT - 
+ * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com');
  * Returns:     
  */
 CREATE OR REPLACE FUNCTION tk.users_create (
     name VARCHAR( 50 ),
     password TEXT,
-    email TEXT,
-    date_created TIMESTAMPTZ
+    email TEXT
 )
     RETURNS TABLE (id UUID)
     LANGUAGE PLPGSQL
@@ -39,8 +37,8 @@ BEGIN
     SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
 
     RETURN QUERY
-    INSERT INTO tk.users (name, password, email, date_created)
-    VALUES ($1, saltedhash, $3, $4)
+    INSERT INTO tk.users (name, password, email)
+    VALUES ($1, saltedhash, $3)
     RETURNING tk.users.id;
 END;
 $$;

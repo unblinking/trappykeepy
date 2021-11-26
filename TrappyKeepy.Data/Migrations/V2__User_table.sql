@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS tk.users OF tk.user_type (
     name WITH OPTIONS UNIQUE NOT NULL,
     password WITH OPTIONS NOT NULL,
     email WITH OPTIONS UNIQUE NOT NULL,
-    date_created WITH OPTIONS NOT NULL
+    date_created WITH OPTIONS NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 COMMENT ON TABLE tk.users IS 'Table to store user records.';
 COMMENT ON COLUMN tk.users.id IS 'UUID primary key.';
