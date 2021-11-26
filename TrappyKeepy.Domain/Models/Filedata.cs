@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 namespace TrappyKeepy.Domain.Models
 {
     /// <summary>
-    /// Table to store keeper/document file/bytea/blob records.
+    /// Table to store keeper/document binary data records.
     /// </summary>
-    [Table("filebyteas", Schema = "tk")]
-    public partial class Filebytea
+    [Table("filedatas", Schema = "tk")]
+    public partial class Filedata
     {
         /// <summary>
         /// UUID primary key, and foreign key to the tk.keepers table.
@@ -19,13 +19,13 @@ namespace TrappyKeepy.Domain.Models
         [Column("keeper_id")]
         public Guid KeeperId { get; set; }
         /// <summary>
-        /// Bytea blob of the actual keeper/document uploaded.
+        /// Bytea binary string of the actual keeper/document uploaded.
         /// </summary>
-        [Column("filebytea")]
-        public byte[] Filebytea1 { get; set; } = null!;
+        [Column("binary_data")]
+        public byte[] BinaryData { get; set; } = null!;
 
         [ForeignKey(nameof(KeeperId))]
-        [InverseProperty("Filebytea")]
+        [InverseProperty("Filedata")]
         public virtual Keeper Keeper { get; set; } = null!;
     }
 }
