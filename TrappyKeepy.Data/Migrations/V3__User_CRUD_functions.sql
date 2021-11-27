@@ -92,7 +92,7 @@ COMMENT ON FUNCTION tk.users_read_by_id IS 'Function to return a record from the
  * Function:    tk.users_update
  * Created:     2021-11-22
  * Author:      Joshua Gray
- * Description: Function to update a record in the users table. The Id cannot be changed. The password can only be changed via tk.users_update_password(). The date_created cannot be changed.
+ * Description: Function to update a record in the users table. The id cannot be changed. The password can only be changed via tk.users_update_password(). The date_created cannot be changed.
  * Parameters:  id UUID - Primary key id for the record to be updated.
  *              name VARCHAR(50)
  *              email TEXT

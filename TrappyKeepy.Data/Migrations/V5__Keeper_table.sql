@@ -38,7 +38,7 @@ COMMENT ON TYPE tk.keeper_type IS 'Type for an individual keeper/document metada
  *              description - 
  *              category - 
  *              date_posted - Not null.
- *              user_posted - 
+ *              user_posted - Not null.
  */
 CREATE TABLE IF NOT EXISTS tk.keepers OF tk.keeper_type (
     id WITH OPTIONS PRIMARY KEY DEFAULT gen_random_uuid(),
