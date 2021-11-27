@@ -36,24 +36,77 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public Task<List<Keeper>> ReadAll()
+        public async Task<List<Keeper>> ReadAll()
         {
-            throw new NotImplementedException();
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = "SELECT * FROM tk.keepers_read_all();";
+                var reader = await RunQuery(command);
+                var keepers = new List<Keeper>();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    keepers.Add(map.Keeper(reader));
+                }
+                reader.Close();
+                return keepers;
+            }
         }
 
-        public Task<Keeper> ReadById(Guid id)
+        public async Task<Keeper> ReadById(Guid id)
         {
-            throw new NotImplementedException();
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.keepers_read_by_id('{id}');";
+                var reader = await RunQuery(command);
+                var keeper = new Keeper();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    keeper = map.Keeper(reader);
+                }
+                reader.Close();
+                return keeper;
+            }
         }
 
-        public Task<bool> UpdateById(Keeper keeper)
+        public async Task<bool> UpdateById(Keeper keeper)
         {
-            throw new NotImplementedException();
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.keepers_update('{keeper.Id}', '{keeper.Filename}'";
+                if (keeper.Description is not null)
+                {
+                    command.CommandText += $", '{keeper.Description}'";
+                }
+                if (keeper.Category is not null)
+                {
+                    command.CommandText += $", '{keeper.Category}'";
+                }
+                command.CommandText += ");";
+                var result = await RunScalar(command);
+                var success = false;
+                if (result is not null)
+                {
+                    success = bool.Parse($"{result.ToString()}");
+                }
+                return success;
+            }
         }
 
-        public Task<bool> DeleteById(Guid id)
+        public async Task<bool> DeleteById(Guid id)
         {
-            throw new NotImplementedException();
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.keepers_delete_by_id('{id}');";
+                var result = await RunScalar(command);
+                var success = false;
+                if (result is not null)
+                {
+                    success = bool.Parse($"{result.ToString()}");
+                }
+                return success;
+            }
         }
 
         public async Task<int> CountByColumnValue(string column, string value)

@@ -16,7 +16,10 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.filedatas_create('{filedata.KeeperId}', '{filedata.BinaryData}');";
+                command.CommandText = $"SELECT * FROM tk.filedatas_create('{filedata.KeeperId}', :binary_data );";
+                var npgsqlParameter = new NpgsqlParameter("binary_data", NpgsqlTypes.NpgsqlDbType.Bytea);
+                npgsqlParameter.Value = filedata.BinaryData;
+                command.Parameters.Add(npgsqlParameter);
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
                 if (result is not null)
@@ -27,24 +30,56 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public Task<List<Filedata>> ReadAll()
+        /**
+         *
+         * I don't think anyone would ever really want to do this.
+         * but there is a function written for it, commented out.
+         *
+         */
+        public async Task<List<Filedata>> ReadAll()
         {
             throw new NotImplementedException();
         }
 
-        public Task<Filedata> ReadByKeeperId(Guid id)
+        public async Task<Filedata> ReadByKeeperId(Guid id)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.filedatas_read_by_keeper_id('{id}');";
+                var reader = await RunQuery(command);
+                var filedata = new Filedata();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    filedata = map.Filedata(reader);
+                }
+                reader.Close();
+                return filedata;
+            }
+        }
+
+        /**
+         * Not going to ahave a function to update a filedatas record. If you want to do
+         * that, delete the old keeper/filedata and then insert a new record set.
+         */
+        public async Task<bool> UpdateByKeeperId(Filedata filedata)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> UpdateByKeeperId(Filedata filedata)
+        public async Task<bool> DeleteByKeeperId(Guid id)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> DeleteByKeeperId(Guid id)
-        {
-            throw new NotImplementedException();
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.filedatas_delete_by_keeper_id('{id}');";
+                var result = await RunScalar(command);
+                var success = false;
+                if (result is not null)
+                {
+                    success = bool.Parse($"{result.ToString()}");
+                }
+                return success;
+            }
         }
     }
 }

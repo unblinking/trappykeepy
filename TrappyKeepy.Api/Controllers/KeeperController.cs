@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
-using System.Web;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
@@ -64,6 +64,47 @@ namespace TrappyKeepy.Api.Controllers
                 return StatusCode(500);
             }
 
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult> ReadById(Guid id)
+        {
+            try
+            {
+                var serviceRequest = new KeeperServiceRequest(id);
+                var serviceResponse = await keeperService.ReadById(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        if (serviceResponse.Item is null || serviceResponse.Item.Filename is null || serviceResponse.Item.Binarydata is null)
+                        {
+                            return StatusCode(500);
+                        }
+                        var filename = serviceResponse.Item.Filename;
+                        var binarydata = serviceResponse.Item.Binarydata;
+                        string contentType = "";
+                        new FileExtensionContentTypeProvider().TryGetContentType(filename, out contentType);
+                        var fileContentResult = new FileContentResult(binarydata, contentType)
+                        {
+                            FileDownloadName = filename
+                        };
+                        return fileContentResult;
+                }
+            }
+            catch (Exception)
+            {
+                // TODO: Log exception somewhere?
+                return StatusCode(500);
+            }
             // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }

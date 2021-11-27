@@ -104,7 +104,6 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                // TODO: Supply the SQL that executes the stored procedure for this.
                 command.CommandText = $"SELECT * FROM tk.users_delete_by_id('{id}');";
                 var result = await RunScalar(command);
                 var success = false;

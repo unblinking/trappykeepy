@@ -106,22 +106,72 @@ namespace TrappyKeepy.Service
             return response;
         }
 
-        public Task<KeeperServiceResponse> ReadAll(KeeperServiceRequest request)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<KeeperServiceResponse> ReadAll(KeeperServiceRequest request)
         {
             throw new NotImplementedException();
         }
 
-        public Task<KeeperServiceResponse> ReadById(KeeperServiceRequest request)
+        /// <summary>
+        /// Read one Keeper from the database (meta data), INCLUDING the actual Filedata (binary data).
+        /// </summary>
+        /// <param name="request"></param> - A KeeperServiceRequest including the request token and Keeper.Id value.
+        /// <returns>KeeperServiceResponse</returns> - A KeeperDto that includes the Binarydata for the document.
+        public async Task<KeeperServiceResponse> ReadById(KeeperServiceRequest request)
+        {
+            var response = new KeeperServiceResponse();
+            if (request.Id is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Requested keeper id was not defined.";
+                return response;
+            }
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            {
+                try
+                {
+                    // TODO: Verify requesting user has permission to make this request.
+
+                    var keeper = await unitOfWork.KeeperRepository.ReadById((Guid)request.Id);
+                    var filedata = await unitOfWork.FiledataRepository.ReadByKeeperId((Guid)request.Id);
+                    unitOfWork.Commit();
+
+                    // Pass a KeeperDto back to the controller.
+                    var keeperDto = new KeeperDto()
+                    {
+                        Id = keeper.Id,
+                        Filename = keeper.Filename,
+                        Description = keeper.Description,
+                        Category = keeper.Category,
+                        DatePosted = keeper.DatePosted,
+                        UserPosted = keeper.UserPosted,
+                        Binarydata = filedata.BinaryData
+                    };
+                    response.Item = keeperDto;
+                    response.Outcome = OutcomeType.Success;
+                }
+                catch (Exception)
+                {
+                    unitOfWork.Rollback();
+                    unitOfWork.Dispose();
+                    // TODO: Log exception somewhere?
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+            }
+            return response;
+        }
+
+        public async Task<KeeperServiceResponse> UpdateById(KeeperServiceRequest request)
         {
             throw new NotImplementedException();
         }
 
-        public Task<KeeperServiceResponse> UpdateById(KeeperServiceRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<KeeperServiceResponse> DeleteById(KeeperServiceRequest request)
+        public async Task<KeeperServiceResponse> DeleteById(KeeperServiceRequest request)
         {
             throw new NotImplementedException();
         }

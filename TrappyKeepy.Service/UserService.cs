@@ -134,7 +134,7 @@ namespace TrappyKeepy.Service
             if (request.Id is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user Id was not defined.";
+                response.ErrorMessage = "Requested user id was not defined.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
@@ -144,11 +144,7 @@ namespace TrappyKeepy.Service
                     // TODO: Verify requesting user has permission to make this request.
                     var user = await unitOfWork.UserRepository.ReadById((Guid)request.Id);
                     unitOfWork.Commit();
-
-                    // TODO: Get User objects from unitOfWork, convert to Dto objects for the service response.
-                    // TODO: Don't include the password in the Dto.
-
-
+                    // Pass a UserDto back to the controller.
                     var userDto = new UserDto()
                     {
                         Id = user.Id,
@@ -194,7 +190,6 @@ namespace TrappyKeepy.Service
                 try
                 {
                     // TODO: Verify requesting user has permission to make this request.
-                    // TODO: Verify that the user exists first?
                     // Received a UserDto from the controller. Turn that into a User.
                     var dto = request.Item;
                     var updatee = new User();
@@ -205,6 +200,7 @@ namespace TrappyKeepy.Service
                     if (dto.DateLastLogin is not null) updatee.DateLastLogin = dto.DateLastLogin;
 
                     // The updater updates the updatee.
+                    // TODO: Verify that the user exists first?
                     var successful = await unitOfWork.UserRepository.UpdateById(updatee);
                     unitOfWork.Commit();
                     if (successful)
@@ -243,7 +239,6 @@ namespace TrappyKeepy.Service
                 try
                 {
                     // TODO: Verify requesting user has permission to make this request.
-                    // TODO: Verify that the user exists first?
                     // Received a UserDto from the controller. Turn that into a User.
                     var dto = request.Item;
                     var updatee = new User();
@@ -251,6 +246,7 @@ namespace TrappyKeepy.Service
                     if (dto.Password is not null) updatee.Password = dto.Password;
 
                     // The updater updates the updatee.
+                    // TODO: Verify that the user exists first?
                     var successful = await unitOfWork.UserRepository.UpdatePasswordById(updatee);
                     unitOfWork.Commit();
                     if (successful)

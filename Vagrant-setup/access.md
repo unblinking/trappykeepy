@@ -77,6 +77,12 @@ INSERT INTO tk.users (name, password, email, date_created) VALUES ('bar', 'passw
 To rollback all migrations:  
 
 ```sql
+DROP FUNCTION tk.filedatas_delete_by_keeper_id(uuid);
+DROP FUNCTION tk.keepers_delete_by_id(uuid);
+DROP FUNCTION tk.keepers_update(uuid, text, text, text);
+DROP FUNCTION tk.filedatas_read_by_keeper_id(uuid);
+DROP FUNCTION tk.keepers_read_by_id(uuid);
+DROP FUNCTION tk.keepers_read_all();
 DROP FUNCTION tk.keepers_count_by_column_value_text(text, text);
 DROP FUNCTION tk.filedatas_create(uuid, bytea);
 DROP FUNCTION tk.keepers_create(text, uuid, text, text);
