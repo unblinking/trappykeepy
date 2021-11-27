@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using TrappyKeepy.Domain;
+using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Data
 {
@@ -17,6 +17,8 @@ namespace TrappyKeepy.Data
         {
         }
 
+        public virtual DbSet<Filedata> Filedatas { get; set; } = null!;
+        public virtual DbSet<Keeper> Keepers { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -32,25 +34,74 @@ namespace TrappyKeepy.Data
             modelBuilder.UseCollation("en_US.utf8")
                 .HasPostgresExtension("pgcrypto");
 
-            modelBuilder.Entity<User>(entity =>
+            modelBuilder.Entity<Filedata>(entity =>
             {
-                entity.HasComment("Individual user records including login credentials.");
+                entity.HasKey(e => e.KeeperId)
+                    .HasName("filedatas_pkey");
+
+                entity.HasComment("Table to store keeper/document binary data records.");
+
+                entity.Property(e => e.KeeperId)
+                    .ValueGeneratedNever()
+                    .HasComment("UUID primary key, and foreign key to the tk.keepers table.");
+
+                entity.Property(e => e.BinaryData).HasComment("Bytea binary string of the actual keeper/document uploaded.");
+
+                entity.HasOne(d => d.Keeper)
+                    .WithOne(p => p.Filedata)
+                    .HasForeignKey<Filedata>(d => d.KeeperId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_keeper_of_filedata");
+            });
+
+            modelBuilder.Entity<Keeper>(entity =>
+            {
+                entity.HasComment("Table to store keeper/document metadata records.");
 
                 entity.Property(e => e.Id)
                     .HasDefaultValueSql("gen_random_uuid()")
-                    .HasComment("UUID/GUID primary key of the user record.");
+                    .HasComment("UUID primary key.");
 
-                entity.Property(e => e.DateActivated).HasComment("The datetime when the user record was activated for login.");
+                entity.Property(e => e.Category).HasComment("Category of the document.");
 
-                entity.Property(e => e.DateCreated).HasComment("The datetime when the user record was created in the database.");
+                entity.Property(e => e.DatePosted)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .HasComment("Datetime the document was created in the database.");
 
-                entity.Property(e => e.DateLastLogin).HasComment("The datetime when the user last logged into the system successfully.");
+                entity.Property(e => e.Description).HasComment("Description of the document.");
 
-                entity.Property(e => e.Email).HasComment("Unique email address for the user.");
+                entity.Property(e => e.Filename).HasComment("Unique document filename.");
 
-                entity.Property(e => e.Name).HasComment("Unique user display name.");
+                entity.Property(e => e.UserPosted).HasComment("User id associated with creating the document in the database.");
 
-                entity.Property(e => e.Password).HasComment("Encrypted user password using the pgcrypto crypt function, and gen_salt with the blowfish algorithm and iteration count of 8.");
+                entity.HasOne(d => d.UserPostedNavigation)
+                    .WithMany(p => p.Keepers)
+                    .HasForeignKey(d => d.UserPosted)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_user_posted_keeper");
+            });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasComment("Table to store user records.");
+
+                entity.Property(e => e.Id)
+                    .HasDefaultValueSql("gen_random_uuid()")
+                    .HasComment("UUID primary key.");
+
+                entity.Property(e => e.DateActivated).HasComment("Datetime the user was activated for login.");
+
+                entity.Property(e => e.DateCreated)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .HasComment("Datetime the user was created in the database.");
+
+                entity.Property(e => e.DateLastLogin).HasComment("Datetime the user last logged into the system successfully.");
+
+                entity.Property(e => e.Email).HasComment("Unique email address.");
+
+                entity.Property(e => e.Name).HasComment("Unique display name.");
+
+                entity.Property(e => e.Password).HasComment("Salted/Hashed password using the pgcrypto crypt function, and gen_salt with the blowfish algorithm and iteration count of 8.");
             });
 
             OnModelCreatingPartial(modelBuilder);

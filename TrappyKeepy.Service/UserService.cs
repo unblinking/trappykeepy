@@ -6,6 +6,9 @@ namespace TrappyKeepy.Service
 {
     public class UserService : IUserService
     {
+        // TODO: Figure out some way to inject UnitOfWork here for testing.
+        // TODO: This connection string env var is ugly too.
+
         private string connectionString;
 
         public UserService()
@@ -21,7 +24,6 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> Create(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            // TODO: Verify requesting user has permission to make this request.
             if (request.Item is null)
             {
                 response.Outcome = OutcomeType.Fail;
@@ -38,13 +40,13 @@ namespace TrappyKeepy.Service
             {
                 try
                 {
+                    // TODO: Verify requesting user has permission to make this request.
                     // Received a UserDto from the controller. Turn that into a User.
                     var newUser = new User()
                     {
                         Name = request.Item.Name,
                         Password = request.Item.Password, // Plaintext password here from the request Dto.
-                        Email = request.Item.Email,
-                        DateCreated = DateTime.Now
+                        Email = request.Item.Email
                     };
                     var existingNameCount = await unitOfWork.UserRepository
                         .CountByColumnValue("name", newUser.Name);
@@ -87,11 +89,11 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> ReadAll(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            // TODO: Verify requesting user has permission to make this request.
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
+                    // TODO: Verify requesting user has permission to make this request.
                     var userList = await unitOfWork.UserRepository.ReadAll();
                     unitOfWork.Commit();
 
@@ -129,24 +131,20 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> ReadById(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            // TODO: Verify requesting user has permission to make this request.
             if (request.Id is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user Id was not defined.";
+                response.ErrorMessage = "Requested user id was not defined.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
+                    // TODO: Verify requesting user has permission to make this request.
                     var user = await unitOfWork.UserRepository.ReadById((Guid)request.Id);
                     unitOfWork.Commit();
-
-                    // TODO: Get User objects from unitOfWork, convert to Dto objects for the service response.
-                    // TODO: Don't include the password in the Dto.
-
-
+                    // Pass a UserDto back to the controller.
                     var userDto = new UserDto()
                     {
                         Id = user.Id,
@@ -175,7 +173,6 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> UpdateById(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            // TODO: Verify requesting user has permission to make this request.
             if (request.Item is null)
             {
                 response.Outcome = OutcomeType.Fail;
@@ -192,7 +189,7 @@ namespace TrappyKeepy.Service
             {
                 try
                 {
-                    // TODO: Verify that the user exists first?
+                    // TODO: Verify requesting user has permission to make this request.
                     // Received a UserDto from the controller. Turn that into a User.
                     var dto = request.Item;
                     var updatee = new User();
@@ -203,6 +200,7 @@ namespace TrappyKeepy.Service
                     if (dto.DateLastLogin is not null) updatee.DateLastLogin = dto.DateLastLogin;
 
                     // The updater updates the updatee.
+                    // TODO: Verify that the user exists first?
                     var successful = await unitOfWork.UserRepository.UpdateById(updatee);
                     unitOfWork.Commit();
                     if (successful)
@@ -230,7 +228,6 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> UpdatePasswordById(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            // TODO: Verify requesting user has permission to make this request.
             if (request.Item is null || request.Item.Id is null || request.Item.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
@@ -241,7 +238,7 @@ namespace TrappyKeepy.Service
             {
                 try
                 {
-                    // TODO: Verify that the user exists first?
+                    // TODO: Verify requesting user has permission to make this request.
                     // Received a UserDto from the controller. Turn that into a User.
                     var dto = request.Item;
                     var updatee = new User();
@@ -249,6 +246,7 @@ namespace TrappyKeepy.Service
                     if (dto.Password is not null) updatee.Password = dto.Password;
 
                     // The updater updates the updatee.
+                    // TODO: Verify that the user exists first?
                     var successful = await unitOfWork.UserRepository.UpdatePasswordById(updatee);
                     unitOfWork.Commit();
                     if (successful)
@@ -276,7 +274,6 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> DeleteById(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            // TODO: Verify requesting user has permission to make this request.
             if (request.Id is null)
             {
                 response.Outcome = OutcomeType.Fail;
@@ -287,6 +284,7 @@ namespace TrappyKeepy.Service
             {
                 try
                 {
+                    // TODO: Verify requesting user has permission to make this request.
                     // TODO: Verify that the user exists first?
                     var successful = await unitOfWork.UserRepository.DeleteById((Guid)request.Id);
                     unitOfWork.Commit();

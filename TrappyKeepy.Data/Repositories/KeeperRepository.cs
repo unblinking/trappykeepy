@@ -5,18 +5,27 @@ using TrappyKeepy.Domain.Interfaces;
 
 namespace TrappyKeepy.Data.Repositories
 {
-    public class UserRepository : BaseRepository, IUserRepository
+    public class KeeperRepository : BaseRepository, IKeeperRepository
     {
-        public UserRepository(NpgsqlConnection connection) : base(connection)
+        public KeeperRepository(NpgsqlConnection connection) : base(connection)
         {
             this.connection = connection;
         }
 
-        public async Task<Guid> Create(User user)
+        public async Task<Guid> Create(Keeper keeper)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_create('{user.Name}', '{user.Password}', '{user.Email}');";
+                command.CommandText = $"SELECT * FROM tk.keepers_create('{keeper.Filename}'";
+                if (keeper.Description is not null)
+                {
+                    command.CommandText += $", '{keeper.Description}'";
+                }
+                if (keeper.Category is not null)
+                {
+                    command.CommandText += $", '{keeper.Category}'";
+                }
+                command.CommandText += $", '{keeper.UserPosted}');";
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
                 if (result is not null)
@@ -27,69 +36,54 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<List<User>> ReadAll()
+        public async Task<List<Keeper>> ReadAll()
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = "SELECT * FROM tk.users_read_all();";
+                command.CommandText = "SELECT * FROM tk.keepers_read_all();";
                 var reader = await RunQuery(command);
-                var users = new List<User>();
+                var keepers = new List<Keeper>();
                 while (await reader.ReadAsync())
                 {
                     var map = new PgsqlReaderMap();
-                    users.Add(map.User(reader));
+                    keepers.Add(map.Keeper(reader));
                 }
                 reader.Close();
-                return users;
+                return keepers;
             }
         }
 
-        public async Task<User> ReadById(Guid id)
+        public async Task<Keeper> ReadById(Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_read_by_id('{id}');";
+                command.CommandText = $"SELECT * FROM tk.keepers_read_by_id('{id}');";
                 var reader = await RunQuery(command);
-                var user = new User();
+                var keeper = new Keeper();
                 while (await reader.ReadAsync())
                 {
                     var map = new PgsqlReaderMap();
-                    user = map.User(reader);
+                    keeper = map.Keeper(reader);
                 }
                 reader.Close();
-                return user;
+                return keeper;
             }
         }
 
-        public async Task<bool> UpdateById(User user)
+        public async Task<bool> UpdateById(Keeper keeper)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_update('{user.Id}', '{user.Name}', '{user.Email}'";
-                if (user.DateActivated is not null)
+                command.CommandText = $"SELECT * FROM tk.keepers_update('{keeper.Id}', '{keeper.Filename}'";
+                if (keeper.Description is not null)
                 {
-                    command.CommandText += $", '{user.DateActivated}'";
+                    command.CommandText += $", '{keeper.Description}'";
                 }
-                if (user.DateLastLogin is not null)
+                if (keeper.Category is not null)
                 {
-                    command.CommandText += $", '{user.DateLastLogin}'";
+                    command.CommandText += $", '{keeper.Category}'";
                 }
                 command.CommandText += ");";
-                var result = await RunScalar(command);
-                var success = false;
-                if (result is not null)
-                {
-                    success = bool.Parse($"{result.ToString()}");
-                }
-                return success;
-            }
-        }
-
-        public async Task<bool> UpdatePasswordById(User user)
-        {
-            using (var command = new NpgsqlCommand())
-            {
-                command.CommandText = $"SELECT * FROM tk.users_update_password('{user.Id}', '{user.Password}');";
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -104,7 +98,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_delete_by_id('{id}');";
+                command.CommandText = $"SELECT * FROM tk.keepers_delete_by_id('{id}');";
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -119,7 +113,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_count_by_column_value_text('{column}', '{value}');";
+                command.CommandText = $"SELECT * FROM tk.keepers_count_by_column_value_text('{column}', '{value}');";
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)
@@ -127,21 +121,6 @@ namespace TrappyKeepy.Data.Repositories
                     count = int.Parse($"{result.ToString()}");
                 }
                 return count;
-            }
-        }
-
-        public async Task<Guid> Authenticate(User user)
-        {
-            using (var command = new NpgsqlCommand())
-            {
-                command.CommandText = $"SELECT * FROM tk.users_authenticate('{user.Email}', '{user.Password}');";
-                var result = await RunScalar(command);
-                var authenticatedId = Guid.Empty;
-                if (result is not null)
-                {
-                    authenticatedId = Guid.Parse($"{result.ToString()}");
-                }
-                return authenticatedId;
             }
         }
     }

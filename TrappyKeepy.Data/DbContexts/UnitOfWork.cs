@@ -7,6 +7,8 @@ namespace TrappyKeepy.Data
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private UserRepository? userRepository;
+        private KeeperRepository? keeperRepository;
+        private FiledataRepository? filedataRepository;
         private string connectionString;
         private NpgsqlConnection connection;
         private NpgsqlTransaction? transaction;
@@ -28,11 +30,26 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.userRepository is null)
-                {
-                    userRepository = new UserRepository(connection);
-                }
+                if (this.userRepository is null) userRepository = new UserRepository(connection);
                 return userRepository;
+            }
+        }
+
+        public KeeperRepository KeeperRepository
+        {
+            get
+            {
+                if (this.keeperRepository is null) keeperRepository = new KeeperRepository(connection);
+                return keeperRepository;
+            }
+        }
+
+        public FiledataRepository FiledataRepository
+        {
+            get
+            {
+                if (this.filedataRepository is null) filedataRepository = new FiledataRepository(connection);
+                return filedataRepository;
             }
         }
 

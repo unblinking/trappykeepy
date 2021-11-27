@@ -55,28 +55,26 @@ FROM information_schema.routine_privileges
 WHERE grantee = 'dbuser';
 ```
 
-To see the source of a function in the database:  
-
-```psql
-\sf tk.get_table_types
-```
-
-# Seed data  
-
-Seed a couple of user records:  
-
-```sql
-INSERT INTO tk.users (name, password, email, date_created) VALUES ('foo', 'passwordfoo', 'foo@example.com', '2021-10-10 10:10:10-10');
-INSERT INTO tk.users (name, password, email, date_created) VALUES ('bar', 'passwordbar', 'bar@example.com', '2021-10-10 10:10:10-10');
-```
-
 # Migrations  
 
 ## V1  
 
-To rollback the V1 migration:  
+To rollback all migrations:  
 
 ```sql
+DROP FUNCTION tk.filedatas_delete_by_keeper_id(uuid);
+DROP FUNCTION tk.keepers_delete_by_id(uuid);
+DROP FUNCTION tk.keepers_update(uuid, text, text, text);
+DROP FUNCTION tk.filedatas_read_by_keeper_id(uuid);
+DROP FUNCTION tk.keepers_read_by_id(uuid);
+DROP FUNCTION tk.keepers_read_all();
+DROP FUNCTION tk.keepers_count_by_column_value_text(text, text);
+DROP FUNCTION tk.filedatas_create(uuid, bytea);
+DROP FUNCTION tk.keepers_create(text, uuid, text, text);
+DROP TABLE tk.filedatas;
+DROP TYPE tk.filedata_type;
+DROP TABLE tk.keepers;
+DROP TYPE tk.keeper_type;
 DROP FUNCTION tk.users_authenticate(text, text);
 DROP FUNCTION tk.users_count_by_column_value_text(text, text);
 DROP FUNCTION tk.users_delete_by_id(uuid);
@@ -84,7 +82,7 @@ DROP FUNCTION tk.users_update_password(uuid, text);
 DROP FUNCTION tk.users_update(uuid, varchar(50), text, timestamptz, timestamptz);
 DROP FUNCTION tk.users_read_by_id(uuid);
 DROP FUNCTION tk.users_read_all();
-DROP FUNCTION tk.users_insert(varchar(50), text, text, timestamptz);
+DROP FUNCTION tk.users_create(varchar(50), text, text);
 DROP TABLE tk.users;
 DROP TYPE tk.user_type;
 DROP FUNCTION tk.get_table_types(text);
