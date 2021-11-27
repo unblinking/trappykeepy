@@ -85,17 +85,11 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        if (serviceResponse.Item is null || serviceResponse.Item.Filename is null || serviceResponse.Item.Binarydata is null)
+                        new FileExtensionContentTypeProvider()
+                            .TryGetContentType(serviceResponse.Item.Filename, out var contentType);
+                        var fileContentResult = new FileContentResult(serviceResponse.Item.Binarydata, contentType)
                         {
-                            return StatusCode(500);
-                        }
-                        var filename = serviceResponse.Item.Filename;
-                        var binarydata = serviceResponse.Item.Binarydata;
-                        string contentType = "";
-                        new FileExtensionContentTypeProvider().TryGetContentType(filename, out contentType);
-                        var fileContentResult = new FileContentResult(binarydata, contentType)
-                        {
-                            FileDownloadName = filename
+                            FileDownloadName = serviceResponse.Item.Filename
                         };
                         return fileContentResult;
                 }

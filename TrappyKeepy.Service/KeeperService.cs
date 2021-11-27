@@ -111,7 +111,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<KeeperServiceResponse> ReadAll(KeeperServiceRequest request)
+        public Task<KeeperServiceResponse> ReadAll(KeeperServiceRequest request)
         {
             throw new NotImplementedException();
         }
@@ -166,12 +166,12 @@ namespace TrappyKeepy.Service
             return response;
         }
 
-        public async Task<KeeperServiceResponse> UpdateById(KeeperServiceRequest request)
+        public Task<KeeperServiceResponse> UpdateById(KeeperServiceRequest request)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<KeeperServiceResponse> DeleteById(KeeperServiceRequest request)
+        public Task<KeeperServiceResponse> DeleteById(KeeperServiceRequest request)
         {
             throw new NotImplementedException();
         }

@@ -36,7 +36,7 @@ namespace TrappyKeepy.Data.Repositories
          * but there is a function written for it, commented out.
          *
          */
-        public async Task<List<Filedata>> ReadAll()
+        public Task<List<Filedata>> ReadAll()
         {
             throw new NotImplementedException();
         }
@@ -62,7 +62,7 @@ namespace TrappyKeepy.Data.Repositories
          * Not going to ahave a function to update a filedatas record. If you want to do
          * that, delete the old keeper/filedata and then insert a new record set.
          */
-        public async Task<bool> UpdateByKeeperId(Filedata filedata)
+        public Task<bool> UpdateByKeeperId(Filedata filedata)
         {
             throw new NotImplementedException();
         }
