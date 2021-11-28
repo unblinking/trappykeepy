@@ -1,6 +1,7 @@
-using TrappyKeepy.Data;
+﻿using TrappyKeepy.Data;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
+
 
 namespace TrappyKeepy.Service
 {
@@ -24,81 +25,50 @@ namespace TrappyKeepy.Service
         public async Task<KeeperServiceResponse> Create(KeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
-            if (request.Item is null)
+            if (request.Item?.Filename is null || request?.BinaryData is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested new keeper was not defined.";
-                return response;
-            }
-            if (request.Item.Filename is null || request.Item.Binarydata is null || request.BearerToken is null)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Filename, binary data, and a valid bearer token are required to create a keeper.";
+                response.ErrorMessage = "File name and binary data are required to create a keeper.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
-                    // Get the requesting user GUID from the request token.
-                    var jwtService = new JwtService();
-                    var decodedToken = jwtService.DecodeJwt(request.BearerToken);
-                    decodedToken.TryGetValue("id", out var requestingUserGuidObject);
-                    if (requestingUserGuidObject is null)
-                    {
-                        response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Request token missing user id.";
-                        return response;
-                    }
-                    var requestingUserGuid = requestingUserGuidObject.ToString();
-                    if (requestingUserGuid is null)
-                    {
-                        response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Request token missing user id.";
-                        return response;
-                    }
-
-                    // TODO: Verify requesting user has permission to make this request.
-
-                    // Received a KeeperDto from the controller. Turn that into a Keeper.
-
-                    var newKeeper = new Keeper()
-                    {
-                        Filename = request.Item.Filename,
-                        DatePosted = DateTime.Now,
-                        UserPosted = new Guid(requestingUserGuid)
-                    };
+                    // Verify the requested file name is not already in use.
                     var existingNameCount = await unitOfWork.KeeperRepository
-                        .CountByColumnValue("filename", newKeeper.Filename);
+                        .CountByColumnValue("filename", request.Item.Filename);
                     if (existingNameCount > 0)
                     {
                         response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Requested new keeper filename already in use.";
+                        response.ErrorMessage = "File name already in use.";
                         return response;
                     }
+
                     // Create the new keeper record now.
-                    var newKeeperId = await unitOfWork.KeeperRepository.Create(newKeeper);
-                    // Create the filedata record now, with the id of the keeper we just created in the database.
-                    var newFiledata = new Filedata()
+                    var id = await unitOfWork.KeeperRepository.Create(request.Item);
+
+                    // Create the new filedata record now.
+                    var filedata = new Filedata()
                     {
-                        KeeperId = newKeeperId,
-                        BinaryData = request.Item.Binarydata
+                        KeeperId = id,
+                        BinaryData = request.BinaryData
                     };
-                    var newFiledataId = await unitOfWork.FiledataRepository.Create(newFiledata);
+                    await unitOfWork.FiledataRepository.Create(filedata);
+
                     // Commit changes in this transaction.
                     unitOfWork.Commit();
+
                     // Pass a KeeperDto back to the controller.
-                    response.Item = new KeeperDto()
-                    {
-                        Id = newKeeperId // Id from the database insert.
-                    };
+                    response.Item = new KeeperDto() { Id = id };
+
+                    // Success if we made it this far.
                     response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }
@@ -117,10 +87,10 @@ namespace TrappyKeepy.Service
         }
 
         /// <summary>
-        /// Read one Keeper from the database (meta data), INCLUDING the actual Filedata (binary data).
+        /// Read one keeper from the database (meta data), including the filedata (binary data).
         /// </summary>
-        /// <param name="request"></param> - A KeeperServiceRequest including the request token and Keeper.Id value.
-        /// <returns>KeeperServiceResponse</returns> - A KeeperDto that includes the Binarydata for the document.
+        /// <param name="request"></param> - A KeeperServiceRequest including the requested keeper id.
+        /// <returns>KeeperServiceResponse</returns> - A KeeperDto that includes the BinaryData for the file.
         public async Task<KeeperServiceResponse> ReadById(KeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
@@ -130,18 +100,18 @@ namespace TrappyKeepy.Service
                 response.ErrorMessage = "Requested keeper id was not defined.";
                 return response;
             }
-            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            using (var unitOfWork = new UnitOfWork(connectionString, false))
             {
                 try
                 {
-                    // TODO: Verify requesting user has permission to make this request.
-
+                    // Read the keeper record now.
                     var keeper = await unitOfWork.KeeperRepository.ReadById((Guid)request.Id);
+
+                    // Read the filedata record now.
                     var filedata = await unitOfWork.FiledataRepository.ReadByKeeperId((Guid)request.Id);
-                    unitOfWork.Commit();
 
                     // Pass a KeeperDto back to the controller.
-                    var keeperDto = new KeeperDto()
+                    response.Item = new KeeperDto()
                     {
                         Id = keeper.Id,
                         Filename = keeper.Filename,
@@ -149,16 +119,16 @@ namespace TrappyKeepy.Service
                         Category = keeper.Category,
                         DatePosted = keeper.DatePosted,
                         UserPosted = keeper.UserPosted,
-                        Binarydata = filedata.BinaryData
+                        BinaryData = filedata.BinaryData
                     };
-                    response.Item = keeperDto;
+
+                    // Success if we made it this far.
                     response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }

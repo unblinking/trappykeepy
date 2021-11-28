@@ -1,4 +1,4 @@
-namespace TrappyKeepy.Domain.Models
+﻿namespace TrappyKeepy.Domain.Models
 {
     /// <summary>
     /// Base service request class.
@@ -13,13 +13,13 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         public T? Item { get; set; }
 
-        public string? BearerToken { get; set; }
+        public Guid? RequesterId { get; set; }
     }
 
     /// <summary>
     /// User service request.
     /// </summary>
-    public class UserServiceRequest : ServiceRequest<UserDto>
+    public class UserServiceRequest : ServiceRequest<User>
     {
         /// <summary>
         ///  If no user is provided, instantiate a new one.
@@ -33,10 +33,10 @@ namespace TrappyKeepy.Domain.Models
         /// If a user is provided, set the user as the Item of the request.
         /// Example could be a request to create a new user.
         /// </summary>
-        /// <param name="userDto"></param>
-        public UserServiceRequest(UserDto userDto)
+        /// <param name="user"></param>
+        public UserServiceRequest(User user)
         {
-            this.Item = userDto;
+            this.Item = user;
         }
 
         public UserServiceRequest(Guid id)
@@ -48,8 +48,10 @@ namespace TrappyKeepy.Domain.Models
     /// <summary>
     /// Keeper service request.
     /// </summary>
-    public class KeeperServiceRequest : ServiceRequest<KeeperDto>
+    public class KeeperServiceRequest : ServiceRequest<Keeper>
     {
+        public byte[]? BinaryData { get; set; }
+
         /// <summary>
         ///  If no keeper is provided, instantiate a new one.
         /// </summary>
@@ -62,10 +64,10 @@ namespace TrappyKeepy.Domain.Models
         /// If a keeper is provided, set the keeper as the Item of the request.
         /// Example could be a request to create a new keeper.
         /// </summary>
-        /// <param name="keeperDto"></param>
-        public KeeperServiceRequest(KeeperDto keeperDto)
+        /// <param name="keeper"></param>
+        public KeeperServiceRequest(Keeper keeper)
         {
-            this.Item = keeperDto;
+            this.Item = keeper;
         }
 
         public KeeperServiceRequest(Guid id)
