@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="EasyEncrypt" Version="2.2.1" />
-    <PackageReference Include="SimpleJWT" Version="1.1.0" />
+    <PackageReference Include="JWT" Version="8.6.0" />
   </ItemGroup>
 
 </Project>
