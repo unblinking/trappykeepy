@@ -1,7 +1,7 @@
-using Npgsql;
+﻿using Npgsql;
+using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Maps;
 using TrappyKeepy.Domain.Models;
-using TrappyKeepy.Domain.Interfaces;
 
 namespace TrappyKeepy.Data.Repositories
 {
@@ -16,7 +16,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_create('{user.Name}', '{user.Password}', '{user.Email}');";
+                command.CommandText = $"SELECT * FROM tk.users_create('{user.Name}', '{user.Password}', '{user.Email}', '{user.Role}');";
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
                 if (result is not null)
@@ -65,14 +65,46 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_update('{user.Id}', '{user.Name}', '{user.Email}'";
+                command.CommandText = $"SELECT * FROM tk.users_update('{user.Id}'";
+                if (user.Name is not null)
+                {
+                    command.CommandText += $", '{user.Name}'";
+                }
+                else
+                {
+                    command.CommandText += $", null";
+                }
+                if (user.Email is not null)
+                {
+                    command.CommandText += $", '{user.Email}'";
+                }
+                else
+                {
+                    command.CommandText += $", null";
+                }
+                if (user.Role >= 0)
+                {
+                    command.CommandText += $", '{user.Role}'";
+                }
+                else
+                {
+                    command.CommandText += $", null";
+                }
                 if (user.DateActivated is not null)
                 {
                     command.CommandText += $", '{user.DateActivated}'";
                 }
+                else
+                {
+                    command.CommandText += $", null";
+                }
                 if (user.DateLastLogin is not null)
                 {
                     command.CommandText += $", '{user.DateLastLogin}'";
+                }
+                else
+                {
+                    command.CommandText += $", null";
                 }
                 command.CommandText += ");";
                 var result = await RunScalar(command);
@@ -130,18 +162,20 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<Guid> Authenticate(User user)
+        public async Task<User> Authenticate(User user)
         {
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_authenticate('{user.Email}', '{user.Password}');";
-                var result = await RunScalar(command);
-                var authenticatedId = Guid.Empty;
-                if (result is not null)
+                var reader = await RunQuery(command);
+                var authenticatedUser = new User();
+                while (await reader.ReadAsync())
                 {
-                    authenticatedId = Guid.Parse($"{result.ToString()}");
+                    var map = new PgsqlReaderMap();
+                    authenticatedUser = map.User(reader);
                 }
-                return authenticatedId;
+                reader.Close();
+                return authenticatedUser;
             }
         }
     }

@@ -41,6 +41,8 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         [Column("email")]
         public string Email { get; set; } = null!;
+        [Column("role")]
+        public short Role { get; set; }
         /// <summary>
         /// Datetime the user was created in the database.
         /// </summary>

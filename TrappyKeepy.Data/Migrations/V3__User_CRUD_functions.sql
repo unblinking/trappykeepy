@@ -19,13 +19,15 @@
  * Parameters:  name VARCHAR(50) - Unique user display name.
  *              password TEXT - Plain text user password that will be salted/hashed.
  *              email TEXT - 
- * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com');
+ *              role SMALLINT - 
+ * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', '0');
  * Returns:     
  */
 CREATE OR REPLACE FUNCTION tk.users_create (
     name VARCHAR( 50 ),
     password TEXT,
-    email TEXT
+    email TEXT,
+    role SMALLINT
 )
     RETURNS TABLE (id UUID)
     LANGUAGE PLPGSQL
@@ -34,11 +36,13 @@ $$
 DECLARE
     saltedhash TEXT;
 BEGIN
-    SELECT crypt($2, gen_salt('bf', 8)) INTO saltedhash;
+    SELECT crypt($2, gen_salt('bf', 8))
+    INTO saltedhash;
 
     RETURN QUERY
-    INSERT INTO tk.users (name, password, email)
-    VALUES ($1, saltedhash, $3)
+    INSERT
+    INTO tk.users (name, password, email, role)
+    VALUES ($1, saltedhash, $3, $4)
     RETURNING tk.users.id;
 END;
 $$;
@@ -60,7 +64,8 @@ CREATE OR REPLACE FUNCTION tk.users_read_all ()
 $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM tk.users;
+    SELECT *
+    FROM tk.users;
 END;
 $$;
 COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from the users table.';
@@ -83,7 +88,9 @@ CREATE OR REPLACE FUNCTION tk.users_read_by_id (
 $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM tk.users WHERE tk.users.id = $1;
+    SELECT *
+    FROM tk.users
+    WHERE tk.users.id = $1;
 END;
 $$;
 COMMENT ON FUNCTION tk.users_read_by_id IS 'Function to return a record from the users table by id.';
@@ -98,13 +105,14 @@ COMMENT ON FUNCTION tk.users_read_by_id IS 'Function to return a record from the
  *              email TEXT
  *              date_activated TIMESTAMPTZ
  *              date_last_login TIMESTAMPTZ
- * Usage:       SELECT * FROM tk.users_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo', 'foo@example.com', '2021-10-10T13:10:10');
+ * Usage:       SELECT * FROM tk.users_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo', 'foo@example.com', '0', '2021-10-10T13:10:10', '2021-10-10T13:10:10');
  * Returns:     True if the user was updated, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.users_update (
     id UUID,
     name VARCHAR( 50 ) DEFAULT NULL,
     email TEXT DEFAULT NULL,
+    role SMALLINT DEFAULT NULL,
     date_activated TIMESTAMPTZ DEFAULT NULL,
     date_last_login TIMESTAMPTZ DEFAULT NULL
 )
@@ -116,8 +124,9 @@ BEGIN
     UPDATE tk.users
     SET name = COALESCE($2, tk.users.name),
         email = COALESCE($3, tk.users.email),
-        date_activated = COALESCE($4, tk.users.date_activated),
-        date_last_login = COALESCE($5, tk.users.date_last_login)
+        role = COALESCE($4, tk.users.role),
+        date_activated = COALESCE($5, tk.users.date_activated),
+        date_last_login = COALESCE($6, tk.users.date_last_login)
     WHERE tk.users.id = $1;
     RETURN FOUND;
 END;
@@ -141,7 +150,8 @@ CREATE OR REPLACE FUNCTION tk.users_delete_by_id (
     AS
 $$
 BEGIN
-    DELETE FROM tk.users
+    DELETE
+    FROM tk.users
     WHERE tk.users.id = $1;
     RETURN FOUND;
 END;
