@@ -32,7 +32,9 @@ BEGIN
     IF column_name IS NOT NULL THEN
         query := query || ' WHERE ' || quote_ident(column_name) || ' = $1';
     END IF;
-    EXECUTE query USING column_value INTO row_count;
+    EXECUTE query
+    USING column_value
+    INTO row_count;
     RETURN row_count;
 END;
 $$;

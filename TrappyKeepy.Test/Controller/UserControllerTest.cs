@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Moq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
 using TrappyKeepy.Api.Controllers;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;

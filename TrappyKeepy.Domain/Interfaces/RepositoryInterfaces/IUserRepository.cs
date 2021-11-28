@@ -1,4 +1,4 @@
-using TrappyKeepy.Domain.Models;
+﻿using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Domain.Interfaces
 {
@@ -11,6 +11,6 @@ namespace TrappyKeepy.Domain.Interfaces
         Task<bool> UpdatePasswordById(User user);
         Task<bool> DeleteById(Guid id);
         Task<int> CountByColumnValue(string column, string value);
-        Task<Guid> Authenticate(User user);
+        Task<User> Authenticate(User user);
     }
 }

@@ -42,7 +42,8 @@ BEGIN
     WHERE isc.table_name = $1;
 
     RETURN QUERY
-    SELECT * FROM users_information_schema_columns;
+    SELECT *
+    FROM users_information_schema_columns;
 END;
 $$;
 COMMENT ON FUNCTION tk.get_table_types IS 'Function to return table column types.';
