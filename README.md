@@ -1,6 +1,6 @@
 # TrappyKeepy  
 
-A Simple Document Storage API
+A Simple Document Storage API  
 
 ## Using the `Makefile`  
 
@@ -65,4 +65,12 @@ To view all currently stored development secrets, run the following command:
 
 ```bash
 dotnet user-secrets list --project TrappyKeepy.Api
+```
+
+## First Admin  
+
+To create the first administrator user, connect to the database and insert the user by running the tk.users_create function. Here is an example using development values:  
+
+```sql
+SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', '2');
 ```
