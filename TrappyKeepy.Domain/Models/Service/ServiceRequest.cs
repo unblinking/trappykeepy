@@ -12,8 +12,6 @@
         /// The item contains the details needed to complete the request.
         /// </summary>
         public T? Item { get; set; }
-
-        public Guid? RequesterId { get; set; }
     }
 
     /// <summary>

@@ -29,8 +29,17 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Verify the requester is authorized.
-                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.ADMIN)
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
                 {
                     response.Fail("Unauthorized. Access denied.");
                     return StatusCode(401, response);
@@ -88,8 +97,17 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Verify the requester is authorized.
-                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.ADMIN)
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
                 {
                     response.Fail("Unauthorized. Access denied.");
                     return StatusCode(401, response);
@@ -132,8 +150,17 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Verify the requester is authorized.
-                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.ADMIN)
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
                 {
                     response.Fail("Unauthorized. Access denied.");
                     return StatusCode(401, response);
@@ -176,8 +203,17 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Verify the requester is authorized.
-                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.ADMIN)
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
                 {
                     response.Fail("Unauthorized. Access denied.");
                     return StatusCode(401, response);
@@ -243,8 +279,17 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Verify the requester is authorized.
-                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.ADMIN)
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
                 {
                     response.Fail("Unauthorized. Access denied.");
                     return StatusCode(401, response);
@@ -300,8 +345,17 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Verify the requester is authorized.
-                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.ADMIN)
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
                 {
                     response.Fail("Unauthorized. Access denied.");
                     return StatusCode(401, response);

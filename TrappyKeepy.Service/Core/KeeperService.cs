@@ -31,6 +31,12 @@ namespace TrappyKeepy.Service
                 response.ErrorMessage = "File name and binary data are required to create a keeper.";
                 return response;
             }
+            if (request.Item.UserPosted == Guid.Empty)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "An authorized user is required to create a keeper.";
+                return response;
+            }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
