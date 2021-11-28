@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Net.Http.Headers;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
+using TrappyKeepy.Service;
 
 namespace TrappyKeepy.Api.Controllers
 {
@@ -14,6 +14,8 @@ namespace TrappyKeepy.Api.Controllers
     public class KeeperController : ControllerBase
     {
         private readonly IKeeperService keeperService;
+        private readonly JwtManager jwtManager = new JwtManager();
+        private readonly Helpers help = new Helpers();
 
         public KeeperController(IKeeperService keeperService)
         {
@@ -25,26 +27,51 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                // Prepare the service request.
-                var token = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
-                var keeperDto = new KeeperDto();
-                using (var ms = new MemoryStream()) // TODO: Set the capacity here?
+                var response = new ControllerResponse();
+
+                // Verify the requester is authorized.
+                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                {
+                    response.Fail("Unauthorized. Access denied.");
+                    return StatusCode(401, response);
+                }
+
+                // Try to determine the content type.
+                new FileExtensionContentTypeProvider()
+                    .TryGetContentType(file.FileName, out var contentType);
+                if (contentType is null)
+                {
+                    response.Fail("Unsupported file content type.");
+                    return BadRequest(response);
+                }
+
+                // Read the binary file data.
+                byte[] binaryData;
+                using (var ms = new MemoryStream())
                 {
                     await file.CopyToAsync(ms);
-                    keeperDto.Binarydata = ms.ToArray();
+                    binaryData = ms.ToArray();
                 }
-                keeperDto.Filename = file.FileName;
+                // Verify the binar file data was successfully received.
+                if (binaryData is not { Length: < 0 })
+                {
+                    response.Fail("No file data was received.");
+                    return StatusCode(400, response);
+                }
+
+                // Prepare the service request.
                 var serviceRequest = new KeeperServiceRequest()
                 {
-                    Item = keeperDto,
-                    BearerToken = token
+                    BinaryData = binaryData,
+                    Item = new Keeper() { Filename = file.FileName },
+                    RequesterId = authorized.userId
                 };
 
                 // Wait for the service response.
                 var serviceResponse = await keeperService.Create(serviceRequest);
 
-                // Prepare and send the controller response back to the client.
-                var response = new ControllerResponse();
+                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -60,7 +87,6 @@ namespace TrappyKeepy.Api.Controllers
             }
             catch (Exception)
             {
-                // TODO: Log exception somewhere?
                 return StatusCode(500);
             }
 
@@ -73,9 +99,23 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var serviceRequest = new KeeperServiceRequest(id);
-                var serviceResponse = await keeperService.ReadById(serviceRequest);
                 var response = new ControllerResponse();
+
+                // Verify the requester is authorized.
+                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                if (authorized.type is not JwtType.ACCESS) // All users may download documents.
+                {
+                    response.Fail("Unauthorized. Access denied.");
+                    return StatusCode(401, response);
+                }
+
+                // Prepare the service request.
+                var serviceRequest = new KeeperServiceRequest(id);
+
+                // Wait for the service response.
+                var serviceResponse = await keeperService.ReadById(serviceRequest);
+
+                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -85,9 +125,20 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
+                        // Verify we really have the filename and binary data if we think we have achieved success.
+                        if (serviceResponse.Item?.Filename is null || serviceResponse.Item?.BinaryData is not { Length: > 0 })
+                        {
+                            throw new Exception("Keeper service replied with succcess but filename or binary data not returned.");
+                        }
+                        // Try to determine the content type.
                         new FileExtensionContentTypeProvider()
                             .TryGetContentType(serviceResponse.Item.Filename, out var contentType);
-                        var fileContentResult = new FileContentResult(serviceResponse.Item.Binarydata, contentType)
+                        if (contentType is null)
+                        {
+                            throw new Exception("Could not determine content type for a keeper from the database.");
+                        }
+                        // Set and return the file content result.
+                        var fileContentResult = new FileContentResult(serviceResponse.Item.BinaryData, contentType)
                         {
                             FileDownloadName = serviceResponse.Item.Filename
                         };
@@ -96,9 +147,9 @@ namespace TrappyKeepy.Api.Controllers
             }
             catch (Exception)
             {
-                // TODO: Log exception somewhere?
                 return StatusCode(500);
             }
+
             // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
