@@ -1,4 +1,4 @@
-using TrappyKeepy.Data;
+﻿using TrappyKeepy.Data;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
@@ -24,61 +24,51 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> Create(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            if (request.Item is null)
+            if (request.Item?.Name is null || request.Item?.Email is null || request.Item?.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested new user was not defined.";
-                return response;
-            }
-            if (request.Item.Name is null || request.Item.Email is null || request.Item.Password is null)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Name, Email, and Password are required to create a user.";
+                response.ErrorMessage = "Name, email, password, and role are required to create a user.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
-                    // TODO: Verify requesting user has permission to make this request.
-                    // Received a UserDto from the controller. Turn that into a User.
-                    var newUser = new User()
-                    {
-                        Name = request.Item.Name,
-                        Password = request.Item.Password, // Plaintext password here from the request Dto.
-                        Email = request.Item.Email
-                    };
+                    // Verify the requested user name is not already in use.
                     var existingNameCount = await unitOfWork.UserRepository
-                        .CountByColumnValue("name", newUser.Name);
+                        .CountByColumnValue("name", request.Item.Name);
                     if (existingNameCount > 0)
                     {
                         response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Requested new user name already in use.";
+                        response.ErrorMessage = "Requested user name is already in use.";
                         return response;
                     }
+                    // Verify the requested user name is not already in use.
                     var existingEmailCount = await unitOfWork.UserRepository
-                        .CountByColumnValue("email", newUser.Email);
+                        .CountByColumnValue("email", request.Item.Email);
                     if (existingEmailCount > 0)
                     {
                         response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Requested new user email already in use.";
+                        response.ErrorMessage = "Requested user email is already in use.";
                         return response;
                     }
-                    var newId = await unitOfWork.UserRepository.Create(newUser);
+
+                    // Create the new user record now.
+                    var id = await unitOfWork.UserRepository.Create(request.Item);
+
+                    // Commit changes in this transaction.
                     unitOfWork.Commit();
 
                     // Pass a UserDto back to the controller.
-                    response.Item = new UserDto()
-                    {
-                        Id = newId // Id from the database insert.
-                    };
+                    response.Item = new UserDto() { Id = id };
+
+                    // Success if we made it this far.
                     response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }
@@ -89,17 +79,16 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> ReadAll(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            using (var unitOfWork = new UnitOfWork(connectionString, false))
             {
                 try
                 {
-                    // TODO: Verify requesting user has permission to make this request.
-                    var userList = await unitOfWork.UserRepository.ReadAll();
-                    unitOfWork.Commit();
+                    // Read the user records now.
+                    var users = await unitOfWork.UserRepository.ReadAll();
 
-                    // Pass userDto objects back to the controller.
+                    // Pass a list of userDtos back to the controller.
                     var userDtos = new List<UserDto>();
-                    foreach (User user in userList)
+                    foreach (User user in users)
                     {
                         var userDto = new UserDto()
                         {
@@ -107,6 +96,7 @@ namespace TrappyKeepy.Service
                             Name = user.Name,
                             // Do not include the salted/hashed password.
                             Email = user.Email,
+                            Role = user.Role,
                             DateCreated = user.DateCreated,
                             DateActivated = user.DateActivated,
                             DateLastLogin = user.DateLastLogin
@@ -114,13 +104,14 @@ namespace TrappyKeepy.Service
                         userDtos.Add(userDto);
                     }
                     response.List = userDtos;
+
+                    // Success if we made it this far.
                     response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }
@@ -134,35 +125,36 @@ namespace TrappyKeepy.Service
             if (request.Id is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user id was not defined.";
+                response.ErrorMessage = "User id is required to find a user.";
                 return response;
             }
-            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            using (var unitOfWork = new UnitOfWork(connectionString, false))
             {
                 try
                 {
-                    // TODO: Verify requesting user has permission to make this request.
+                    // Read the user record now.
                     var user = await unitOfWork.UserRepository.ReadById((Guid)request.Id);
-                    unitOfWork.Commit();
+
                     // Pass a UserDto back to the controller.
-                    var userDto = new UserDto()
+                    response.Item = new UserDto()
                     {
                         Id = user.Id,
                         Name = user.Name,
                         // Do not include the salted/hashed password.
                         Email = user.Email,
+                        Role = user.Role,
                         DateCreated = user.DateCreated,
                         DateActivated = user.DateActivated,
                         DateLastLogin = user.DateLastLogin
                     };
-                    response.Item = userDto;
+
+                    // Success if we made it this far.
                     response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }
@@ -173,36 +165,32 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> UpdateById(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            if (request.Item is null)
+            if (request.Item is null || request.Item.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user for update was not defined.";
-                return response;
-            }
-            if (request.Item.Id is null)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user id for update was not defined.";
+                response.ErrorMessage = "User id is required to update a user.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
-                    // TODO: Verify requesting user has permission to make this request.
-                    // Received a UserDto from the controller. Turn that into a User.
-                    var dto = request.Item;
-                    var updatee = new User();
-                    if (dto.Id is not null) updatee.Id = (Guid)dto.Id;
-                    if (dto.Name is not null) updatee.Name = dto.Name;
-                    if (dto.Email is not null) updatee.Email = dto.Email;
-                    if (dto.DateActivated is not null) updatee.DateActivated = dto.DateActivated;
-                    if (dto.DateLastLogin is not null) updatee.DateLastLogin = dto.DateLastLogin;
+                    // Verify that the user exists.
+                    var existing = await unitOfWork.UserRepository.ReadById(request.Item.Id);
+                    if (existing.Id != request.Item.Id)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Requested user or user id for update does not exist.";
+                        return response;
+                    }
 
-                    // The updater updates the updatee.
-                    // TODO: Verify that the user exists first?
-                    var successful = await unitOfWork.UserRepository.UpdateById(updatee);
+                    // Update the user record now.
+                    var successful = await unitOfWork.UserRepository.UpdateById(request.Item);
+
+                    // Commit changes in this transaction.
                     unitOfWork.Commit();
+
+                    // Set response success or not.
                     if (successful)
                     {
                         response.Outcome = OutcomeType.Success;
@@ -217,7 +205,6 @@ namespace TrappyKeepy.Service
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }
@@ -228,27 +215,32 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> UpdatePasswordById(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            if (request.Item is null || request.Item.Id is null || request.Item.Password is null)
+            if (request.Item is null || request.Item.Id == Guid.Empty || request.Item.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Required fields were not defined. Please include user id and password and try again.";
+                response.ErrorMessage = "User id and password are required to update a user password.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
-                    // TODO: Verify requesting user has permission to make this request.
-                    // Received a UserDto from the controller. Turn that into a User.
-                    var dto = request.Item;
-                    var updatee = new User();
-                    if (dto.Id is not null) updatee.Id = (Guid)dto.Id;
-                    if (dto.Password is not null) updatee.Password = dto.Password;
+                    // Verify that the user exists.
+                    var existing = await unitOfWork.UserRepository.ReadById(request.Item.Id);
+                    if (existing.Id != request.Item.Id)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Requested user or user id for update does not exist.";
+                        return response;
+                    }
 
-                    // The updater updates the updatee.
-                    // TODO: Verify that the user exists first?
-                    var successful = await unitOfWork.UserRepository.UpdatePasswordById(updatee);
+                    // Update the user record now.
+                    var successful = await unitOfWork.UserRepository.UpdatePasswordById(request.Item);
+
+                    // Commit changes in this transaction.
                     unitOfWork.Commit();
+
+                    // Set response success or not.
                     if (successful)
                     {
                         response.Outcome = OutcomeType.Success;
@@ -263,7 +255,6 @@ namespace TrappyKeepy.Service
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }
@@ -274,18 +265,25 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> DeleteById(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            if (request.Id is null)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user Id was not defined.";
+                response.ErrorMessage = "User id is required to delete a user.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
             {
                 try
                 {
-                    // TODO: Verify requesting user has permission to make this request.
-                    // TODO: Verify that the user exists first?
+                    // Verify that the user exists.
+                    var existing = await unitOfWork.UserRepository.ReadById((Guid)request.Id);
+                    if (existing.Id != request.Id)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Requested user or user id for update does not exist.";
+                        return response;
+                    }
+
                     var successful = await unitOfWork.UserRepository.DeleteById((Guid)request.Id);
                     unitOfWork.Commit();
                     if (successful)
@@ -302,7 +300,6 @@ namespace TrappyKeepy.Service
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }
@@ -313,10 +310,10 @@ namespace TrappyKeepy.Service
         public async Task<UserServiceResponse> Authenticate(UserServiceRequest request)
         {
             var response = new UserServiceResponse();
-            if (request.Item is null || request.Item.Email is null || request.Item.Password is null)
+            if (request.Item?.Email is null || request.Item?.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Requested user for authentication was not defined. Please provide a user email and password and try again.";
+                response.ErrorMessage = "User email and password are required to authenticate a user.";
                 return response;
             }
             using (var unitOfWork = new UnitOfWork(connectionString, true))
@@ -330,28 +327,28 @@ namespace TrappyKeepy.Service
                         Email = request.Item.Email,
                     };
 
-                    var authenticatedId = await unitOfWork.UserRepository.Authenticate(authenticatingUser);
+                    var authenticatedUser = await unitOfWork.UserRepository.Authenticate(authenticatingUser);
                     unitOfWork.Commit();
 
-                    if (authenticatedId == Guid.Empty)
+                    if (authenticatedUser.Id == Guid.Empty)
                     {
                         response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "No match found for email and password. Please correct the email or password and try again.";
+                        response.ErrorMessage = "No match found for user email and password. Please correct the email or password and try again.";
                         return response;
                     }
 
-                    // Create a JWT with encrypted payload values.
-                    var jwtService = new JwtService();
-                    var jwt = jwtService.EncodeJwt(authenticatedId, JwtTokenType.ACCESS);
-
+                    // Create a JWT.
+                    var jwtManager = new JwtManager();
+                    var userRole = (UserRole)authenticatedUser.Role;
+                    var jwt = jwtManager.EncodeJwt(authenticatedUser.Id, userRole, JwtType.ACCESS);
                     response.Token = jwt;
+
                     response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
                     unitOfWork.Rollback();
                     unitOfWork.Dispose();
-                    // TODO: Log exception somewhere?
                     response.Outcome = OutcomeType.Error;
                     return response;
                 }

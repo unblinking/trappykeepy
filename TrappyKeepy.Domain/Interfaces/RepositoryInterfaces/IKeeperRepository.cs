@@ -1,4 +1,4 @@
-using TrappyKeepy.Domain.Models;
+﻿using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Domain.Interfaces
 {

@@ -1,6 +1,6 @@
-using Npgsql;
-using TrappyKeepy.Domain.Interfaces;
+﻿using Npgsql;
 using TrappyKeepy.Data.Repositories;
+using TrappyKeepy.Domain.Interfaces;
 
 namespace TrappyKeepy.Data
 {

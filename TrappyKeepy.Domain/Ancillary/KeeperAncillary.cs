@@ -1,4 +1,4 @@
-namespace TrappyKeepy.Domain.Models
+﻿namespace TrappyKeepy.Domain.Models
 {
     public class KeeperDto
     {
@@ -8,6 +8,6 @@ namespace TrappyKeepy.Domain.Models
         public string? Category { get; set; }
         public DateTime? DatePosted { get; set; }
         public Guid? UserPosted { get; set; }
-        public byte[]? Binarydata { get; set; }
+        public byte[]? BinaryData { get; set; }
     }
 }

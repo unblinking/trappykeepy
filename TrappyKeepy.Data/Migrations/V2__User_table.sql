@@ -15,6 +15,7 @@
  *              name VARCHAR(50) - 50 char limit for display purposes.
  *              password TEXT - Salted/hashed passwords using pgcrypto.
  *              email TEXT - 
+ *              role SMALLINT -
  *              date_created TIMESTAMPTZ - 
  *              date_activated TIMESTAMPTZ - 
  *              date_last_login TIMESTAMPTZ - 
@@ -24,6 +25,7 @@ CREATE TYPE tk.user_type AS (
     name VARCHAR ( 50 ),
     password TEXT,
     email TEXT,
+    role SMALLINT,
     date_created TIMESTAMPTZ,
     date_activated TIMESTAMPTZ,
     date_last_login TIMESTAMPTZ
@@ -39,6 +41,7 @@ COMMENT ON TYPE tk.user_type IS 'Type for an individual user record including lo
  *              name - Unique, and not null.
  *              password - Not null.
  *              email - Unique, and not null.
+ *              role - Not null.
  *              date_created - Not null.
  *              date_activated - 
  *              date_last_login - 
@@ -48,6 +51,7 @@ CREATE TABLE IF NOT EXISTS tk.users OF tk.user_type (
     name WITH OPTIONS UNIQUE NOT NULL,
     password WITH OPTIONS NOT NULL,
     email WITH OPTIONS UNIQUE NOT NULL,
+    role WITH OPTIONS NOT NULL CHECK (role >= 0 AND role <= 2) DEFAULT 0,
     date_created WITH OPTIONS NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 COMMENT ON TABLE tk.users IS 'Table to store user records.';

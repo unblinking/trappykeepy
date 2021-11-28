@@ -17,19 +17,22 @@
  * Parameters:  email TEXT - 
  *              password TEXT -
  * Usage:       SELECT * FROM tk.users_authenticate('foo@example.com', 'passwordfoo');
- * Returns:     True if the user was deleted, and false if not.
+ * Returns:     The user record if found.
  */
 CREATE OR REPLACE FUNCTION tk.users_authenticate (
     email TEXT,
     password TEXT
 )
-    RETURNS TABLE (id UUID)
+    RETURNS SETOF tk.users
     LANGUAGE PLPGSQL
     AS
 $$
 BEGIN
     RETURN QUERY
-    SELECT tk.users.id FROM tk.users WHERE tk.users.email = $1 and tk.users.password = crypt($2, tk.users.password);
+    SELECT *
+    FROM tk.users
+    WHERE tk.users.email = $1
+        AND tk.users.password = crypt($2, tk.users.password);
 END;
 $$;
 COMMENT ON FUNCTION tk.users_authenticate IS 'Function to authenticate a user by email and password.';
@@ -90,7 +93,9 @@ BEGIN
     IF column_name IS NOT NULL THEN
         query := query || ' WHERE ' || quote_ident(column_name) || ' = $1';
     END IF;
-    EXECUTE query USING column_value INTO row_count;
+    EXECUTE query
+    USING column_value
+    INTO row_count;
     RETURN row_count;
 END;
 $$;

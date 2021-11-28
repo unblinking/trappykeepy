@@ -40,7 +40,8 @@ CREATE OR REPLACE FUNCTION tk.keepers_create (
 $$
 BEGIN
     RETURN QUERY
-    INSERT INTO tk.keepers (filename, description, category, user_posted)
+    INSERT
+    INTO tk.keepers (filename, description, category, user_posted)
     VALUES ($1, $3, $4, $2)
     RETURNING tk.keepers.id;
 END;
@@ -66,7 +67,8 @@ CREATE OR REPLACE FUNCTION tk.filedatas_create (
     AS
 $$
 BEGIN
-    INSERT INTO tk.filedatas (keeper_id, binary_data)
+    INSERT
+    INTO tk.filedatas (keeper_id, binary_data)
     VALUES ($1, $2);
 
     RETURN keeper_id;
@@ -90,7 +92,8 @@ CREATE OR REPLACE FUNCTION tk.keepers_read_all ()
 $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM tk.keepers;
+    SELECT *
+    FROM tk.keepers;
 END;
 $$;
 COMMENT ON FUNCTION tk.keepers_read_all IS 'Function to return all records from the keepers table.';
@@ -112,7 +115,8 @@ CREATE OR REPLACE FUNCTION tk.filedatas_read_all ()
 $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM tk.filedatas;
+    SELECT *
+    FROM tk.filedatas;
 END;
 $$;
 COMMENT ON FUNCTION tk.filedatas_read_all IS 'Function to return all records from the filedatas table.';
@@ -136,7 +140,9 @@ CREATE OR REPLACE FUNCTION tk.keepers_read_by_id (
 $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM tk.keepers WHERE tk.keepers.id = $1;
+    SELECT *
+    FROM tk.keepers
+    WHERE tk.keepers.id = $1;
 END;
 $$;
 COMMENT ON FUNCTION tk.keepers_read_by_id IS 'Function to return a record from the keepers table by id.';
@@ -160,7 +166,9 @@ CREATE OR REPLACE FUNCTION tk.filedatas_read_by_keeper_id (
 $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM tk.filedatas WHERE tk.filedatas.keeper_id = $1;
+    SELECT *
+    FROM tk.filedatas
+    WHERE tk.filedatas.keeper_id = $1;
 END;
 $$;
 COMMENT ON FUNCTION tk.filedatas_read_by_keeper_id IS 'Function to return a record from the filedatas table by id.';
@@ -220,7 +228,8 @@ CREATE OR REPLACE FUNCTION tk.keepers_delete_by_id (
     AS
 $$
 BEGIN
-    DELETE FROM tk.keepers
+    DELETE
+    FROM tk.keepers
     WHERE tk.keepers.id = $1;
     RETURN FOUND;
 END;
@@ -244,7 +253,8 @@ CREATE OR REPLACE FUNCTION tk.filedatas_delete_by_keeper_id (
     AS
 $$
 BEGIN
-    DELETE FROM tk.filedatas
+    DELETE
+    FROM tk.filedatas
     WHERE tk.filedatas.keeper_id = $1;
     RETURN FOUND;
 END;

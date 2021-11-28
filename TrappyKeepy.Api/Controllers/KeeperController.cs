@@ -30,8 +30,17 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Verify the requester is authorized.
-                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
                 {
                     response.Fail("Unauthorized. Access denied.");
                     return StatusCode(401, response);
@@ -54,7 +63,7 @@ namespace TrappyKeepy.Api.Controllers
                     binaryData = ms.ToArray();
                 }
                 // Verify the binar file data was successfully received.
-                if (binaryData is not { Length: < 0 })
+                if (binaryData is not { Length: > 0 })
                 {
                     response.Fail("No file data was received.");
                     return StatusCode(400, response);
@@ -64,8 +73,11 @@ namespace TrappyKeepy.Api.Controllers
                 var serviceRequest = new KeeperServiceRequest()
                 {
                     BinaryData = binaryData,
-                    Item = new Keeper() { Filename = file.FileName },
-                    RequesterId = authorized.userId
+                    Item = new Keeper()
+                    {
+                        Filename = file.FileName,
+                        UserPosted = authorized.userId
+                    }
                 };
 
                 // Wait for the service response.
@@ -102,8 +114,17 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Verify the requester is authorized.
-                var authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                if (authorized.type is not JwtType.ACCESS) // All users may download documents.
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
                 {
                     response.Fail("Unauthorized. Access denied.");
                     return StatusCode(401, response);

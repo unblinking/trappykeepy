@@ -1,4 +1,4 @@
-namespace TrappyKeepy.Domain.Models
+﻿namespace TrappyKeepy.Domain.Models
 {
     /// <summary>
     /// Possible outcomes after the service attempts to process the request.
