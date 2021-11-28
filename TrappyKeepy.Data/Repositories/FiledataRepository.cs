@@ -30,17 +30,6 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        /**
-         *
-         * I don't think anyone would ever really want to do this.
-         * but there is a function written for it, commented out.
-         *
-         */
-        public Task<List<Filedata>> ReadAll()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<Filedata> ReadByKeeperId(Guid id)
         {
             using (var command = new NpgsqlCommand())
@@ -56,15 +45,6 @@ namespace TrappyKeepy.Data.Repositories
                 reader.Close();
                 return filedata;
             }
-        }
-
-        /**
-         * Not going to ahave a function to update a filedatas record. If you want to do
-         * that, delete the old keeper/filedata and then insert a new record set.
-         */
-        public Task<bool> UpdateByKeeperId(Filedata filedata)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<bool> DeleteByKeeperId(Guid id)

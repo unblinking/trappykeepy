@@ -88,7 +88,7 @@ namespace TrappyKeepy.Service
 
                     // Pass a list of userDtos back to the controller.
                     var userDtos = new List<UserDto>();
-                    foreach (User user in users)
+                    foreach (var user in users)
                     {
                         var userDto = new UserDto()
                         {
@@ -180,7 +180,7 @@ namespace TrappyKeepy.Service
                     if (existing.Id != request.Item.Id)
                     {
                         response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Requested user or user id for update does not exist.";
+                        response.ErrorMessage = "Requested user id for update does not exist.";
                         return response;
                     }
 
@@ -280,7 +280,7 @@ namespace TrappyKeepy.Service
                     if (existing.Id != request.Id)
                     {
                         response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Requested user or user id for update does not exist.";
+                        response.ErrorMessage = "Requested user id for update does not exist.";
                         return response;
                     }
 
