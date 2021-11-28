@@ -1,6 +1,10 @@
 # TrappyKeepy  
 
-A Simple Document Storage API  
+A Simple Document Storage [Web API](https://dotnet.microsoft.com/apps/aspnet/apis)  
+
+Users, user roles, user groups, and documents (aka keepers).  
+
+Written using [.NET6](https://dotnet.microsoft.com/download/dotnet/6.0) with the [.NET CLI](https://docs.microsoft.com/en-us/dotnet/core/tools/), [C# 10](https://devblogs.microsoft.com/dotnet/welcome-to-csharp-10/), and [PostgreSQL](https://www.postgresql.org/).  
 
 ## Using the `Makefile`  
 
