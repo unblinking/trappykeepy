@@ -106,6 +106,59 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
+        [HttpGet("")]
+        public async Task<ActionResult> ReadAll()
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                // Verify the requester is authorized.
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
+                {
+                    response.Fail("Unauthorized. Access denied.");
+                    return StatusCode(401, response);
+                }
+
+                // Prepare the service request.
+                var serviceRequest = new KeeperServiceRequest();
+
+                // Wait for the service response.
+                var serviceResponse = await keeperService.ReadAll(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.List); // KeeperDto objects.
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult> ReadById(Guid id)
         {
@@ -164,6 +217,130 @@ namespace TrappyKeepy.Api.Controllers
                             FileDownloadName = serviceResponse.Item.Filename
                         };
                         return fileContentResult;
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpPut("")]
+        public async Task<ActionResult> UpdateById([FromBody] KeeperDto keeperDto)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                // Verify the requester is authorized.
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
+                {
+                    response.Fail("Unauthorized. Access denied.");
+                    return StatusCode(401, response);
+                }
+
+                if (keeperDto.Id is null || keeperDto.Id == Guid.Empty || (Guid)keeperDto.Id == Guid.Empty)
+                {
+                    response.Fail("Keeper id is required to update a keeper.");
+                    return BadRequest(response);
+                }
+
+                // Prepare a keeper from the keeperDto to pass to the service.
+                var keeper = new Keeper() { Id = (Guid)keeperDto.Id };
+                if (keeperDto.Filename is not null) keeper.Filename = keeperDto.Filename;
+                if (keeperDto.Description is not null) keeper.Description = keeperDto.Description;
+                if (keeperDto.Category is not null) keeper.Category = keeperDto.Category;
+
+                // Prepare the service request.
+                var serviceRequest = new KeeperServiceRequest(keeper);
+
+                // Wait for the service response.
+                var serviceResponse = await keeperService.UpdateById(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Keeper updated.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteById(Guid id)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                // Verify the requester is authorized.
+                JwtPayload authorized;
+                try
+                {
+                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
+                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
+                    {
+                        response.Fail("Unauthorized. Access denied.");
+                        return StatusCode(401, response);
+                    }
+                }
+                catch
+                {
+                    response.Fail("Unauthorized. Access denied.");
+                    return StatusCode(401, response);
+                }
+
+                if (id == Guid.Empty || (Guid)id == Guid.Empty)
+                {
+                    response.Fail("Keeper id is required to delete a keeper.");
+                    return BadRequest(response);
+                }
+
+                // Prepare the service request.
+                var serviceRequest = new KeeperServiceRequest(id);
+
+                // Wait for the service response.
+                var serviceResponse = await keeperService.DeleteById(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Keeper deleted.");
+                        return Ok(response);
                 }
             }
             catch (Exception)
