@@ -1,7 +1,15 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TrappyKeepy.Domain.Models
 {
+
+    public enum UserRole
+    {
+        REGULAR = 0,
+        MANAGER = 1,
+        ADMIN = 2
+    }
+
     public class UserDto
     {
         public Guid? Id { get; set; }
@@ -12,6 +20,7 @@ namespace TrappyKeepy.Domain.Models
         public string? Password { get; set; }
 
         public string? Email { get; set; }
+        public short? Role { get; set; }
 
         public DateTime? DateCreated { get; set; }
 
