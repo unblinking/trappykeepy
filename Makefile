@@ -43,7 +43,7 @@ dbscaffold:
 	@# based on the current database structure.
 	# ----------
 	# Scaffolding the database context and model classes
-	dotnet ef dbcontext scaffold Name=ConnectionStrings:TKDB_CONN_STRING --project TrappyKeepy.Api --context-namespace TrappyKeepy.Data --namespace TrappyKeepy.Domain.Models --data-annotations --schema tk --context KeepyDbContext --context-dir ../TrappyKeepy.Data/DbContexts --output-dir ../TrappyKeepy.Domain/Models --force Npgsql.EntityFrameworkCore.PostgreSQL
+	dotnet ef dbcontext scaffold Name=ConnectionStrings:TKDB_CONN_STRING --project TrappyKeepy.Api --context-namespace TrappyKeepy.Data --namespace TrappyKeepy.Domain.Models --data-annotations --schema tk --context KeepyDbContext --context-dir ../TrappyKeepy.Data/DataBridges --output-dir ../TrappyKeepy.Domain/Models --force Npgsql.EntityFrameworkCore.PostgreSQL
 
 .PHONY: format
 format:

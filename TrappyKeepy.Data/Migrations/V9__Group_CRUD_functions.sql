@@ -29,7 +29,7 @@
  */
 CREATE OR REPLACE FUNCTION tk.groups_create (
     name TEXT,
-    description TEXT DEFAULT NULL,
+    description TEXT DEFAULT NULL
 )
     RETURNS TABLE (id UUID)
     LANGUAGE PLPGSQL
@@ -116,7 +116,7 @@ BEGIN
 END;
 $$;
 COMMENT ON FUNCTION tk.memberships_read_all IS 'Function to return all records from the memberships table.';
-*/
+
 
 /**
  * Function:    tk.groups_read_by_id
