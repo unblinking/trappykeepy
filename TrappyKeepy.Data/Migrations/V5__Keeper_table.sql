@@ -4,6 +4,7 @@
  * Created:     2021-11-24
  * Author:      Joshua Gray
  * Description: Create the keeper type, and the keepers table.
+ *              Create the filedata type, and the filedatas table.
  ******************************************************************************/
 
 /**
@@ -56,7 +57,12 @@ COMMENT ON COLUMN tk.keepers.date_posted IS 'Datetime the document was created i
 COMMENT ON COLUMN tk.keepers.user_posted IS 'User id associated with creating the document in the database.';
 
 /**
- *
+ * Type:        tk.filedata_type
+ * Created:     2021-11-24
+ * Author:      Joshua Gray
+ * Description: Type for an individual keeper/document binary data record.
+ * Attributes:  keeper_id UUID - 
+ *              binary_data BYTEA -
  */
 CREATE TYPE tk.filedata_type AS (
     keeper_id UUID,
@@ -65,7 +71,12 @@ CREATE TYPE tk.filedata_type AS (
 COMMENT ON TYPE tk.filedata_type IS 'Type for an individual keeper/document binary data record.';
 
 /**
- *
+ * Table:       tk.filedatas
+ * Created:     2021-11-24
+ * Author:      Joshua Gray
+ * Description: Table to store keeper/document binary data records.
+ * Columns:     keeper_id - Primary key using the id from the associated tk.keepers record.
+ *              binary_data - Not null.
  */
 CREATE TABLE IF NOT EXISTS tk.filedatas OF tk.filedata_type (
     keeper_id WITH OPTIONS PRIMARY KEY,
