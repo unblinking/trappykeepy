@@ -3,17 +3,15 @@
  * Version:     V6
  * Created:     2021-11-24
  * Author:      Joshua Gray
- * Description: Create keeper functions for CRUD operations.
+ * Description: Create keeper and filedata functions for CRUD operations.
  *              - tk.keepers_create
  *              - tk.filedatas_create
  *              - tk.keepers_read_all
- *              - tk.filedatas_read_all
  *              - tk.keepers_read_by_id
- *              - tk.filedatas_read_by_id
+ *              - tk.filedatas_read_by_keeper_id
  *              - tk.keepers_update
- *              - tk.filedatas_update
  *              - tk.keepers_delete_by_id
- *              - tk.filedatas_delete_by_id
+ *              - tk.filedatas_delete_by_keeper_id
  ******************************************************************************/
 
  /**
@@ -99,30 +97,6 @@ $$;
 COMMENT ON FUNCTION tk.keepers_read_all IS 'Function to return all records from the keepers table.';
 
 /**
- * Function:    tk.filedatas_read_all
- * Created:     2021-11-26
- * Author:      Joshua Gray
- * Description: Function to return all records from the filedatas table.
- * Parameters:  None
- * Usage:       SELECT * FROM tk.filedatas_read_all();
- * Returns:     All columns for all records from the tk.filedatas table.
- */
-/* I'm commenting this out for now, because I don't think anyone would ever really want to do this.
-CREATE OR REPLACE FUNCTION tk.filedatas_read_all ()
-    RETURNS SETOF tk.filedatas
-    LANGUAGE PLPGSQL
-    AS
-$$
-BEGIN
-    RETURN QUERY
-    SELECT *
-    FROM tk.filedatas;
-END;
-$$;
-COMMENT ON FUNCTION tk.filedatas_read_all IS 'Function to return all records from the filedatas table.';
-*/
-
-/**
  * Function:    tk.keepers_read_by_id
  * Created:     2021-11-22
  * Author:      Joshua Gray
@@ -153,7 +127,7 @@ COMMENT ON FUNCTION tk.keepers_read_by_id IS 'Function to return a record from t
  * Created:     2021-11-22
  * Author:      Joshua Gray
  * Description: Function to return a record from the filedatas table by keeper_id.
- * Parameters:  id_value UUID - The id of the filedata record.
+ * Parameters:  id_value UUID - The keeper_id of the filedata record.
  * Usage:       SELECT * FROM tk.filedatas_read_by_keeper_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
  * Returns:     All columns for a record from the tk.filedatas table.
  */
@@ -205,11 +179,6 @@ BEGIN
 END;
 $$;
 COMMENT ON FUNCTION tk.keepers_update IS 'Function to update a record in the keepers table. ';
-
-/**
- * Not going to ahave a function to update a filedatas record. If you want to do
- * that, delete the old keeper/filedata and then insert a new record set.
- */
 
 /**
  * Function:    tk.keepers_delete_by_id

@@ -18,7 +18,9 @@ namespace TrappyKeepy.Data
         }
 
         public virtual DbSet<Filedata> Filedatas { get; set; } = null!;
+        public virtual DbSet<Group> Groups { get; set; } = null!;
         public virtual DbSet<Keeper> Keepers { get; set; } = null!;
+        public virtual DbSet<Membership> Memberships { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -54,6 +56,23 @@ namespace TrappyKeepy.Data
                     .HasConstraintName("fk_keeper_of_filedata");
             });
 
+            modelBuilder.Entity<Group>(entity =>
+            {
+                entity.HasComment("Table to store group records.");
+
+                entity.Property(e => e.Id)
+                    .HasDefaultValueSql("gen_random_uuid()")
+                    .HasComment("UUID primary key.");
+
+                entity.Property(e => e.DateCreated)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .HasComment("Datetime the group was created in the database.");
+
+                entity.Property(e => e.Description).HasComment("Description of the group.");
+
+                entity.Property(e => e.Name).HasComment("Unique group name.");
+            });
+
             modelBuilder.Entity<Keeper>(entity =>
             {
                 entity.HasComment("Table to store keeper/document metadata records.");
@@ -79,6 +98,32 @@ namespace TrappyKeepy.Data
                     .HasForeignKey(d => d.UserPosted)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_user_posted_keeper");
+            });
+
+            modelBuilder.Entity<Membership>(entity =>
+            {
+                entity.HasKey(e => e.GroupId)
+                    .HasName("memberships_pkey");
+
+                entity.HasComment("Table to store group membership records.");
+
+                entity.Property(e => e.GroupId)
+                    .ValueGeneratedNever()
+                    .HasComment("UUID primary key, and foreign key to the tk.groups table.");
+
+                entity.Property(e => e.UserId).HasComment("UUID, and foreign key to the tk.users table.");
+
+                entity.HasOne(d => d.Group)
+                    .WithOne(p => p.Membership)
+                    .HasForeignKey<Membership>(d => d.GroupId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_group_of_memberships");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Memberships)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_user_of_memberships");
             });
 
             modelBuilder.Entity<User>(entity =>

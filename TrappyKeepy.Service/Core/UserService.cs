@@ -43,7 +43,7 @@ namespace TrappyKeepy.Service
                         response.ErrorMessage = "Requested user name is already in use.";
                         return response;
                     }
-                    // Verify the requested user name is not already in use.
+                    // Verify the requested user email is not already in use.
                     var existingEmailCount = await unitOfWork.UserRepository
                         .CountByColumnValue("email", request.Item.Email);
                     if (existingEmailCount > 0)
@@ -187,19 +187,19 @@ namespace TrappyKeepy.Service
                     // Update the user record now.
                     var successful = await unitOfWork.UserRepository.UpdateById(request.Item);
 
+                    // If the user record couldn't be updated, rollback and return to the controller.
+                    if (!successful)
+                    {
+                        unitOfWork.Rollback();
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "User was not updated.";
+                        return response;
+                    }
+
                     // Commit changes in this transaction.
                     unitOfWork.Commit();
 
-                    // Set response success or not.
-                    if (successful)
-                    {
-                        response.Outcome = OutcomeType.Success;
-                    }
-                    else
-                    {
-                        response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "User was not updated.";
-                    }
+                    response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
@@ -234,22 +234,22 @@ namespace TrappyKeepy.Service
                         return response;
                     }
 
-                    // Update the user record now.
+                    // Update the user password now.
                     var successful = await unitOfWork.UserRepository.UpdatePasswordById(request.Item);
+
+                    // If the user password couldn't be updated, rollback and return to the controller.
+                    if (!successful)
+                    {
+                        unitOfWork.Rollback();
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "User password was not updated.";
+                        return response;
+                    }
 
                     // Commit changes in this transaction.
                     unitOfWork.Commit();
 
-                    // Set response success or not.
-                    if (successful)
-                    {
-                        response.Outcome = OutcomeType.Success;
-                    }
-                    else
-                    {
-                        response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "User password was not updated.";
-                    }
+                    response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
@@ -280,21 +280,45 @@ namespace TrappyKeepy.Service
                     if (existing.Id != request.Id)
                     {
                         response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Requested user id for update does not exist.";
+                        response.ErrorMessage = "Requested user id for delete does not exist.";
                         return response;
                     }
 
-                    var successful = await unitOfWork.UserRepository.DeleteById((Guid)request.Id);
-                    unitOfWork.Commit();
-                    if (successful)
+                    // TODO: Figure out what to do with the keepers they are linked to.
+                    // TODO: Just delete those keepers? Seems wrong to do that.
+
+                    // Delete any existing user memberships first.
+                    var membershipsCount = await unitOfWork.MembershipRepository.CountByColumnValue("user_id", (Guid)request.Id);
+                    if (membershipsCount > 0)
                     {
-                        response.Outcome = OutcomeType.Success;
+                        var successfulDeleteMemberships = await unitOfWork.MembershipRepository.DeleteByUserId((Guid)request.Id);
+
+                        // If the user had memberships that couldn't be deleted, rollback and return to the controller.
+                        if (!successfulDeleteMemberships)
+                        {
+                            unitOfWork.Rollback();
+                            response.Outcome = OutcomeType.Fail;
+                            response.ErrorMessage = "User was not deleted because existing memberships could not be deleted.";
+                            return response;
+                        }
                     }
-                    else
+
+                    // Delete the user record now.
+                    var successfulDeleteUser = await unitOfWork.UserRepository.DeleteById((Guid)request.Id);
+
+                    // If the user record couldn't be deleted, rollback and return to the controller.
+                    if (!successfulDeleteUser)
                     {
+                        unitOfWork.Rollback();
                         response.Outcome = OutcomeType.Fail;
                         response.ErrorMessage = "User was not deleted.";
+                        return response;
                     }
+
+                    // Commit changes in this transaction.
+                    unitOfWork.Commit();
+
+                    response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {

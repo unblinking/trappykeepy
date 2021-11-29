@@ -24,7 +24,7 @@
         /// </summary>
         public UserServiceRequest()
         {
-
+            this.Item = new User();
         }
 
         /// <summary>
@@ -48,6 +48,9 @@
     /// </summary>
     public class KeeperServiceRequest : ServiceRequest<Keeper>
     {
+        /// <summary>
+        /// This holds the associated Filedata.BinaryData value.
+        /// </summary>
         public byte[]? BinaryData { get; set; }
 
         /// <summary>
@@ -55,7 +58,7 @@
         /// </summary>
         public KeeperServiceRequest()
         {
-
+            this.Item = new Keeper();
         }
 
         /// <summary>
@@ -71,6 +74,82 @@
         public KeeperServiceRequest(Guid id)
         {
             this.Id = id;
+        }
+    }
+
+    /// <summary>
+    /// Group service request.
+    /// </summary>
+    public class GroupServiceRequest : ServiceRequest<Group>
+    {
+        /// <summary>
+        ///  If no group is provided, instantiate a new one.
+        /// </summary>
+        public GroupServiceRequest()
+        {
+            this.Item = new Group();
+        }
+
+        /// <summary>
+        /// If a group is provided, set the group as the Item of the request.
+        /// Example could be a request to create a new group.
+        /// </summary>
+        /// <param name="group"></param>
+        public GroupServiceRequest(Group group)
+        {
+            this.Item = group;
+        }
+
+        public GroupServiceRequest(Guid id)
+        {
+            this.Id = id;
+        }
+    }
+
+    /// <summary>
+    /// Membership service request.
+    /// </summary>
+    public class MembershipServiceRequest : ServiceRequest<Membership>
+    {
+        /// <summary>
+        /// The memberships table doesn't have an id colum.
+        /// This can specify the group_id column value in a request.
+        /// </summary>
+        public Guid? GroupId { get; set; }
+
+        /// <summary>
+        /// The memberships table doesn't have an id colum.
+        /// This can specify the user_id column value in a request.
+        /// </summary>
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        ///  If no membership is provided, instantiate a new one.
+        /// </summary>
+        public MembershipServiceRequest()
+        {
+            this.Item = new Membership();
+        }
+
+        /// <summary>
+        /// If a membership is provided, set the membership as the Item of the request.
+        /// Example could be a request to create a new membership.
+        /// </summary>
+        /// <param name="membership"></param>
+        public MembershipServiceRequest(Membership membership)
+        {
+            this.Item = membership;
+        }
+
+        /// <summary>
+        /// Used to request to delete a membership by groupId/userId.
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <param name="userId"></param>
+        public MembershipServiceRequest(Guid groupId, Guid userId)
+        {
+            this.GroupId = groupId;
+            this.UserId = userId;
         }
     }
 }

@@ -5,26 +5,23 @@ using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Data.Repositories
 {
-    public class KeeperRepository : BaseRepository, IKeeperRepository
+    public class GroupRepository : BaseRepository, IGroupRepository
     {
-        public KeeperRepository(NpgsqlConnection connection) : base(connection)
+        public GroupRepository(NpgsqlConnection connection) : base(connection)
         {
             this.connection = connection;
         }
 
-        public async Task<Guid> Create(Keeper keeper)
+        public async Task<Guid> Create(Group group)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_create('{keeper.Filename}'";
+                command.CommandText = $"SELECT * FROM tk.groups_create('{group.Name}');";
 
-                if (keeper.Description is not null) command.CommandText += $", '{keeper.Description}'";
+                if (group.Description is not null) command.CommandText += $", '{group.Description}'";
                 else command.CommandText += $", null";
 
-                if (keeper.Category is not null) command.CommandText += $", '{keeper.Category}'";
-                else command.CommandText += $", null";
-
-                command.CommandText += $", '{keeper.UserPosted}');";
+                command.CommandText += ");";
 
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
@@ -36,50 +33,50 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<List<Keeper>> ReadAll()
+        public async Task<List<Group>> ReadAll()
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = "SELECT * FROM tk.keepers_read_all();";
+                command.CommandText = "SELECT * FROM tk.groups_read_all();";
                 var reader = await RunQuery(command);
-                var keepers = new List<Keeper>();
+                var groups = new List<Group>();
                 while (await reader.ReadAsync())
                 {
                     var map = new PgsqlReaderMap();
-                    keepers.Add(map.Keeper(reader));
+                    groups.Add(map.Group(reader));
                 }
                 reader.Close();
-                return keepers;
+                return groups;
             }
         }
 
-        public async Task<Keeper> ReadById(Guid id)
+        public async Task<Group> ReadById(Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_read_by_id('{id}');";
+                command.CommandText = $"SELECT * FROM tk.groups_read_by_id('{id}');";
                 var reader = await RunQuery(command);
-                var keeper = new Keeper();
+                var group = new Group();
                 while (await reader.ReadAsync())
                 {
                     var map = new PgsqlReaderMap();
-                    keeper = map.Keeper(reader);
+                    group = map.Group(reader);
                 }
                 reader.Close();
-                return keeper;
+                return group;
             }
         }
 
-        public async Task<bool> UpdateById(Keeper keeper)
+        public async Task<bool> UpdateById(Group group)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_update('{keeper.Id}', '{keeper.Filename}'";
+                command.CommandText = $"SELECT * FROM tk.groups_update('{group.Id}'";
 
-                if (keeper.Description is not null) command.CommandText += $", '{keeper.Description}'";
+                if (group.Name is not null) command.CommandText += $", '{group.Name}'";
                 else command.CommandText += $", null";
 
-                if (keeper.Category is not null) command.CommandText += $", '{keeper.Category}'";
+                if (group.Description is not null) command.CommandText += $", '{group.Description}'";
                 else command.CommandText += $", null";
 
                 command.CommandText += ");";
@@ -98,7 +95,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_delete_by_id('{id}');";
+                command.CommandText = $"SELECT * FROM tk.groups_delete_by_id('{id}');";
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -113,7 +110,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_count_by_column_value_text('{column}', '{value}');";
+                command.CommandText = $"SELECT * FROM tk.groups_count_by_column_value_text('{column}', '{value}');";
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)

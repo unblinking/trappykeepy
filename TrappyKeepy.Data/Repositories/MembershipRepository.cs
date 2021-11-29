@@ -5,18 +5,18 @@ using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Data.Repositories
 {
-    public class UserRepository : BaseRepository, IUserRepository
+    public class MembershipRepository : BaseRepository, IMembershipRepository
     {
-        public UserRepository(NpgsqlConnection connection) : base(connection)
+        public MembershipRepository(NpgsqlConnection connection) : base(connection)
         {
             this.connection = connection;
         }
 
-        public async Task<Guid> Create(User user)
+        public async Task<Guid> Create(Membership membership)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_create('{user.Name}', '{user.Password}', '{user.Email}', '{user.Role}');";
+                command.CommandText = $"SELECT * FROM tk.memberships_create('{membership.GroupId}', '{membership.UserId}');";
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
                 if (result is not null)
@@ -27,63 +27,62 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<List<User>> ReadAll()
+        public async Task<List<Membership>> ReadAll()
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = "SELECT * FROM tk.users_read_all();";
+                command.CommandText = "SELECT * FROM tk.memberships_read_all();";
                 var reader = await RunQuery(command);
-                var users = new List<User>();
+                var memberships = new List<Membership>();
                 while (await reader.ReadAsync())
                 {
                     var map = new PgsqlReaderMap();
-                    users.Add(map.User(reader));
+                    memberships.Add(map.Membership(reader));
                 }
                 reader.Close();
-                return users;
+                return memberships;
             }
         }
 
-        public async Task<User> ReadById(Guid id)
+        public async Task<List<Membership>> ReadByGroupId(Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_read_by_id('{id}');";
+                command.CommandText = $"SELECT * FROM tk.memberships_read_by_group_id('{id}');";
                 var reader = await RunQuery(command);
-                var user = new User();
+                var memberships = new List<Membership>();
                 while (await reader.ReadAsync())
                 {
                     var map = new PgsqlReaderMap();
-                    user = map.User(reader);
+                    memberships.Add(map.Membership(reader));
                 }
                 reader.Close();
-                return user;
+                return memberships;
             }
         }
 
-        public async Task<bool> UpdateById(User user)
+        public async Task<List<Membership>> ReadByUserId(Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_update('{user.Id}'";
+                command.CommandText = $"SELECT * FROM tk.memberships_read_by_user_id('{id}');";
+                var reader = await RunQuery(command);
+                var memberships = new List<Membership>();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    memberships.Add(map.Membership(reader));
+                }
+                reader.Close();
+                return memberships;
+            }
+        }
 
-                if (user.Name is not null) command.CommandText += $", '{user.Name}'";
-                else command.CommandText += $", null";
-
-                if (user.Email is not null) command.CommandText += $", '{user.Email}'";
-                else command.CommandText += $", null";
-
-                if (user.Role >= 0) command.CommandText += $", '{user.Role}'";
-                else command.CommandText += $", null";
-
-                if (user.DateActivated is not null) command.CommandText += $", '{user.DateActivated}'";
-                else command.CommandText += $", null";
-
-                if (user.DateLastLogin is not null) command.CommandText += $", '{user.DateLastLogin}'";
-                else command.CommandText += $", null";
-
-                command.CommandText += ");";
-
+        public async Task<bool> DeleteByGroupId(Guid id)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_group_id('{id}');";
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -94,11 +93,11 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<bool> UpdatePasswordById(User user)
+        public async Task<bool> DeleteByUserId(Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_update_password('{user.Id}', '{user.Password}');";
+                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_user_id('{id}');";
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -109,11 +108,11 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<bool> DeleteById(Guid id)
+        public async Task<bool> DeleteByGroupIdAndUserId(Guid groupId, Guid userId)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_delete_by_id('{id}');";
+                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_group_id_and-user_id('{groupId}', '{userId}');";
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -124,11 +123,11 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<int> CountByColumnValue(string column, string value)
+        public async Task<int> CountByColumnValue(string column, Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_count_by_column_value_text('{column}', '{value}');";
+                command.CommandText = $"SELECT * FROM tk.memberships_count_by_column_value_uuid('{column}', '{id}');";
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)
@@ -139,20 +138,18 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<User> Authenticate(User user)
+        public async Task<int> CountByGroupAndUser(Guid groupId, Guid userId)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.users_authenticate('{user.Email}', '{user.Password}');";
-                var reader = await RunQuery(command);
-                var authenticatedUser = new User();
-                while (await reader.ReadAsync())
+                command.CommandText = $"SELECT * FROM tk.memberships_count_by_group_and_user('{groupId}', '{userId}');";
+                var result = await RunScalar(command);
+                int count = 0;
+                if (result is not null)
                 {
-                    var map = new PgsqlReaderMap();
-                    authenticatedUser = map.User(reader);
+                    count = int.Parse($"{result.ToString()}");
                 }
-                reader.Close();
-                return authenticatedUser;
+                return count;
             }
         }
     }

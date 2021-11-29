@@ -198,19 +198,19 @@ namespace TrappyKeepy.Service
                     // Update the keeper record now.
                     var successful = await unitOfWork.KeeperRepository.UpdateById(request.Item);
 
+                    // If the keeper record couldn't be updated, rollback and return to the controller.
+                    if (!successful)
+                    {
+                        unitOfWork.Rollback();
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Keeper was not updated.";
+                        return response;
+                    }
+
                     // Commit changes in this transaction.
                     unitOfWork.Commit();
 
-                    // Set response success or not.
-                    if (successful)
-                    {
-                        response.Outcome = OutcomeType.Success;
-                    }
-                    else
-                    {
-                        response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Keeper was not updated.";
-                    }
+                    response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {

@@ -6,9 +6,11 @@ namespace TrappyKeepy.Data
 {
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
-        private UserRepository? userRepository;
-        private KeeperRepository? keeperRepository;
-        private FiledataRepository? filedataRepository;
+        private IUserRepository? userRepository;
+        private IKeeperRepository? keeperRepository;
+        private IFiledataRepository? filedataRepository;
+        private IGroupRepository? groupRepository;
+        private IMembershipRepository? membershipRepository;
         private string connectionString;
         private NpgsqlConnection connection;
         private NpgsqlTransaction? transaction;
@@ -26,7 +28,7 @@ namespace TrappyKeepy.Data
             }
         }
 
-        public UserRepository UserRepository
+        public IUserRepository UserRepository
         {
             get
             {
@@ -35,7 +37,7 @@ namespace TrappyKeepy.Data
             }
         }
 
-        public KeeperRepository KeeperRepository
+        public IKeeperRepository KeeperRepository
         {
             get
             {
@@ -44,12 +46,30 @@ namespace TrappyKeepy.Data
             }
         }
 
-        public FiledataRepository FiledataRepository
+        public IFiledataRepository FiledataRepository
         {
             get
             {
                 if (this.filedataRepository is null) filedataRepository = new FiledataRepository(connection);
                 return filedataRepository;
+            }
+        }
+
+        public IGroupRepository GroupRepository
+        {
+            get
+            {
+                if (this.groupRepository is null) groupRepository = new GroupRepository(connection);
+                return groupRepository;
+            }
+        }
+
+        public IMembershipRepository MembershipRepository
+        {
+            get
+            {
+                if (this.membershipRepository is null) membershipRepository = new MembershipRepository(connection);
+                return membershipRepository;
             }
         }
 

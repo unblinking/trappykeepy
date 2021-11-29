@@ -17,6 +17,7 @@ namespace TrappyKeepy.Domain.Models
         public User()
         {
             Keepers = new HashSet<Keeper>();
+            Memberships = new HashSet<Membership>();
         }
 
         /// <summary>
@@ -61,5 +62,7 @@ namespace TrappyKeepy.Domain.Models
 
         [InverseProperty(nameof(Keeper.UserPostedNavigation))]
         public virtual ICollection<Keeper> Keepers { get; set; }
+        [InverseProperty(nameof(Membership.User))]
+        public virtual ICollection<Membership> Memberships { get; set; }
     }
 }
