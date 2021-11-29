@@ -1,4 +1,4 @@
-using Npgsql;
+﻿using Npgsql;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Maps;
 using TrappyKeepy.Domain.Models;
@@ -80,7 +80,7 @@ namespace TrappyKeepy.Data.Repositories
                 else command.CommandText += $", null";
 
                 command.CommandText += ");";
-                
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)

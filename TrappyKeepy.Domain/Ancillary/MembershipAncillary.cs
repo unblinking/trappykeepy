@@ -1,4 +1,4 @@
-namespace TrappyKeepy.Domain.Models
+﻿namespace TrappyKeepy.Domain.Models
 {
     public class MembershipDto
     {
