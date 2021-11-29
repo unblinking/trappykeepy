@@ -78,6 +78,36 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
+        public async Task<bool> DeleteByGroupId(Guid id)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_group_id('{id}');";
+                var result = await RunScalar(command);
+                var success = false;
+                if (result is not null)
+                {
+                    success = bool.Parse($"{result.ToString()}");
+                }
+                return success;
+            }
+        }
+
+        public async Task<bool> DeleteByUserId(Guid id)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_user_id('{id}');";
+                var result = await RunScalar(command);
+                var success = false;
+                if (result is not null)
+                {
+                    success = bool.Parse($"{result.ToString()}");
+                }
+                return success;
+            }
+        }
+
         public async Task<bool> DeleteByGroupIdAndUserId(Guid groupId, Guid userId)
         {
             using (var command = new NpgsqlCommand())
@@ -90,6 +120,21 @@ namespace TrappyKeepy.Data.Repositories
                     success = bool.Parse($"{result.ToString()}");
                 }
                 return success;
+            }
+        }
+
+        public async Task<int> CountByColumnValue(string column, Guid id)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.memberships_count_by_column_value_uuid('{column}', '{id}');";
+                var result = await RunScalar(command);
+                int count = 0;
+                if (result is not null)
+                {
+                    count = int.Parse($"{result.ToString()}");
+                }
+                return count;
             }
         }
 

@@ -284,11 +284,30 @@ namespace TrappyKeepy.Service
                         return response;
                     }
 
+                    // TODO: Figure out what to do with the keepers they are linked to.
+                    // TODO: Just delete those keepers? Seems wrong to do that.
+
+                    // Delete any existing user memberships first.
+                    var membershipsCount = await unitOfWork.MembershipRepository.CountByColumnValue("user_id", (Guid)request.Id);
+                    if (membershipsCount > 0)
+                    {
+                        var successfulDeleteMemberships = await unitOfWork.MembershipRepository.DeleteByUserId((Guid)request.Id);
+
+                        // If the user had memberships that couldn't be deleted, rollback and return to the controller.
+                        if (!successfulDeleteMemberships)
+                        {
+                            unitOfWork.Rollback();
+                            response.Outcome = OutcomeType.Fail;
+                            response.ErrorMessage = "User was not deleted because existing memberships could not be deleted.";
+                            return response;
+                        }
+                    }
+
                     // Delete the user record now.
-                    var successful = await unitOfWork.UserRepository.DeleteById((Guid)request.Id);
+                    var successfulDeleteUser = await unitOfWork.UserRepository.DeleteById((Guid)request.Id);
 
                     // If the user record couldn't be deleted, rollback and return to the controller.
-                    if (!successful)
+                    if (!successfulDeleteUser)
                     {
                         unitOfWork.Rollback();
                         response.Outcome = OutcomeType.Fail;

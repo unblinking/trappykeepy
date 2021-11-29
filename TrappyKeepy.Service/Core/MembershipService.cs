@@ -200,6 +200,108 @@ namespace TrappyKeepy.Service
             return response;
         }
 
+        public async Task<MembershipServiceResponse> DeleteByGroupId(MembershipServiceRequest request)
+        {
+            var response = new MembershipServiceResponse();
+            if (request.Id is null || request.Id == Guid.Empty)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Group id is required to delete membership(s) by group.";
+                return response;
+            }
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            {
+                try
+                {
+                    // Verify that at least one membership exists for the group.
+                    var existingCount = await unitOfWork.MembershipRepository.CountByColumnValue("group_id", (Guid)request.Id);
+                    if (existingCount < 1)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Requested membership(s) for delete not found.";
+                        return response;
+                    }
+
+                    // Delete the membership record(s) now.
+                    var successful = await unitOfWork.MembershipRepository.DeleteByGroupId((Guid)request.Id);
+
+                    // If the membership record(s) couldn't be deleted, rollback and return to the controller.
+                    if (!successful)
+                    {
+                        unitOfWork.Rollback();
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Membership(s) not deleted.";
+                        return response;
+                    }
+
+                    // Commit changes in this transaction.
+                    unitOfWork.Commit();
+
+                    // TODO: Return the number of memberships deleted?
+                    response.Outcome = OutcomeType.Success;
+                }
+                catch (Exception)
+                {
+                    unitOfWork.Rollback();
+                    unitOfWork.Dispose();
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+            }
+            return response;
+        }
+
+        public async Task<MembershipServiceResponse> DeleteByUserId(MembershipServiceRequest request)
+        {
+            var response = new MembershipServiceResponse();
+            if (request.Id is null || request.Id == Guid.Empty)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "User id is required to delete membership(s) by user.";
+                return response;
+            }
+            using (var unitOfWork = new UnitOfWork(connectionString, true))
+            {
+                try
+                {
+                    // Verify that at least one membership exists for the user.
+                    var existingCount = await unitOfWork.MembershipRepository.CountByColumnValue("user_id", (Guid)request.Id);
+                    if (existingCount < 1)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Requested membership(s) for delete not found.";
+                        return response;
+                    }
+
+                    // Delete the membership record(s) now.
+                    var successful = await unitOfWork.MembershipRepository.DeleteByUserId((Guid)request.Id);
+
+                    // If the membership record(s) couldn't be deleted, rollback and return to the controller.
+                    if (!successful)
+                    {
+                        unitOfWork.Rollback();
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Membership(s) not deleted.";
+                        return response;
+                    }
+
+                    // Commit changes in this transaction.
+                    unitOfWork.Commit();
+
+                    // TODO: Return the number of memberships deleted?
+                    response.Outcome = OutcomeType.Success;
+                }
+                catch (Exception)
+                {
+                    unitOfWork.Rollback();
+                    unitOfWork.Dispose();
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+            }
+            return response;
+        }
+
         public async Task<MembershipServiceResponse> DeleteByGroupIdAndUserId(MembershipServiceRequest request)
         {
             var response = new MembershipServiceResponse();
