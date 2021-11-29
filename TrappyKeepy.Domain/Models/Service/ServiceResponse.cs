@@ -91,4 +91,72 @@
             this.List = keeperDtos;
         }
     }
+
+    /// <summary>
+    /// Group service response class.
+    /// </summary>
+    public class GroupServiceResponse : ServiceResponse<GroupDto>
+    {
+        /// <summary>
+        /// If no group is provided, instantiate a new one in the Item.
+        /// </summary>
+        public GroupServiceResponse()
+        {
+            this.Item = new GroupDto();
+        }
+
+        /// <summary>
+        /// If a group was provided, set the group to the response Item.
+        /// Example could be a lookup for a single group by Id.
+        /// </summary>
+        /// <param name="groupDto"></param>
+        public GroupServiceResponse(GroupDto groupDto)
+        {
+            this.Item = groupDto;
+        }
+
+        /// <summary>
+        /// If a list of groups was provided, set the list to the response Item.
+        /// Example could be a lookup for all groups.
+        /// </summary>
+        /// <param name="groupDtos"></param>
+        public GroupServiceResponse(List<GroupDto> groupDtos)
+        {
+            this.List = groupDtos;
+        }
+    }
+
+    /// <summary>
+    /// Membership service response class.
+    /// </summary>
+    public class MembershipServiceResponse : ServiceResponse<MembershipDto>
+    {
+        /// <summary>
+        /// If no membership is provided, instantiate a new one in the Item.
+        /// </summary>
+        public MembershipServiceResponse()
+        {
+            this.Item = new MembershipDto();
+        }
+
+        /// <summary>
+        /// If a membership was provided, set the membership to the response Item.
+        /// Example could be a lookup for a single membership by Id.
+        /// </summary>
+        /// <param name="membershipDto"></param>
+        public MembershipServiceResponse(MembershipDto membershipDto)
+        {
+            this.Item = membershipDto;
+        }
+
+        /// <summary>
+        /// If a list of memberships was provided, set the list to the response Item.
+        /// Example could be a lookup for all memberships.
+        /// </summary>
+        /// <param name="membershipDtos"></param>
+        public MembershipServiceResponse(List<MembershipDto> membershipDtos)
+        {
+            this.List = membershipDtos;
+        }
+    }
 }

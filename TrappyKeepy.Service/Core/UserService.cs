@@ -43,7 +43,7 @@ namespace TrappyKeepy.Service
                         response.ErrorMessage = "Requested user name is already in use.";
                         return response;
                     }
-                    // Verify the requested user name is not already in use.
+                    // Verify the requested user email is not already in use.
                     var existingEmailCount = await unitOfWork.UserRepository
                         .CountByColumnValue("email", request.Item.Email);
                     if (existingEmailCount > 0)
@@ -187,19 +187,19 @@ namespace TrappyKeepy.Service
                     // Update the user record now.
                     var successful = await unitOfWork.UserRepository.UpdateById(request.Item);
 
+                    // If the user record couldn't be updated, rollback and return to the controller.
+                    if (!successful)
+                    {
+                        unitOfWork.Rollback();
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "User was not updated.";
+                        return response;
+                    }
+
                     // Commit changes in this transaction.
                     unitOfWork.Commit();
 
-                    // Set response success or not.
-                    if (successful)
-                    {
-                        response.Outcome = OutcomeType.Success;
-                    }
-                    else
-                    {
-                        response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "User was not updated.";
-                    }
+                    response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
@@ -234,22 +234,22 @@ namespace TrappyKeepy.Service
                         return response;
                     }
 
-                    // Update the user record now.
+                    // Update the user password now.
                     var successful = await unitOfWork.UserRepository.UpdatePasswordById(request.Item);
+
+                    // If the user password couldn't be updated, rollback and return to the controller.
+                    if (!successful)
+                    {
+                        unitOfWork.Rollback();
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "User password was not updated.";
+                        return response;
+                    }
 
                     // Commit changes in this transaction.
                     unitOfWork.Commit();
 
-                    // Set response success or not.
-                    if (successful)
-                    {
-                        response.Outcome = OutcomeType.Success;
-                    }
-                    else
-                    {
-                        response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "User password was not updated.";
-                    }
+                    response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
@@ -284,17 +284,22 @@ namespace TrappyKeepy.Service
                         return response;
                     }
 
+                    // Delete the user record now.
                     var successful = await unitOfWork.UserRepository.DeleteById((Guid)request.Id);
-                    unitOfWork.Commit();
-                    if (successful)
+
+                    // If the user record couldn't be deleted, rollback and return to the controller.
+                    if (!successful)
                     {
-                        response.Outcome = OutcomeType.Success;
-                    }
-                    else
-                    {
+                        unitOfWork.Rollback();
                         response.Outcome = OutcomeType.Fail;
                         response.ErrorMessage = "User was not deleted.";
+                        return response;
                     }
+
+                    // Commit changes in this transaction.
+                    unitOfWork.Commit();
+
+                    response.Outcome = OutcomeType.Success;
                 }
                 catch (Exception)
                 {
