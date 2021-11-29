@@ -112,6 +112,18 @@
     public class MembershipServiceRequest : ServiceRequest<Membership>
     {
         /// <summary>
+        /// The memberships table doesn't have an id colum.
+        /// This can specify the group_id column value in a request.
+        /// </summary>
+        public Guid? GroupId { get; set; }
+
+        /// <summary>
+        /// The memberships table doesn't have an id colum.
+        /// This can specify the user_id column value in a request.
+        /// </summary>
+        public Guid? UserId { get; set; }
+
+        /// <summary>
         ///  If no membership is provided, instantiate a new one.
         /// </summary>
         public MembershipServiceRequest()
@@ -129,9 +141,15 @@
             this.Item = membership;
         }
 
-        public MembershipServiceRequest(Guid id)
+        /// <summary>
+        /// Used to request to delete a membership by groupId/userId.
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <param name="userId"></param>
+        public MembershipServiceRequest(Guid groupId, Guid userId)
         {
-            this.Id = id;
+            this.GroupId = groupId;
+            this.UserId = userId;
         }
     }
 }
