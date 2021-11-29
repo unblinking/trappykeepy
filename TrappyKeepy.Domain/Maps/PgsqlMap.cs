@@ -42,5 +42,25 @@ namespace TrappyKeepy.Domain.Maps
                 BinaryData = (byte[])reader["binary_data"],
             };
         }
+
+        public Group Group(NpgsqlDataReader reader)
+        {
+            return new Group()
+            {
+                Id = Guid.Parse($"{reader["id"].ToString()}"),
+                Name = $"{reader["name"].ToString()}",
+                Description = reader["description"] is not DBNull ? $"{reader["description"].ToString()}" : null,
+                DateCreated = DateTime.Parse($"{reader["date_created"].ToString()}"),
+            };
+        }
+
+        public Membership Membership(NpgsqlDataReader reader)
+        {
+            return new Membership()
+            {
+                GroupId = Guid.Parse($"{reader["group_id"].ToString()}"),
+                UserId = Guid.Parse($"{reader["user_id"].ToString()}"),
+            };
+        }
     }
 }

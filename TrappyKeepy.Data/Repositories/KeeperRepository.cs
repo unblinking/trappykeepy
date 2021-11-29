@@ -17,15 +17,15 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.keepers_create('{keeper.Filename}'";
-                if (keeper.Description is not null)
-                {
-                    command.CommandText += $", '{keeper.Description}'";
-                }
-                if (keeper.Category is not null)
-                {
-                    command.CommandText += $", '{keeper.Category}'";
-                }
+
+                if (keeper.Description is not null) command.CommandText += $", '{keeper.Description}'";
+                else command.CommandText += $", null";
+
+                if (keeper.Category is not null) command.CommandText += $", '{keeper.Category}'";
+                else command.CommandText += $", null";
+
                 command.CommandText += $", '{keeper.UserPosted}');";
+
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
                 if (result is not null)
@@ -75,15 +75,15 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.keepers_update('{keeper.Id}', '{keeper.Filename}'";
-                if (keeper.Description is not null)
-                {
-                    command.CommandText += $", '{keeper.Description}'";
-                }
-                if (keeper.Category is not null)
-                {
-                    command.CommandText += $", '{keeper.Category}'";
-                }
+
+                if (keeper.Description is not null) command.CommandText += $", '{keeper.Description}'";
+                else command.CommandText += $", null";
+
+                if (keeper.Category is not null) command.CommandText += $", '{keeper.Category}'";
+                else command.CommandText += $", null";
+
                 command.CommandText += ");";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)

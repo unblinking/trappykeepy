@@ -66,47 +66,24 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_update('{user.Id}'";
-                if (user.Name is not null)
-                {
-                    command.CommandText += $", '{user.Name}'";
-                }
-                else
-                {
-                    command.CommandText += $", null";
-                }
-                if (user.Email is not null)
-                {
-                    command.CommandText += $", '{user.Email}'";
-                }
-                else
-                {
-                    command.CommandText += $", null";
-                }
-                if (user.Role >= 0)
-                {
-                    command.CommandText += $", '{user.Role}'";
-                }
-                else
-                {
-                    command.CommandText += $", null";
-                }
-                if (user.DateActivated is not null)
-                {
-                    command.CommandText += $", '{user.DateActivated}'";
-                }
-                else
-                {
-                    command.CommandText += $", null";
-                }
-                if (user.DateLastLogin is not null)
-                {
-                    command.CommandText += $", '{user.DateLastLogin}'";
-                }
-                else
-                {
-                    command.CommandText += $", null";
-                }
+
+                if (user.Name is not null) command.CommandText += $", '{user.Name}'";
+                else command.CommandText += $", null";
+
+                if (user.Email is not null) command.CommandText += $", '{user.Email}'";
+                else command.CommandText += $", null";
+
+                if (user.Role >= 0) command.CommandText += $", '{user.Role}'";
+                else command.CommandText += $", null";
+
+                if (user.DateActivated is not null) command.CommandText += $", '{user.DateActivated}'";
+                else command.CommandText += $", null";
+
+                if (user.DateLastLogin is not null) command.CommandText += $", '{user.DateLastLogin}'";
+                else command.CommandText += $", null";
+
                 command.CommandText += ");";
+                
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)

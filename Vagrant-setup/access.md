@@ -57,8 +57,6 @@ WHERE grantee = 'dbuser';
 
 # Migrations  
 
-## V1  
-
 To rollback all migrations:  
 
 ```sql
