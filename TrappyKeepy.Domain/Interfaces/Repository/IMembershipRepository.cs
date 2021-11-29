@@ -6,9 +6,9 @@ namespace TrappyKeepy.Domain.Interfaces
     {
         Task<Guid> Create(Membership membership);
         Task<List<Membership>> ReadAll();
-        Task<Membership> ReadByGroupId(Guid id);
-        Task<Membership> ReadByUserId(Guid id);
-        Task<bool> DeleteByGroupId(Guid id);
-        Task<bool> DeleteByUserId(Guid id);
+        Task<List<Membership>> ReadByGroupId(Guid id);
+        Task<List<Membership>> ReadByUserId(Guid id);
+        Task<bool> DeleteByGroupIdAndUserId(Guid groupId, Guid userId);
+        Task<int> CountByGroupAndUser(Guid groupId, Guid userId);
     }
 }

@@ -251,16 +251,18 @@ $$;
 COMMENT ON FUNCTION tk.groups_delete_by_id IS 'Function to delete a record from the groups table by id.';
 
 /**
- * Function:    tk.memberships_delete_by_group_id
+ * Function:    tk.memberships_delete_by_group_id_and_user_id
  * Created:     2021-11-28
  * Author:      Joshua Gray
- * Description: Function to delete a record from the memberships table by group_id.
- * Parameters:  id UUID - group_id for the record to be deleted.
- * Usage:       SELECT * FROM tk.memberships_delete_by_group_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Description: Function to delete a record from the memberships table by group_id/user_id.
+ * Parameters:  id_group UUID - group_id for the record to be deleted.
+ *              id_user UUID - user_id for the record to be deleted.
+ * Usage:       SELECT * FROM tk.memberships_delete_by_group_id_and_user_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'a1e84bb3-3429-4bfc-95c8-e184fceaa036');
  * Returns:     True if the membership was deleted, and false if not.
  */
-CREATE OR REPLACE FUNCTION tk.memberships_delete_by_group_id (
-    id_value UUID
+CREATE OR REPLACE FUNCTION tk.memberships_delete_by_group_id_and_user_id (
+    id_group UUID,
+    id_user UUID
 )
     RETURNS BOOLEAN
     LANGUAGE PLPGSQL
@@ -269,33 +271,9 @@ $$
 BEGIN
     DELETE
     FROM tk.memberships
-    WHERE tk.memberships.group_id = $1;
+    WHERE tk.memberships.group_id = $1
+        AND tk.memberships.user_id = $2;
     RETURN FOUND;
 END;
 $$;
-COMMENT ON FUNCTION tk.memberships_delete_by_group_id IS 'Function to delete a record from the memberships table by group_id.';
-
-/**
- * Function:    tk.memberships_delete_by_user_id
- * Created:     2021-11-28
- * Author:      Joshua Gray
- * Description: Function to delete a record from the memberships table by user_id.
- * Parameters:  id UUID - user_id for the record to be deleted.
- * Usage:       SELECT * FROM tk.memberships_delete_by_user_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
- * Returns:     True if the membership was deleted, and false if not.
- */
-CREATE OR REPLACE FUNCTION tk.memberships_delete_by_user_id (
-    id_value UUID
-)
-    RETURNS BOOLEAN
-    LANGUAGE PLPGSQL
-    AS
-$$
-BEGIN
-    DELETE
-    FROM tk.memberships
-    WHERE tk.memberships.user_id = $1;
-    RETURN FOUND;
-END;
-$$;
-COMMENT ON FUNCTION tk.memberships_delete_by_user_id IS 'Function to delete a record from the memberships table by user_id.';
+COMMENT ON FUNCTION tk.memberships_delete_by_group_id_and_user_id IS 'Function to delete a record from the memberships table by group_id/user_id.';

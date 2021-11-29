@@ -44,45 +44,45 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<Membership> ReadByGroupId(Guid id)
+        public async Task<List<Membership>> ReadByGroupId(Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.memberships_read_by_group_id('{id}');";
                 var reader = await RunQuery(command);
-                var membership = new Membership();
+                var memberships = new List<Membership>();
                 while (await reader.ReadAsync())
                 {
                     var map = new PgsqlReaderMap();
-                    membership = map.Membership(reader);
+                    memberships.Add(map.Membership(reader));
                 }
                 reader.Close();
-                return membership;
+                return memberships;
             }
         }
 
-        public async Task<Membership> ReadByUserId(Guid id)
+        public async Task<List<Membership>> ReadByUserId(Guid id)
         {
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.memberships_read_by_user_id('{id}');";
                 var reader = await RunQuery(command);
-                var membership = new Membership();
+                var memberships = new List<Membership>();
                 while (await reader.ReadAsync())
                 {
                     var map = new PgsqlReaderMap();
-                    membership = map.Membership(reader);
+                    memberships.Add(map.Membership(reader));
                 }
                 reader.Close();
-                return membership;
+                return memberships;
             }
         }
 
-        public async Task<bool> DeleteByGroupId(Guid id)
+        public async Task<bool> DeleteByGroupIdAndUserId(Guid groupId, Guid userId)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_group_id('{id}');";
+                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_group_id_and-user_id('{groupId}', '{userId}');";
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -93,18 +93,18 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<bool> DeleteByUserId(Guid id)
+        public async Task<int> CountByGroupAndUser(Guid groupId, Guid userId)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_user_id('{id}');";
+                command.CommandText = $"SELECT * FROM tk.memberships_count_by_group_and_user('{groupId}', '{userId}');";
                 var result = await RunScalar(command);
-                var success = false;
+                int count = 0;
                 if (result is not null)
                 {
-                    success = bool.Parse($"{result.ToString()}");
+                    count = int.Parse($"{result.ToString()}");
                 }
-                return success;
+                return count;
             }
         }
     }

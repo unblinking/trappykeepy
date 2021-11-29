@@ -213,7 +213,7 @@ namespace TrappyKeepy.Service
                     if (existing.Id != request.Id)
                     {
                         response.Outcome = OutcomeType.Fail;
-                        response.ErrorMessage = "Requested group id for update does not exist.";
+                        response.ErrorMessage = "Requested group id for delete does not exist.";
                         return response;
                     }
 
