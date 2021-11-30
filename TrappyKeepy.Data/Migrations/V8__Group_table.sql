@@ -69,11 +69,13 @@ COMMENT ON TYPE tk.membership_type IS 'Type for an individual membership record.
  *              user_id - Not null.
  */
 CREATE TABLE IF NOT EXISTS tk.memberships OF tk.membership_type (
-    group_id WITH OPTIONS PRIMARY KEY,
+    group_id WITH OPTIONS NOT NULL,
     user_id WITH OPTIONS NOT NULL,
     CONSTRAINT fk_group_of_memberships FOREIGN KEY (group_id) REFERENCES tk.groups (id) ON DELETE NO ACTION,
     CONSTRAINT fk_user_of_memberships FOREIGN KEY (user_id) REFERENCES tk.users (id) ON DELETE NO ACTION
 );
+CREATE INDEX group_membership_index ON tk.memberships (group_id);
+CREATE INDEX user_membership_index ON tk.memberships (user_id);
 COMMENT ON TABLE tk.memberships IS 'Table to store group membership records.';
 COMMENT ON COLUMN tk.memberships.group_id IS 'UUID primary key, and foreign key to the tk.groups table.';
 COMMENT ON COLUMN tk.memberships.user_id IS 'UUID, and foreign key to the tk.users table.';

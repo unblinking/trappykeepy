@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS tk.keepers OF tk.keeper_type (
     user_posted WITH OPTIONS NOT NULL,
     CONSTRAINT fk_user_posted_keeper FOREIGN KEY (user_posted) REFERENCES tk.users (id) ON DELETE NO ACTION
 );
+CREATE INDEX user_posted_index ON tk.keepers (user_posted);
 COMMENT ON TABLE tk.keepers IS 'Table to store keeper/document metadata records.';
 COMMENT ON COLUMN tk.keepers.id IS 'UUID primary key.';
 COMMENT ON COLUMN tk.keepers.filename IS 'Unique document filename.';

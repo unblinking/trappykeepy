@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS tk.users OF tk.user_type (
     role WITH OPTIONS NOT NULL CHECK (role >= 0 AND role <= 2) DEFAULT 0,
     date_created WITH OPTIONS NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX user_role_index ON tk.users (role);
 COMMENT ON TABLE tk.users IS 'Table to store user records.';
 COMMENT ON COLUMN tk.users.id IS 'UUID primary key.';
 COMMENT ON COLUMN tk.users.name IS 'Unique display name.';
