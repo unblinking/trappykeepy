@@ -4,49 +4,78 @@ using TrappyKeepy.Domain.Interfaces;
 
 namespace TrappyKeepy.Data
 {
+    /// <summary>
+    /// Unit of work.
+    /// Group operations into a single transaction so that all operations either
+    /// pass or fail as one unit.
+    /// </summary>
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
-        private IUserRepository? userRepository;
-        private IKeeperRepository? keeperRepository;
+        #region Private repository objects.
+
         private IFiledataRepository? filedataRepository;
         private IGroupRepository? groupRepository;
+        private IKeeperRepository? keeperRepository;
         private IMembershipRepository? membershipRepository;
-        private string connectionString;
+        private IUserRepository? userRepository;
+
+        #endregion Private repository objects.
+
+        // Private database connection and transaction.
+        private string connectionString = $"{Environment.GetEnvironmentVariable("TKDB_CONN_STRING")}";
         private NpgsqlConnection connection;
         private NpgsqlTransaction? transaction;
+
         private bool disposed;
 
-
-        public UnitOfWork(string connectionString, bool useTransaction)
+        /// <summary>
+        /// Constructor.
+        /// Instantiate the Npgsql connection and open it.
+        /// </summary>
+        public UnitOfWork()
         {
-            this.connectionString = connectionString;
-            this.connection = new NpgsqlConnection(connectionString);
+            this.connection = new NpgsqlConnection(this.connectionString);
             this.connection.Open();
-            if (useTransaction)
-            {
-                this.transaction = connection.BeginTransaction();
-            }
         }
 
-        public IUserRepository UserRepository
+        #region Transaction methods.
+
+        /// <summary>
+        /// Begin a new transaction.
+        /// </summary>
+        public void Begin()
         {
-            get
-            {
-                if (this.userRepository is null) userRepository = new UserRepository(connection);
-                return userRepository;
-            }
+            this.transaction = connection.BeginTransaction();
         }
 
-        public IKeeperRepository KeeperRepository
+        /// <summary>
+        /// Commit the current transaction.
+        /// </summary>
+        public void Commit()
         {
-            get
-            {
-                if (this.keeperRepository is null) keeperRepository = new KeeperRepository(connection);
-                return keeperRepository;
-            }
+            if (transaction is not null) transaction.Commit();
+            if (transaction is not null && transaction.Connection is not null) transaction.Connection.Close();
+            if (connection is not null) connection.Close();
         }
 
-        public IFiledataRepository FiledataRepository
+        /// <summary>
+        /// Rollback the current transaction.
+        /// </summary>
+        public void Rollback()
+        {
+            if (transaction is not null) transaction.Rollback();
+            if (transaction is not null && transaction.Connection is not null) transaction.Connection.Close();
+        }
+
+        #endregion Transaction methods.
+
+        #region Public repository objects.
+
+        /// <summary>
+        /// The filedatas repository.
+        /// </summary>
+        /// <value></value>
+        public IFiledataRepository filedatas
         {
             get
             {
@@ -55,7 +84,11 @@ namespace TrappyKeepy.Data
             }
         }
 
-        public IGroupRepository GroupRepository
+        /// <summary>
+        /// The groups repository.
+        /// </summary>
+        /// <value></value>
+        public IGroupRepository groups
         {
             get
             {
@@ -64,7 +97,24 @@ namespace TrappyKeepy.Data
             }
         }
 
-        public IMembershipRepository MembershipRepository
+        /// <summary>
+        /// The keeper repository.
+        /// </summary>
+        /// <value></value>
+        public IKeeperRepository keepers
+        {
+            get
+            {
+                if (this.keeperRepository is null) keeperRepository = new KeeperRepository(connection);
+                return keeperRepository;
+            }
+        }
+
+        /// <summary>
+        /// The memberships repository.
+        /// </summary>
+        /// <value></value>
+        public IMembershipRepository memberships
         {
             get
             {
@@ -73,33 +123,22 @@ namespace TrappyKeepy.Data
             }
         }
 
-        public void Commit()
+        /// <summary>
+        /// The user repository.
+        /// </summary>
+        /// <value></value>
+        public IUserRepository users
         {
-            if (transaction is not null)
+            get
             {
-                transaction.Commit();
-            }
-            if (transaction is not null && transaction.Connection is not null)
-            {
-                transaction.Connection.Close();
-            }
-            if (connection is not null)
-            {
-                connection.Close();
+                if (this.userRepository is null) userRepository = new UserRepository(connection);
+                return userRepository;
             }
         }
 
-        public void Rollback()
-        {
-            if (transaction is not null)
-            {
-                transaction.Rollback();
-            }
-            if (transaction is not null && transaction.Connection is not null)
-            {
-                transaction.Connection.Close();
-            }
-        }
+        #endregion Public repository objects.
+
+        #region Garbage collection.
 
         public void Dispose()
         {
@@ -127,5 +166,7 @@ namespace TrappyKeepy.Data
                 disposed = true;
             }
         }
+
+        #endregion Garbage collection.
     }
 }
