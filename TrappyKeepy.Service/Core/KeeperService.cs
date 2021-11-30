@@ -53,6 +53,8 @@ namespace TrappyKeepy.Service
                 // Begin this transaction.
                 uow.Begin();
 
+                // TODO: Verify the user_posted id is a user in the database.
+
                 // Verify the requested file name is not already in use.
                 var existingNameCount = await uow.keepers.CountByColumnValue("filename", request.Item.Filename);
                 if (existingNameCount > 0)

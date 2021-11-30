@@ -137,7 +137,7 @@ namespace TrappyKeepy.Service
             var response = new UserServiceResponse();
 
             // Verify required parameters.
-            if (request.Id is null)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "User id is required to find a user by id.";
@@ -148,6 +148,14 @@ namespace TrappyKeepy.Service
             {
                 // Read the user record now.
                 var user = await uow.users.ReadById((Guid)request.Id);
+
+                // Verify the user was found.
+                if (user.Id != request.Id)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "User was not found with the specified id.";
+                    return response;
+                }
 
                 // Pass a UserDto back to the controller.
                 response.Item = new UserDto()
