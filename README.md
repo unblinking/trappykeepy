@@ -30,6 +30,7 @@ The following development environment variables with development values provide 
 ```bash
 export TKDB_URL="jdbc:postgresql://localhost:15432/keepydb"
 export TKDB_USER="dbuser"
+export TKDB_OWNER="dbowner"
 export TKDB_PASSWORD="dbpass"
 export TKDB_MIGRATIONS="filesystem:./TrappyKeepy.Data/Migrations"
 export TKDB_CONN_STRING="Host=localhost;Database=keepydb;Port=15432;Username=dbuser;Password=dbpass"
