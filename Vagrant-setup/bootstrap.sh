@@ -2,13 +2,14 @@
 
 # Edit the following to change the name of the database user that will be created:
 APP_DB_USER=dbuser
+APP_DB_OWNER=dbowner
 APP_DB_PASS=dbpass
 
 # Edit the following to change the name of the database that is created (defaults to the user name)
 APP_DB_NAME=keepydb
 
 # Edit the following to change the version of PostgreSQL that is installed
-PG_VERSION=12
+PG_VERSION=14
 
 ###########################################################
 # Changes below this line are probably not necessary
@@ -82,11 +83,14 @@ echo "client_encoding = utf8" >> "$PG_CONF"
 service postgresql restart
 
 cat << EOF | su - postgres -c psql
--- Create the database user:
+-- Create the database app user:
 CREATE USER $APP_DB_USER WITH PASSWORD '$APP_DB_PASS';
 
+-- Create the database owner user:
+CREATE USER $APP_DB_OWNER WITH PASSWORD '$APP_DB_PASS';
+
 -- Create the database:
-CREATE DATABASE $APP_DB_NAME WITH OWNER=$APP_DB_USER
+CREATE DATABASE $APP_DB_NAME WITH OWNER=$APP_DB_OWNER
                                   LC_COLLATE='en_US.utf8'
                                   LC_CTYPE='en_US.utf8'
                                   ENCODING='UTF8'

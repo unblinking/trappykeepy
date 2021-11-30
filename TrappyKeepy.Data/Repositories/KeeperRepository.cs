@@ -16,7 +16,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_create('{keeper.Filename}'";
+                command.CommandText = $"SELECT * FROM tk.keepers_create('{keeper.Filename}', '{keeper.UserPosted}'";
 
                 if (keeper.Description is not null) command.CommandText += $", '{keeper.Description}'";
                 else command.CommandText += $", null";
@@ -24,7 +24,7 @@ namespace TrappyKeepy.Data.Repositories
                 if (keeper.Category is not null) command.CommandText += $", '{keeper.Category}'";
                 else command.CommandText += $", null";
 
-                command.CommandText += $", '{keeper.UserPosted}');";
+                command.CommandText += $");";
 
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;

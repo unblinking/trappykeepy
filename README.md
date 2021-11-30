@@ -30,6 +30,7 @@ The following development environment variables with development values provide 
 ```bash
 export TKDB_URL="jdbc:postgresql://localhost:15432/keepydb"
 export TKDB_USER="dbuser"
+export TKDB_OWNER="dbowner"
 export TKDB_PASSWORD="dbpass"
 export TKDB_MIGRATIONS="filesystem:./TrappyKeepy.Data/Migrations"
 export TKDB_CONN_STRING="Host=localhost;Database=keepydb;Port=15432;Username=dbuser;Password=dbpass"
@@ -73,7 +74,7 @@ dotnet user-secrets list --project TrappyKeepy.Api
 
 ## First Admin  
 
-To create the first administrator user, connect to the database and insert the user by running the tk.users_create function. Here is an example using development values:  
+To create the first administrator app user, connect to the database as `dbowner` and insert the user by running the tk.users_create function. Here is an example using development values:  
 
 ```sql
 SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', '2');

@@ -1,6 +1,8 @@
 # PostgreSQL Development Database  
 
-Your PostgreSQL database has been setup and can be accessed on your local machine on the forwarded port (default: 15432).  
+There is a development database available using Vagrant by running the `vagrant up` command. Once running, the details of the database are listed below:  
+
+## Basics  
 
 Key|Value
 --|--
@@ -9,6 +11,8 @@ Port|15432
 Database|keepydb
 Username|dbuser
 Password|dbpass
+
+## Access via the VM  
 
 Admin access to postgres user via VM:
 
@@ -22,42 +26,46 @@ psql access to app database user via VM:
 ```bash
 vagrant ssh
 sudo su - postgres
-PGUSER=dbuser PGPASSWORD=dbpass psql -h localhost keepydb
+PGUSER=dbowner PGPASSWORD=dbpass psql -h localhost keepydb
 ```
 
-Env variable for application development:
+## Access via local commands  
 
-```bash
-DATABASE_URL=postgresql://dbuser:dbpass@localhost:15432/keepydb
-```
-
-Local command to access the database via psql:
+Local command to access the database as dbuser via psql:
 
 ```bash
 PGUSER=dbuser PGPASSWORD=dbpass psql -h localhost -p 15432 keepydb
 ```
 
-Connection string:
+Local command to access the database as dbowner via psql:
 
+```bash
+PGUSER=dbowner PGPASSWORD=dbpass psql -h localhost -p 15432 keepydb
 ```
+
+## Connection string  
+
+Trappy Keepy application connection string:  
+
+```bash
 Host=localhost;Database=keepydb;Port=15432;Username=dbuser;Password=dbpass
 ```
 
 # User Defined Functions  
 
-In development, the grantee adding the functions is currently `dbuser`.  
+In development, the grantee adding the functions is currently `dbowner`.  
 
-To list all functions created by `dbuser`:  
+To list all functions created by `dbowner`:  
 
 ```sql
 SELECT routine_name
 FROM information_schema.routine_privileges
-WHERE grantee = 'dbuser';
+WHERE grantee = 'dbowner';
 ```
 
 # Migrations  
 
-To rollback all migrations:  
+To rollback all migrations, connect to the development database using psql as dbowner and run the following:  
 
 ```sql
 DROP SCHEMA tk CASCADE;
