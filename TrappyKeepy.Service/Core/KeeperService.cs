@@ -53,7 +53,14 @@ namespace TrappyKeepy.Service
                 // Begin this transaction.
                 uow.Begin();
 
-                // TODO: Verify the user_posted id is a user in the database.
+                // Verify the user_posted id is a user in the database.
+                var user = await uow.users.ReadById(request.Item.UserPosted);
+                if (user.Id != request.Item.UserPosted)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Cannot create the keeper because the userPosted was not found with the specified id. A valid userPosted user id is required to create a keeper.";
+                    return response;
+                }
 
                 // Verify the requested file name is not already in use.
                 var existingNameCount = await uow.keepers.CountByColumnValue("filename", request.Item.Filename);
