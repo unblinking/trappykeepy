@@ -95,12 +95,6 @@ CREATE DATABASE $APP_DB_NAME WITH OWNER=$APP_DB_OWNER
                                   LC_CTYPE='en_US.utf8'
                                   ENCODING='UTF8'
                                   TEMPLATE=template0;
-
--- Grant access to the database app user:
-GRANT CONNECT, SELECT, INSERT, UPDATE, DELETE ON DATABASE $APP_DB_NAME TO $APP_DB_USER
-
--- Revoke the dangerous default CREATE privilege on schema public:
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 EOF
 
 # Install extensions.

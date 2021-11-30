@@ -26,7 +26,7 @@ psql access to app database user via VM:
 ```bash
 vagrant ssh
 sudo su - postgres
-PGUSER=dbuser PGPASSWORD=dbpass psql -h localhost keepydb
+PGUSER=dbowner PGPASSWORD=dbpass psql -h localhost keepydb
 ```
 
 ## Access via local commands  
