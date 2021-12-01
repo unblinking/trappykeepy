@@ -8,18 +8,22 @@ using TrappyKeepy.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container to be used for dependency injection.
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IKeeperService, KeeperService>();
 builder.Services.AddTransient<IGroupService, GroupService>();
 builder.Services.AddTransient<IMembershipService, MembershipService>();
+
+// Add controllers to the container.
+// When controllers respond with JSON, leave out any keys that have null values.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
 
+// Add JSON Web Token authorization and authentication.
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -36,6 +40,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
+// Setup the OpenAPI (aka Swagger) landing page.
 builder.Services.AddEndpointsApiExplorer(); // OpenAPI.
 builder.Services.AddSwaggerGen(options =>
 {
@@ -77,6 +82,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
+        // When starting the API in development mode, load the OpenAPI/Swagger page.
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "TrappyKeepy");
         c.RoutePrefix = "";
     });

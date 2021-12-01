@@ -1,10 +1,7 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
-using TrappyKeepy.Service;
 
 namespace TrappyKeepy.Api.Controllers
 {
@@ -155,7 +152,7 @@ namespace TrappyKeepy.Api.Controllers
 
                 if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty)
                 {
-                    response.Fail("User id is required to update a user.");
+                    response.Fail("User id is required to update a user by id.");
                     return BadRequest(response);
                 }
 
@@ -257,7 +254,7 @@ namespace TrappyKeepy.Api.Controllers
 
                 if (id == Guid.Empty || (Guid)id == Guid.Empty)
                 {
-                    response.Fail("User id is required to delete a user.");
+                    response.Fail("User id is required to delete a user by id.");
                     return BadRequest(response);
                 }
 
