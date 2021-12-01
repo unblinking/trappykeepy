@@ -75,7 +75,7 @@ namespace TrappyKeepy.Service
                 uow.Commit();
 
                 // Pass a MembershipDto back to the controller.
-                response.Item = new MembershipDto() { GroupId = id };
+                response.Item = new MembershipDto() { Id = id };
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -108,6 +108,7 @@ namespace TrappyKeepy.Service
                 {
                     var membershipDto = new MembershipDto()
                     {
+                        Id = membership.Id,
                         GroupId = membership.GroupId,
                         UserId = membership.UserId,
                     };
@@ -154,6 +155,7 @@ namespace TrappyKeepy.Service
                 {
                     var membershipDto = new MembershipDto()
                     {
+                        Id = membership.Id,
                         GroupId = membership.GroupId,
                         UserId = membership.UserId,
                     };
@@ -200,6 +202,7 @@ namespace TrappyKeepy.Service
                 {
                     var membershipDto = new MembershipDto()
                     {
+                        Id = membership.Id,
                         GroupId = membership.GroupId,
                         UserId = membership.UserId,
                     };
@@ -208,6 +211,61 @@ namespace TrappyKeepy.Service
                 response.List = membershipDtos;
 
                 // Success if we made it this far.
+                response.Outcome = OutcomeType.Success;
+            }
+            catch (Exception)
+            {
+                response.Outcome = OutcomeType.Error;
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Delete a membership from the database for a specific group/user id combo.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<MembershipServiceResponse> DeleteById(MembershipServiceRequest request)
+        {
+            var response = new MembershipServiceResponse();
+
+            // Verify required parameters.
+            if (
+                request.Id is null || request.Id == Guid.Empty
+            )
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Membership id is required to delete a specific membership by id.";
+                return response;
+            }
+
+            try
+            {
+                // Verify that the membership exists.
+                var existingCount = await uow.memberships.CountByColumnValue("id", (Guid)request.Id);
+                if (existingCount < 1)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Requested membership for delete does not exist.";
+                    return response;
+                }
+
+                // Delete the membership record now.
+                var successful = await uow.memberships.DeleteById((Guid)request.Id);
+
+                // If the membership record couldn't be deleted, rollback and return to the controller.
+                if (!successful)
+                {
+                    uow.Rollback();
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Membership was not deleted.";
+                    return response;
+                }
+
+                // Commit changes in this transaction.
+                uow.Commit();
+
                 response.Outcome = OutcomeType.Success;
             }
             catch (Exception)
@@ -323,68 +381,6 @@ namespace TrappyKeepy.Service
                 uow.Commit();
 
                 // TODO: Return the number of memberships deleted?
-
-                response.Outcome = OutcomeType.Success;
-            }
-            catch (Exception)
-            {
-                response.Outcome = OutcomeType.Error;
-            }
-
-            return response;
-        }
-
-        /// <summary>
-        /// Delete a membership from the database for a specific group/user id combo.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<MembershipServiceResponse> DeleteByGroupIdAndUserId(MembershipServiceRequest request)
-        {
-            var response = new MembershipServiceResponse();
-
-            // Verify required parameters.
-            if (
-                request.GroupId is null || request.GroupId == Guid.Empty ||
-                request.UserId is null || request.UserId == Guid.Empty
-            )
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Group id and user id are required to delete a specific membership.";
-                return response;
-            }
-
-            try
-            {
-                // Verify that the membership exists.
-                var existingCount = await uow.memberships.CountByGroupAndUser(
-                    (Guid)request.GroupId,
-                    (Guid)request.UserId
-                );
-                if (existingCount < 1)
-                {
-                    response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Requested membership for delete does not exist.";
-                    return response;
-                }
-
-                // Delete the membership record now.
-                var successful = await uow.memberships.DeleteByGroupIdAndUserId(
-                    (Guid)request.GroupId,
-                    (Guid)request.UserId
-                );
-
-                // If the membership record couldn't be deleted, rollback and return to the controller.
-                if (!successful)
-                {
-                    uow.Rollback();
-                    response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Membership was not deleted.";
-                    return response;
-                }
-
-                // Commit changes in this transaction.
-                uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }

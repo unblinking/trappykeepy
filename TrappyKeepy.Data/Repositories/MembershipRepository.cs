@@ -78,6 +78,21 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
+        public async Task<bool> DeleteById(Guid id)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_id('{id}');";
+                var result = await RunScalar(command);
+                var success = false;
+                if (result is not null)
+                {
+                    success = bool.Parse($"{result.ToString()}");
+                }
+                return success;
+            }
+        }
+
         public async Task<bool> DeleteByGroupId(Guid id)
         {
             using (var command = new NpgsqlCommand())
@@ -98,21 +113,6 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.memberships_delete_by_user_id('{id}');";
-                var result = await RunScalar(command);
-                var success = false;
-                if (result is not null)
-                {
-                    success = bool.Parse($"{result.ToString()}");
-                }
-                return success;
-            }
-        }
-
-        public async Task<bool> DeleteByGroupIdAndUserId(Guid groupId, Guid userId)
-        {
-            using (var command = new NpgsqlCommand())
-            {
-                command.CommandText = $"SELECT * FROM tk.memberships_delete_by_group_id_and-user_id('{groupId}', '{userId}');";
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)

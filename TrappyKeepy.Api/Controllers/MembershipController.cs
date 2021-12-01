@@ -61,7 +61,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // MembershipDto with group id after db insert.
+                        response.Success(serviceResponse.Item); // MembershipDto with new id from db insert.
                         return Ok(response);
                 }
             }
@@ -110,7 +110,7 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        [HttpGet("{groupId}")]
+        [HttpGet("/v1/membership/group/{id}")]
         public async Task<ActionResult> ReadByGroupId(Guid group_id)
         {
             try
@@ -146,7 +146,7 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet("/v1/membership/user/{id}")]
         public async Task<ActionResult> ReadByUserId(Guid user_id)
         {
             try
@@ -182,7 +182,49 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        [HttpDelete("{groupId}")]
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteById(Guid id)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                if (id == Guid.Empty || (Guid)id == Guid.Empty)
+                {
+                    response.Fail("Membership id is required to delete a specific user membership by id.");
+                    return BadRequest(response);
+                }
+
+                // Prepare the service request.
+                var serviceRequest = new MembershipServiceRequest(id);
+
+                // Wait for the service response.
+                var serviceResponse = await membershipService.DeleteByUserId(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Membership deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpDelete("/v1/membership/group/{id}")]
         public async Task<ActionResult> DeleteByGroupId(Guid group_id)
         {
             try
@@ -224,7 +266,7 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        [HttpDelete("{userId}")]
+        [HttpDelete("/v1/membership/user/{id}")]
         public async Task<ActionResult> DeleteByUserId(Guid user_id)
         {
             try
@@ -265,56 +307,5 @@ namespace TrappyKeepy.Api.Controllers
             // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
-
-        [HttpDelete("{membershipDto}")]
-        public async Task<ActionResult> DeleteByGroupIdAndUserId(MembershipDto membershipDto)
-        {
-            try
-            {
-                var response = new ControllerResponse();
-
-                if (
-                    membershipDto.UserId is null || membershipDto.GroupId is null ||
-                    membershipDto.UserId == Guid.Empty || (Guid)membershipDto.UserId == Guid.Empty ||
-                    membershipDto.GroupId == Guid.Empty || (Guid)membershipDto.GroupId == Guid.Empty
-                )
-                {
-                    response.Fail("Group id and user id are required to delete a specific user membership.");
-                    return BadRequest(response);
-                }
-
-                // Prepare the service request.
-                var serviceRequest = new MembershipServiceRequest()
-                {
-                    GroupId = membershipDto.GroupId,
-                    UserId = membershipDto.UserId
-                };
-
-                // Wait for the service response.
-                var serviceResponse = await membershipService.DeleteByUserId(serviceRequest);
-
-                // Send the controller response back to the client.
-                switch (serviceResponse.Outcome)
-                {
-                    case OutcomeType.Error:
-                        response.Error();
-                        return StatusCode(500, response);
-                    case OutcomeType.Fail:
-                        response.Fail(serviceResponse.ErrorMessage);
-                        return BadRequest(response);
-                    case OutcomeType.Success:
-                        response.Success("Membership deleted.");
-                        return Ok(response);
-                }
-            }
-            catch (Exception)
-            {
-                return StatusCode(500);
-            }
-
-            // Default to error if unknown outcome from the service.
-            return StatusCode(500);
-        }
-
     }
 }

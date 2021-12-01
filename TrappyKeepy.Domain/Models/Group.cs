@@ -13,6 +13,11 @@ namespace TrappyKeepy.Domain.Models
     [Index(nameof(Name), Name = "groups_name_key", IsUnique = true)]
     public partial class Group
     {
+        public Group()
+        {
+            Memberships = new HashSet<Membership>();
+        }
+
         /// <summary>
         /// UUID primary key.
         /// </summary>
@@ -34,5 +39,8 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         [Column("date_created")]
         public DateTime DateCreated { get; set; }
+
+        [InverseProperty(nameof(Membership.Group))]
+        public virtual ICollection<Membership> Memberships { get; set; }
     }
 }
