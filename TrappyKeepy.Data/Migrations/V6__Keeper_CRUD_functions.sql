@@ -20,14 +20,16 @@
  * Author:      Joshua Gray
  * Description: Function to create a record in the keepers table.
  * Parameters:  filename TEXT - 
+ *              content_type TEXT - 
  *              description TEXT - 
  *              category TEXT - 
  *              user_posted UUID -
- * Usage:       SELECT * FROM tk.keepers_create('foo.pdf', 'Important file.', 'Comedy', '204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.keepers_create('foo.pdf', 'application/pdf', 'Important file.', 'Comedy', '204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
  * Returns:     
  */
 CREATE OR REPLACE FUNCTION tk.keepers_create (
     filename TEXT,
+    content_type TEXT,
     user_posted UUID,
     description TEXT DEFAULT NULL,
     category TEXT DEFAULT NULL
@@ -39,8 +41,8 @@ $$
 BEGIN
     RETURN QUERY
     INSERT
-    INTO tk.keepers (filename, description, category, user_posted)
-    VALUES ($1, $3, $4, $2)
+    INTO tk.keepers (filename, content_type, description, category, user_posted)
+    VALUES ($1, $2, $4, $5, $3)
     RETURNING tk.keepers.id;
 END;
 $$;
@@ -151,17 +153,17 @@ COMMENT ON FUNCTION tk.filedatas_read_by_keeper_id IS 'Function to return a reco
  * Function:    tk.keepers_update
  * Created:     2021-11-22
  * Author:      Joshua Gray
- * Description: Function to update a record in the keepers table. The id cannot be changed. The date posted cannot be changed. The user_posted cannot be changed.
+ * Description: Function to update a record in the keepers table. The id cannot be changed. The content_type cannot be changed because that is set based on the original binary data that is stored in the filedatas table. The date posted cannot be changed. The user_posted cannot be changed.
  * Parameters:  id UUID - Primary key id for the record to be updated.
  *              filename TEXT - 
  *              description TEXT - 
  *              category TEXT - 
- * Usage:       SELECT * FROM tk.keepers_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo.pdf', 'Simple PDF file.', 'Drama');
+ * Usage:       SELECT * FROM tk.keepers_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo.pdf', 'application/pdf', 'Simple PDF file.', 'Drama');
  * Returns:     True if the keeper was updated, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.keepers_update (
     id UUID,
-    filename TEXT,
+    filename TEXT DEFAULT NULL,
     description TEXT DEFAULT NULL,
     category TEXT DEFAULT NULL
 )

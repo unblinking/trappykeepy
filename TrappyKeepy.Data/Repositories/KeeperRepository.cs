@@ -16,7 +16,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_create('{keeper.Filename}', '{keeper.UserPosted}'";
+                command.CommandText = $"SELECT * FROM tk.keepers_create('{keeper.Filename}', '{keeper.ContentType}', '{keeper.UserPosted}'";
 
                 if (keeper.Description is not null) command.CommandText += $", '{keeper.Description}'";
                 else command.CommandText += $", null";

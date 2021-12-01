@@ -14,6 +14,7 @@
  * Description: Type for an individual keeper/document metadata record.
  * Attributes:  id UUID - 
  *              filename TEXT - 
+ *              content_type TEXT - 
  *              description TEXT - 
  *              category TEXT - 
  *              date_posted TIMESTAMPTZ - 
@@ -22,6 +23,7 @@
 CREATE TYPE tk.keeper_type AS (
     id UUID,
     filename TEXT,
+    content_type TEXT,
     description TEXT,
     category TEXT,
     date_posted TIMESTAMPTZ,
@@ -36,6 +38,7 @@ COMMENT ON TYPE tk.keeper_type IS 'Type for an individual keeper/document metada
  * Description: Table to store keeper/document metadata records.
  * Columns:     id - Primary key with default using the gen_random_uuid() function.
  *              filename - Unique, and not null.
+ *              content_type - Not null.
  *              description - 
  *              category - 
  *              date_posted - Not null.
@@ -44,6 +47,7 @@ COMMENT ON TYPE tk.keeper_type IS 'Type for an individual keeper/document metada
 CREATE TABLE IF NOT EXISTS tk.keepers OF tk.keeper_type (
     id WITH OPTIONS PRIMARY KEY DEFAULT gen_random_uuid(),
     filename WITH OPTIONS UNIQUE NOT NULL,
+    content_type WITH OPTIONS NOT NULL,
     date_posted WITH OPTIONS NOT NULL DEFAULT CURRENT_TIMESTAMP,
     user_posted WITH OPTIONS NOT NULL,
     CONSTRAINT fk_user_posted_keeper FOREIGN KEY (user_posted) REFERENCES tk.users (id) ON DELETE NO ACTION
@@ -52,6 +56,7 @@ CREATE INDEX user_posted_index ON tk.keepers (user_posted);
 COMMENT ON TABLE tk.keepers IS 'Table to store keeper/document metadata records.';
 COMMENT ON COLUMN tk.keepers.id IS 'UUID primary key.';
 COMMENT ON COLUMN tk.keepers.filename IS 'Unique document filename.';
+COMMENT ON COLUMN tk.keepers.content_type IS 'The media type of the resource.';
 COMMENT ON COLUMN tk.keepers.description IS 'Description of the document.';
 COMMENT ON COLUMN tk.keepers.category IS 'Category of the document.';
 COMMENT ON COLUMN tk.keepers.date_posted IS 'Datetime the document was created in the database.';

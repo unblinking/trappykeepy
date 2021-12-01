@@ -34,8 +34,5 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         [Column("date_created")]
         public DateTime DateCreated { get; set; }
-
-        [InverseProperty("Group")]
-        public virtual Membership Membership { get; set; } = null!;
     }
 }
