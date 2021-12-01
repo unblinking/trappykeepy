@@ -14,7 +14,7 @@ namespace TrappyKeepy.Domain.Maps
                 Name = $"{reader["name"].ToString()}",
                 Password = $"{reader["password"].ToString()}",
                 Email = $"{reader["email"].ToString()}",
-                Role = short.Parse($"{reader["role"].ToString()}"),
+                Role = $"{reader["role"].ToString()}",
                 DateCreated = DateTime.Parse($"{reader["date_created"].ToString()}"),
                 DateActivated = reader["date_activated"] is not DBNull ? DateTime.Parse($"{reader["date_activated"].ToString()}") : null,
                 DateLastLogin = reader["date_last_login"] is not DBNull ? DateTime.Parse($"{reader["date_last_login"].ToString()}") : null,

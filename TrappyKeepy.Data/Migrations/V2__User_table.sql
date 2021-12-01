@@ -15,7 +15,7 @@
  *              name VARCHAR(50) - 50 char limit for display purposes.
  *              password TEXT - Salted/hashed passwords using pgcrypto.
  *              email TEXT - 
- *              role SMALLINT -
+ *              role TEXT -
  *              date_created TIMESTAMPTZ - 
  *              date_activated TIMESTAMPTZ - 
  *              date_last_login TIMESTAMPTZ - 
@@ -25,7 +25,7 @@ CREATE TYPE tk.user_type AS (
     name VARCHAR ( 50 ),
     password TEXT,
     email TEXT,
-    role SMALLINT,
+    role TEXT,
     date_created TIMESTAMPTZ,
     date_activated TIMESTAMPTZ,
     date_last_login TIMESTAMPTZ
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS tk.users OF tk.user_type (
     name WITH OPTIONS UNIQUE NOT NULL,
     password WITH OPTIONS NOT NULL,
     email WITH OPTIONS UNIQUE NOT NULL,
-    role WITH OPTIONS NOT NULL CHECK (role >= 0 AND role <= 2) DEFAULT 0,
+    role WITH OPTIONS NOT NULL CHECK (role IN ('basic', 'manager', 'admin')) DEFAULT 'basic',
     date_created WITH OPTIONS NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX user_role_index ON tk.users (role);
@@ -60,6 +60,7 @@ COMMENT ON COLUMN tk.users.id IS 'UUID primary key.';
 COMMENT ON COLUMN tk.users.name IS 'Unique display name.';
 COMMENT ON COLUMN tk.users.password IS 'Salted/Hashed password using the pgcrypto crypt function, and gen_salt with the blowfish algorithm and iteration count of 8.';
 COMMENT ON COLUMN tk.users.email IS 'Unique email address.';
+COMMENT ON COLUMN tk.users.role IS 'Security level role.';
 COMMENT ON COLUMN tk.users.date_created IS 'Datetime the user was created in the database.';
 COMMENT ON COLUMN tk.users.date_activated IS 'Datetime the user was activated for login.';
 COMMENT ON COLUMN tk.users.date_last_login IS 'Datetime the user last logged into the system successfully.';

@@ -35,10 +35,10 @@ namespace TrappyKeepy.Service
             var response = new KeeperServiceResponse();
 
             // Verify required parameters.
-            if (request.Item?.Filename is null || request?.BinaryData is null)
+            if (request.Item?.Filename is null || request.Item.ContentType is null || request?.BinaryData is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "File name and binary data are required to create a keeper.";
+                response.ErrorMessage = "File name, content type, and binary data are required to create a keeper.";
                 return response;
             }
             if (request.Item.UserPosted == Guid.Empty)

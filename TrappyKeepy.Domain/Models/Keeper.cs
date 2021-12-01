@@ -11,6 +11,7 @@ namespace TrappyKeepy.Domain.Models
     /// </summary>
     [Table("keepers", Schema = "tk")]
     [Index(nameof(Filename), Name = "keepers_filename_key", IsUnique = true)]
+    [Index(nameof(UserPosted), Name = "user_posted_index")]
     public partial class Keeper
     {
         /// <summary>
@@ -24,6 +25,11 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         [Column("filename")]
         public string Filename { get; set; } = null!;
+        /// <summary>
+        /// The media type of the resource.
+        /// </summary>
+        [Column("content_type")]
+        public string ContentType { get; set; } = null!;
         /// <summary>
         /// Description of the document.
         /// </summary>

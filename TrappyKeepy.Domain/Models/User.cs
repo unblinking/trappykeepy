@@ -10,6 +10,7 @@ namespace TrappyKeepy.Domain.Models
     /// Table to store user records.
     /// </summary>
     [Table("users", Schema = "tk")]
+    [Index(nameof(Role), Name = "user_role_index")]
     [Index(nameof(Email), Name = "users_email_key", IsUnique = true)]
     [Index(nameof(Name), Name = "users_name_key", IsUnique = true)]
     public partial class User
@@ -17,7 +18,6 @@ namespace TrappyKeepy.Domain.Models
         public User()
         {
             Keepers = new HashSet<Keeper>();
-            Memberships = new HashSet<Membership>();
         }
 
         /// <summary>
@@ -42,8 +42,11 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         [Column("email")]
         public string Email { get; set; } = null!;
+        /// <summary>
+        /// Security level role.
+        /// </summary>
         [Column("role")]
-        public short Role { get; set; }
+        public string Role { get; set; } = null!;
         /// <summary>
         /// Datetime the user was created in the database.
         /// </summary>
@@ -62,7 +65,5 @@ namespace TrappyKeepy.Domain.Models
 
         [InverseProperty(nameof(Keeper.UserPostedNavigation))]
         public virtual ICollection<Keeper> Keepers { get; set; }
-        [InverseProperty(nameof(Membership.User))]
-        public virtual ICollection<Membership> Memberships { get; set; }
     }
 }
