@@ -13,6 +13,7 @@
  *              - tk.memberships_read_by_user_id
  *              - tk.groups_update
  *              - tk.groups_delete_by_id
+ *              - tk.memberships_delete_by_id
  *              - tk.memberships_delete_by_group_id
  *              - tk.memberships_delete_by_user_id
  ******************************************************************************/
@@ -59,16 +60,16 @@ CREATE OR REPLACE FUNCTION tk.memberships_create (
     group_id UUID,
     user_id UUID
 )
-    RETURNS UUID
+    RETURNS TABLE (id UUID)
     LANGUAGE PLPGSQL
     AS
 $$
 BEGIN
+    RETURN QUERY
     INSERT
     INTO tk.memberships (group_id, user_id)
-    VALUES ($1, $2);
-
-    RETURN group_id;
+    VALUES ($1, $2)
+    RETURNING tk.memberships.id;
 END;
 $$;
 COMMENT ON FUNCTION tk.memberships_create IS 'Function to create a record in the memberships table.';
@@ -251,13 +252,38 @@ $$;
 COMMENT ON FUNCTION tk.groups_delete_by_id IS 'Function to delete a record from the groups table by id.';
 
 /**
+ * Function:    tk.memberships_delete_by_id
+ * Created:     2021-11-28
+ * Author:      Joshua Gray
+ * Description: Function to delete a record from the memberships table by id.
+ * Parameters:  id_value UUID - Primary key id for the record to be deleted.
+ * Usage:       SELECT * FROM tk.memberships_delete_by_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Returns:     True if the membership was deleted, and false if not.
+ */
+CREATE OR REPLACE FUNCTION tk.memberships_delete_by_id (
+    id_value UUID
+)
+    RETURNS BOOLEAN
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    DELETE
+    FROM tk.memberships
+    WHERE tk.memberships.id = $1;
+    RETURN FOUND;
+END;
+$$;
+COMMENT ON FUNCTION tk.memberships_delete_by_id IS 'Function to delete a record from the memberships table by id.';
+
+/**
  * Function:    tk.memberships_delete_by_group_id
  * Created:     2021-11-28
  * Author:      Joshua Gray
- * Description: Function to delete a record from the memberships table by group_id.
- * Parameters:  id UUID - group_id for the record to be deleted.
+ * Description: Function to delete all records from the memberships table by group_id.
+ * Parameters:  id UUID - group_id for the records to be deleted.
  * Usage:       SELECT * FROM tk.memberships_delete_by_group_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
- * Returns:     True if the membership was deleted, and false if not.
+ * Returns:     True if the memberships were deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_delete_by_group_id (
     id_value UUID
@@ -273,16 +299,16 @@ BEGIN
     RETURN FOUND;
 END;
 $$;
-COMMENT ON FUNCTION tk.memberships_delete_by_group_id IS 'Function to delete a record from the memberships table by group_id.';
+COMMENT ON FUNCTION tk.memberships_delete_by_group_id IS 'Function to delete all records from the memberships table by group_id.';
 
 /**
  * Function:    tk.memberships_delete_by_user_id
  * Created:     2021-11-28
  * Author:      Joshua Gray
- * Description: Function to delete a record from the memberships table by user_id.
- * Parameters:  id UUID - user_id for the record to be deleted.
+ * Description: Function to delete all records from the memberships table by user_id.
+ * Parameters:  id UUID - user_id for the records to be deleted.
  * Usage:       SELECT * FROM tk.memberships_delete_by_user_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
- * Returns:     True if the membership was deleted, and false if not.
+ * Returns:     True if the memberships were deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_delete_by_user_id (
     id_value UUID
@@ -298,32 +324,4 @@ BEGIN
     RETURN FOUND;
 END;
 $$;
-COMMENT ON FUNCTION tk.memberships_delete_by_user_id IS 'Function to delete a record from the memberships table by user_id.';
-
-/**
- * Function:    tk.memberships_delete_by_group_id_and_user_id
- * Created:     2021-11-28
- * Author:      Joshua Gray
- * Description: Function to delete a record from the memberships table by group_id/user_id.
- * Parameters:  id_group UUID - group_id for the record to be deleted.
- *              id_user UUID - user_id for the record to be deleted.
- * Usage:       SELECT * FROM tk.memberships_delete_by_group_id_and_user_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'a1e84bb3-3429-4bfc-95c8-e184fceaa036');
- * Returns:     True if the membership was deleted, and false if not.
- */
-CREATE OR REPLACE FUNCTION tk.memberships_delete_by_group_id_and_user_id (
-    id_group UUID,
-    id_user UUID
-)
-    RETURNS BOOLEAN
-    LANGUAGE PLPGSQL
-    AS
-$$
-BEGIN
-    DELETE
-    FROM tk.memberships
-    WHERE tk.memberships.group_id = $1
-        AND tk.memberships.user_id = $2;
-    RETURN FOUND;
-END;
-$$;
-COMMENT ON FUNCTION tk.memberships_delete_by_group_id_and_user_id IS 'Function to delete a record from the memberships table by group_id/user_id.';
+COMMENT ON FUNCTION tk.memberships_delete_by_user_id IS 'Function to delete all records from the memberships table by user_id.';

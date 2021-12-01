@@ -6,47 +6,50 @@ using TrappyKeepy.Domain.Models;
 namespace TrappyKeepy.Api.Controllers
 {
     /// <summary>
-    /// The user controller.
+    /// The membership controller.
     /// </summary>
-    [Route("v1/user")]
+    [Route("v1/membership")]
     [ApiController]
     [Authorize(Roles = "admin")]
-    public class UserController : ControllerBase
+    public class MembershipController : ControllerBase
     {
-        private readonly IUserService userService;
+        private readonly IMembershipService membershipService;
 
-        public UserController(IUserService userService)
+        public MembershipController(IMembershipService membershipService)
         {
-            this.userService = userService;
+            this.membershipService = membershipService;
         }
 
         [HttpPost("")]
-        public async Task<ActionResult> Create([FromBody] UserDto userDto)
+        public async Task<ActionResult> Create([FromBody] MembershipDto membershipDto)
         {
             try
             {
                 var response = new ControllerResponse();
 
-                if (userDto.Name is null || userDto.Password is null || userDto.Email is null)
+                if (membershipDto.GroupId is null || membershipDto.GroupId == Guid.Empty || (Guid)membershipDto.GroupId == Guid.Empty)
                 {
-                    response.Fail("Name, password, and email are required to create a user.");
+                    response.Fail("Group id is required to create a group membership.");
+                    return BadRequest(response);
+                }
+                if (membershipDto.UserId is null || membershipDto.UserId == Guid.Empty || (Guid)membershipDto.UserId == Guid.Empty)
+                {
+                    response.Fail("User id is required to create a group membership.");
                     return BadRequest(response);
                 }
 
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User()
+                // Prepare a membership from the membershipDto to pass to the service.
+                var membership = new Membership()
                 {
-                    Name = userDto.Name,
-                    Password = userDto.Password,
-                    Email = userDto.Email
+                    GroupId = (Guid)membershipDto.GroupId,
+                    UserId = (Guid)membershipDto.UserId
                 };
-                if (userDto.Role is not null) user.Role = userDto.Role;
 
                 // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
+                var serviceRequest = new MembershipServiceRequest(membership);
 
                 // Wait for the service response.
-                var serviceResponse = await userService.Create(serviceRequest);
+                var serviceResponse = await membershipService.Create(serviceRequest);
 
                 // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
@@ -58,7 +61,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // UserDto with new id from db insert.
+                        response.Success(serviceResponse.Item); // MembershipDto with new id from db insert.
                         return Ok(response);
                 }
             }
@@ -79,10 +82,10 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Prepare the service request.
-                var serviceRequest = new UserServiceRequest();
+                var serviceRequest = new MembershipServiceRequest();
 
                 // Wait for the service response.
-                var serviceResponse = await userService.ReadAll(serviceRequest);
+                var serviceResponse = await membershipService.ReadAll(serviceRequest);
 
                 // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
@@ -94,7 +97,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.List); // UserDto objects.
+                        response.Success(serviceResponse.List); // MembershipDto objects.
                         return Ok(response);
                 }
             }
@@ -107,18 +110,18 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult> ReadById(Guid id)
+        [HttpGet("/v1/membership/group/{id}")]
+        public async Task<ActionResult> ReadByGroupId(Guid group_id)
         {
             try
             {
                 var response = new ControllerResponse();
 
                 // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(id);
+                var serviceRequest = new MembershipServiceRequest(group_id);
 
                 // Wait for the service response.
-                var serviceResponse = await userService.ReadById(serviceRequest);
+                var serviceResponse = await membershipService.ReadByGroupId(serviceRequest);
 
                 // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
@@ -130,7 +133,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // UserDto object.
+                        response.Success(serviceResponse.Item); // MembershipDto object.
                         return Ok(response);
                 }
             }
@@ -143,35 +146,18 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        [HttpPut("")]
-        public async Task<ActionResult> UpdateById([FromBody] UserDto userDto)
+        [HttpGet("/v1/membership/user/{id}")]
+        public async Task<ActionResult> ReadByUserId(Guid user_id)
         {
             try
             {
                 var response = new ControllerResponse();
 
-                if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty)
-                {
-                    response.Fail("User id is required to update a user by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User() { Id = (Guid)userDto.Id };
-                if (userDto.Name is not null) user.Name = userDto.Name;
-                if (userDto.Email is not null) user.Email = userDto.Email;
-
-                // Determine if we are updating the user role.
-                if (userDto.Role is not null)
-                {
-                    user.Role = userDto.Role;
-                }
-
                 // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
+                var serviceRequest = new MembershipServiceRequest(user_id);
 
                 // Wait for the service response.
-                var serviceResponse = await userService.UpdateById(serviceRequest);
+                var serviceResponse = await membershipService.ReadByUserId(serviceRequest);
 
                 // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
@@ -183,56 +169,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success("User updated.");
-                        return Ok(response);
-                }
-            }
-            catch (Exception)
-            {
-                return StatusCode(500);
-            }
-
-            // Default to error if unknown outcome from the service.
-            return StatusCode(500);
-        }
-
-        [HttpPut("/v1/user/password")]
-        public async Task<ActionResult> UpdatePasswordById([FromBody] UserDto userDto)
-        {
-            try
-            {
-                var response = new ControllerResponse();
-
-                if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty || userDto.Password is null)
-                {
-                    response.Fail("User id and password are required to update a user pasword.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User()
-                {
-                    Id = (Guid)userDto.Id,
-                    Password = userDto.Password
-                };
-
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.UpdatePasswordById(serviceRequest);
-
-                // Send the controller response back to the client.
-                switch (serviceResponse.Outcome)
-                {
-                    case OutcomeType.Error:
-                        response.Error();
-                        return StatusCode(500, response);
-                    case OutcomeType.Fail:
-                        response.Fail(serviceResponse.ErrorMessage);
-                        return BadRequest(response);
-                    case OutcomeType.Success:
-                        response.Success("User password updated.");
+                        response.Success(serviceResponse.Item); // MembershipDto object.
                         return Ok(response);
                 }
             }
@@ -254,15 +191,15 @@ namespace TrappyKeepy.Api.Controllers
 
                 if (id == Guid.Empty || (Guid)id == Guid.Empty)
                 {
-                    response.Fail("User id is required to delete a user by id.");
+                    response.Fail("Membership id is required to delete a specific user membership by id.");
                     return BadRequest(response);
                 }
 
                 // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(id);
+                var serviceRequest = new MembershipServiceRequest(id);
 
                 // Wait for the service response.
-                var serviceResponse = await userService.DeleteById(serviceRequest);
+                var serviceResponse = await membershipService.DeleteByUserId(serviceRequest);
 
                 // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
@@ -274,7 +211,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success("User deleted.");
+                        response.Success("Membership deleted.");
                         return Ok(response);
                 }
             }
@@ -287,37 +224,24 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        /// <summary>
-        /// Create a user session token.
-        /// </summary>
-        /// <param name="userSessionDto">{"email":"foo","password":"passwordfoo"}</param>
-        /// <returns></returns>
-        [HttpPost("/v1/user/session")]
-        [AllowAnonymous]
-        public async Task<ActionResult> Authenticate([FromBody] UserSessionDto userSessionDto)
+        [HttpDelete("/v1/membership/group/{id}")]
+        public async Task<ActionResult> DeleteByGroupId(Guid group_id)
         {
             try
             {
                 var response = new ControllerResponse();
 
-                if (userSessionDto.Email is null || userSessionDto.Password is null)
+                if (group_id == Guid.Empty || (Guid)group_id == Guid.Empty)
                 {
-                    response.Fail("User email and password are required to authenticate a user.");
+                    response.Fail("Group id is required to delete all memberships by group id.");
                     return BadRequest(response);
                 }
 
-                // Prepare a user from the userSessionDto to pass to the service.
-                var user = new User()
-                {
-                    Email = userSessionDto.Email,
-                    Password = userSessionDto.Password
-                };
-
                 // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
+                var serviceRequest = new MembershipServiceRequest(group_id);
 
                 // Wait for the service response.
-                var serviceResponse = await userService.Authenticate(serviceRequest);
+                var serviceResponse = await membershipService.DeleteByGroupId(serviceRequest);
 
                 // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
@@ -329,7 +253,49 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Token);
+                        response.Success("Membership deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpDelete("/v1/membership/user/{id}")]
+        public async Task<ActionResult> DeleteByUserId(Guid user_id)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                if (user_id == Guid.Empty || (Guid)user_id == Guid.Empty)
+                {
+                    response.Fail("User id is required to delete all memberships by user id.");
+                    return BadRequest(response);
+                }
+
+                // Prepare the service request.
+                var serviceRequest = new MembershipServiceRequest(user_id);
+
+                // Wait for the service response.
+                var serviceResponse = await membershipService.DeleteByUserId(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Membership deleted.");
                         return Ok(response);
                 }
             }

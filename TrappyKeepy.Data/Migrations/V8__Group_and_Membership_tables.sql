@@ -55,6 +55,7 @@ COMMENT ON COLUMN tk.groups.date_created IS 'Datetime the group was created in t
  *              user_id UUID -
  */
 CREATE TYPE tk.membership_type AS (
+    id UUID,
     group_id UUID,
     user_id UUID
 );
@@ -69,6 +70,7 @@ COMMENT ON TYPE tk.membership_type IS 'Type for an individual membership record.
  *              user_id - Not null.
  */
 CREATE TABLE IF NOT EXISTS tk.memberships OF tk.membership_type (
+    id WITH OPTIONS PRIMARY KEY DEFAULT gen_random_uuid(),
     group_id WITH OPTIONS NOT NULL,
     user_id WITH OPTIONS NOT NULL,
     CONSTRAINT fk_group_of_memberships FOREIGN KEY (group_id) REFERENCES tk.groups (id) ON DELETE NO ACTION,
@@ -77,5 +79,6 @@ CREATE TABLE IF NOT EXISTS tk.memberships OF tk.membership_type (
 CREATE INDEX group_membership_index ON tk.memberships (group_id);
 CREATE INDEX user_membership_index ON tk.memberships (user_id);
 COMMENT ON TABLE tk.memberships IS 'Table to store group membership records.';
-COMMENT ON COLUMN tk.memberships.group_id IS 'UUID primary key, and foreign key to the tk.groups table.';
+COMMENT ON COLUMN tk.memberships.id IS 'UUID primary key';
+COMMENT ON COLUMN tk.memberships.group_id IS 'UUID, and foreign key to the tk.groups table.';
 COMMENT ON COLUMN tk.memberships.user_id IS 'UUID, and foreign key to the tk.users table.';

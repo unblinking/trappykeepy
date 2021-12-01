@@ -132,13 +132,23 @@
         }
 
         /// <summary>
-        /// If a membership is provided, set the membership as the Item of the request.
-        /// Example could be a request to create a new membership.
+        /// If a membership is provided, set the membership as the Item of the
+        /// request. Example could be a request to create a new membership.
         /// </summary>
         /// <param name="membership"></param>
         public MembershipServiceRequest(Membership membership)
         {
             this.Item = membership;
+        }
+
+        /// <summary>
+        /// Used to request memberships by group id or user id, or delete
+        /// memberships by group id or user id.
+        /// </summary>
+        /// <param name="id"></param>
+        public MembershipServiceRequest(Guid id)
+        {
+            this.Id = id;
         }
 
         /// <summary>

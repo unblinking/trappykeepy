@@ -58,6 +58,7 @@ namespace TrappyKeepy.Domain.Maps
         {
             return new Membership()
             {
+                Id = Guid.Parse($"{reader["id"].ToString()}"),
                 GroupId = Guid.Parse($"{reader["group_id"].ToString()}"),
                 UserId = Guid.Parse($"{reader["user_id"].ToString()}"),
             };

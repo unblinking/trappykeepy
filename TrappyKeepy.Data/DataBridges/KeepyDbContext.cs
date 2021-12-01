@@ -106,18 +106,22 @@ namespace TrappyKeepy.Data
             {
                 entity.HasComment("Table to store group membership records.");
 
-                entity.Property(e => e.GroupId).HasComment("UUID primary key, and foreign key to the tk.groups table.");
+                entity.Property(e => e.Id)
+                    .HasDefaultValueSql("gen_random_uuid()")
+                    .HasComment("UUID primary key");
+
+                entity.Property(e => e.GroupId).HasComment("UUID, and foreign key to the tk.groups table.");
 
                 entity.Property(e => e.UserId).HasComment("UUID, and foreign key to the tk.users table.");
 
                 entity.HasOne(d => d.Group)
-                    .WithMany()
+                    .WithMany(p => p.Memberships)
                     .HasForeignKey(d => d.GroupId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_group_of_memberships");
 
                 entity.HasOne(d => d.User)
-                    .WithMany()
+                    .WithMany(p => p.Memberships)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_user_of_memberships");

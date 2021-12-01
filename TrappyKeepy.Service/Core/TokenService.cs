@@ -6,15 +6,30 @@ using TrappyKeepy.Domain.Interfaces;
 
 namespace TrappyKeepy.Service
 {
+    /// <summary>
+    /// The token service.
+    /// Create JSON Web Tokens for role based authorization.
+    /// </summary>
     public class TokenService : ITokenService
     {
+        /// <summary>
+        /// Secret cryptographic key/string.
+        /// </summary>
         private string key;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public TokenService()
         {
             this.key = $"{Environment.GetEnvironmentVariable("TK_CRYPTO_KEY")}";
         }
 
+        /// <summary>
+        /// Encode a JSON Web Token.
+        /// </summary>
+        /// <param name="claims"></param>
+        /// <returns></returns>
         public string EncodeJwt(List<Claim> claims)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
