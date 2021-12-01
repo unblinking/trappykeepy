@@ -8,6 +8,8 @@ namespace TrappyKeepy.Domain.Interfaces
         Task<MembershipServiceResponse> ReadAll(MembershipServiceRequest request);
         Task<MembershipServiceResponse> ReadByGroupId(MembershipServiceRequest request);
         Task<MembershipServiceResponse> ReadByUserId(MembershipServiceRequest request);
+        Task<MembershipServiceResponse> DeleteByGroupId(MembershipServiceRequest request);
+        Task<MembershipServiceResponse> DeleteByUserId(MembershipServiceRequest request);
         Task<MembershipServiceResponse> DeleteByGroupIdAndUserId(MembershipServiceRequest request);
     }
 }

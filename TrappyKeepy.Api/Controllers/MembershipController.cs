@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
@@ -73,6 +73,248 @@ namespace TrappyKeepy.Api.Controllers
             // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
-    
+
+        [HttpGet("")]
+        public async Task<ActionResult> ReadAll()
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                // Prepare the service request.
+                var serviceRequest = new MembershipServiceRequest();
+
+                // Wait for the service response.
+                var serviceResponse = await membershipService.ReadAll(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.List); // MembershipDto objects.
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpGet("{groupId}")]
+        public async Task<ActionResult> ReadByGroupId(Guid group_id)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                // Prepare the service request.
+                var serviceRequest = new MembershipServiceRequest(group_id);
+
+                // Wait for the service response.
+                var serviceResponse = await membershipService.ReadByGroupId(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.Item); // MembershipDto object.
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpGet("{userId}")]
+        public async Task<ActionResult> ReadByUserId(Guid user_id)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                // Prepare the service request.
+                var serviceRequest = new MembershipServiceRequest(user_id);
+
+                // Wait for the service response.
+                var serviceResponse = await membershipService.ReadByUserId(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.Item); // MembershipDto object.
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpDelete("{groupId}")]
+        public async Task<ActionResult> DeleteByGroupId(Guid group_id)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                if (group_id == Guid.Empty || (Guid)group_id == Guid.Empty)
+                {
+                    response.Fail("Group id is required to delete all memberships by group id.");
+                    return BadRequest(response);
+                }
+
+                // Prepare the service request.
+                var serviceRequest = new MembershipServiceRequest(group_id);
+
+                // Wait for the service response.
+                var serviceResponse = await membershipService.DeleteByGroupId(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Membership deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpDelete("{userId}")]
+        public async Task<ActionResult> DeleteByUserId(Guid user_id)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                if (user_id == Guid.Empty || (Guid)user_id == Guid.Empty)
+                {
+                    response.Fail("User id is required to delete all memberships by user id.");
+                    return BadRequest(response);
+                }
+
+                // Prepare the service request.
+                var serviceRequest = new MembershipServiceRequest(user_id);
+
+                // Wait for the service response.
+                var serviceResponse = await membershipService.DeleteByUserId(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Membership deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
+        [HttpDelete("{membershipDto}")]
+        public async Task<ActionResult> DeleteByGroupIdAndUserId(MembershipDto membershipDto)
+        {
+            try
+            {
+                var response = new ControllerResponse();
+
+                if (
+                    membershipDto.UserId is null || membershipDto.GroupId is null ||
+                    membershipDto.UserId == Guid.Empty || (Guid)membershipDto.UserId == Guid.Empty ||
+                    membershipDto.GroupId == Guid.Empty || (Guid)membershipDto.GroupId == Guid.Empty
+                )
+                {
+                    response.Fail("Group id and user id are required to delete a specific user membership.");
+                    return BadRequest(response);
+                }
+
+                // Prepare the service request.
+                var serviceRequest = new MembershipServiceRequest()
+                {
+                    GroupId = membershipDto.GroupId,
+                    UserId = membershipDto.UserId
+                };
+
+                // Wait for the service response.
+                var serviceResponse = await membershipService.DeleteByUserId(serviceRequest);
+
+                // Send the controller response back to the client.
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Membership deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+
+            // Default to error if unknown outcome from the service.
+            return StatusCode(500);
+        }
+
     }
 }
