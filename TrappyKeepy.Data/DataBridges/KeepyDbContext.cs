@@ -83,6 +83,8 @@ namespace TrappyKeepy.Data
 
                 entity.Property(e => e.Category).HasComment("Category of the document.");
 
+                entity.Property(e => e.ContentType).HasComment("The media type of the resource.");
+
                 entity.Property(e => e.DatePosted)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP")
                     .HasComment("Datetime the document was created in the database.");
@@ -102,25 +104,20 @@ namespace TrappyKeepy.Data
 
             modelBuilder.Entity<Membership>(entity =>
             {
-                entity.HasKey(e => e.GroupId)
-                    .HasName("memberships_pkey");
-
                 entity.HasComment("Table to store group membership records.");
 
-                entity.Property(e => e.GroupId)
-                    .ValueGeneratedNever()
-                    .HasComment("UUID primary key, and foreign key to the tk.groups table.");
+                entity.Property(e => e.GroupId).HasComment("UUID primary key, and foreign key to the tk.groups table.");
 
                 entity.Property(e => e.UserId).HasComment("UUID, and foreign key to the tk.users table.");
 
                 entity.HasOne(d => d.Group)
-                    .WithOne(p => p.Membership)
-                    .HasForeignKey<Membership>(d => d.GroupId)
+                    .WithMany()
+                    .HasForeignKey(d => d.GroupId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_group_of_memberships");
 
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.Memberships)
+                    .WithMany()
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_user_of_memberships");
@@ -147,6 +144,10 @@ namespace TrappyKeepy.Data
                 entity.Property(e => e.Name).HasComment("Unique display name.");
 
                 entity.Property(e => e.Password).HasComment("Salted/Hashed password using the pgcrypto crypt function, and gen_salt with the blowfish algorithm and iteration count of 8.");
+
+                entity.Property(e => e.Role)
+                    .HasDefaultValueSql("'basic'::text")
+                    .HasComment("Security level role.");
             });
 
             OnModelCreatingPartial(modelBuilder);

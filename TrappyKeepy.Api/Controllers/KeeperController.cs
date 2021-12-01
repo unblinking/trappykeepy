@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
@@ -11,11 +13,10 @@ namespace TrappyKeepy.Api.Controllers
     /// </summary>
     [Route("v1/keeper")]
     [ApiController]
+    [Authorize]
     public class KeeperController : ControllerBase
     {
         private readonly IKeeperService keeperService;
-        private readonly JwtManager jwtManager = new JwtManager();
-        private readonly Helpers help = new Helpers();
 
         public KeeperController(IKeeperService keeperService)
         {
@@ -23,28 +24,20 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult> Create(IFormFile file)
+        [Authorize(Roles = "manager, admin")]
+        public async Task<ActionResult> Create(IFormCollection metadata, IFormFile file)
         {
             try
             {
                 var response = new ControllerResponse();
 
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
+                string? authorizedIdString = User?.FindFirst("id")?.Value;
+                if (authorizedIdString is null)
                 {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
+                    response.Fail("Error reading authorized user id from bearer token.");
+                    return StatusCode(400, response);
                 }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
+                var authorizedId = new Guid(authorizedIdString);
 
                 // Try to determine the content type.
                 new FileExtensionContentTypeProvider()
@@ -75,8 +68,11 @@ namespace TrappyKeepy.Api.Controllers
                     BinaryData = binaryData,
                     Item = new Keeper()
                     {
-                        Filename = file.FileName,
-                        UserPosted = authorized.userId
+                        Filename = metadata["filename"],
+                        ContentType = contentType,
+                        Description = metadata["description"],
+                        Category = metadata["category"],
+                        UserPosted = authorizedId
                     }
                 };
 
@@ -113,23 +109,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
-
                 // Prepare the service request.
                 var serviceRequest = new KeeperServiceRequest();
 
@@ -165,23 +144,6 @@ namespace TrappyKeepy.Api.Controllers
             try
             {
                 var response = new ControllerResponse();
-
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
 
                 // Prepare the service request.
                 var serviceRequest = new KeeperServiceRequest(id);
@@ -235,23 +197,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
-
                 if (keeperDto.Id is null || keeperDto.Id == Guid.Empty || (Guid)keeperDto.Id == Guid.Empty)
                 {
                     response.Fail("Keeper id is required to update a keeper.");
@@ -299,23 +244,6 @@ namespace TrappyKeepy.Api.Controllers
             try
             {
                 var response = new ControllerResponse();
-
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
 
                 if (id == Guid.Empty || (Guid)id == Guid.Empty)
                 {

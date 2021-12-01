@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 using TrappyKeepy.Service;
@@ -10,11 +13,10 @@ namespace TrappyKeepy.Api.Controllers
     /// </summary>
     [Route("v1/user")]
     [ApiController]
+    [Authorize(Roles = "admin")]
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
-        private readonly JwtManager jwtManager = new JwtManager();
-        private readonly Helpers help = new Helpers();
 
         public UserController(IUserService userService)
         {
@@ -27,23 +29,6 @@ namespace TrappyKeepy.Api.Controllers
             try
             {
                 var response = new ControllerResponse();
-
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
 
                 if (userDto.Name is null || userDto.Password is null || userDto.Email is null)
                 {
@@ -58,7 +43,7 @@ namespace TrappyKeepy.Api.Controllers
                     Password = userDto.Password,
                     Email = userDto.Email
                 };
-                if (userDto.Role is not null) user.Role = (short)userDto.Role;
+                if (userDto.Role is not null) user.Role = userDto.Role;
 
                 // Prepare the service request.
                 var serviceRequest = new UserServiceRequest(user);
@@ -96,23 +81,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
-
                 // Prepare the service request.
                 var serviceRequest = new UserServiceRequest();
 
@@ -148,23 +116,6 @@ namespace TrappyKeepy.Api.Controllers
             try
             {
                 var response = new ControllerResponse();
-
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
 
                 // Prepare the service request.
                 var serviceRequest = new UserServiceRequest(id);
@@ -202,23 +153,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
-
                 if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty)
                 {
                     response.Fail("User id is required to update a user.");
@@ -233,13 +167,7 @@ namespace TrappyKeepy.Api.Controllers
                 // Determine if we are updating the user role.
                 if (userDto.Role is not null)
                 {
-                    user.Role = (short)userDto.Role;
-                }
-                else
-                {
-                    // If we aren't updating the user role, set it to -1.
-                    // The repository will only update role if role is >= 0.
-                    user.Role = -1;
+                    user.Role = userDto.Role;
                 }
 
                 // Prepare the service request.
@@ -277,23 +205,6 @@ namespace TrappyKeepy.Api.Controllers
             try
             {
                 var response = new ControllerResponse();
-
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
 
                 if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty || userDto.Password is null)
                 {
@@ -344,23 +255,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
-                // Verify the requester is authorized.
-                JwtPayload authorized;
-                try
-                {
-                    authorized = jwtManager.DecodeJwt(help.ParseToken(Request.Headers));
-                    if (authorized.type is not JwtType.ACCESS || authorized.role < UserRole.MANAGER)
-                    {
-                        response.Fail("Unauthorized. Access denied.");
-                        return StatusCode(401, response);
-                    }
-                }
-                catch
-                {
-                    response.Fail("Unauthorized. Access denied.");
-                    return StatusCode(401, response);
-                }
-
                 if (id == Guid.Empty || (Guid)id == Guid.Empty)
                 {
                     response.Fail("User id is required to delete a user.");
@@ -396,25 +290,30 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
-        // TODO: Authenticate
+        /// <summary>
+        /// Create a user session token.
+        /// </summary>
+        /// <param name="userSessionDto">{"email":"foo","password":"passwordfoo"}</param>
+        /// <returns></returns>
         [HttpPost("/v1/user/session")]
-        public async Task<ActionResult> Authenticate([FromBody] UserDto userDto)
+        [AllowAnonymous]
+        public async Task<ActionResult> Authenticate([FromBody] UserSessionDto userSessionDto)
         {
             try
             {
                 var response = new ControllerResponse();
 
-                if (userDto.Email is null || userDto.Password is null)
+                if (userSessionDto.Email is null || userSessionDto.Password is null)
                 {
                     response.Fail("User email and password are required to authenticate a user.");
                     return BadRequest(response);
                 }
 
-                // Prepare a user from the userDto to pass to the service.
+                // Prepare a user from the userSessionDto to pass to the service.
                 var user = new User()
                 {
-                    Email = userDto.Email,
-                    Password = userDto.Password
+                    Email = userSessionDto.Email,
+                    Password = userSessionDto.Password
                 };
 
                 // Prepare the service request.

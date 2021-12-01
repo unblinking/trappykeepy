@@ -1,4 +1,5 @@
-﻿using TrappyKeepy.Domain.Interfaces;
+﻿using System.Security.Claims;
+using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Service
@@ -15,13 +16,16 @@ namespace TrappyKeepy.Service
         /// </summary>
         private readonly IUnitOfWork uow;
 
+        private readonly ITokenService tokenService;
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="unitOfWork"></param>
-        public UserService(IUnitOfWork unitOfWork)
+        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService)
         {
             this.uow = unitOfWork;
+            this.tokenService = tokenService;
         }
 
         /// <summary>
@@ -328,6 +332,8 @@ namespace TrappyKeepy.Service
                 // TODO: Figure out what to do with the keepers they are linked to.
                 // TODO: Just delete those keepers? Seems wrong to do that.
 
+                // TODO: Don't allow a user to delete themselves?
+
                 // Delete any existing user memberships first.
                 var membershipsCount = await uow.memberships.CountByColumnValue("user_id", (Guid)request.Id);
                 if (membershipsCount > 0)
@@ -397,10 +403,24 @@ namespace TrappyKeepy.Service
                     return response;
                 }
 
+                // Pass a UserDto back to the controller.
+                response.Item = new UserDto()
+                {
+                    Id = authenticated.Id,
+                    Name = authenticated.Name,
+                    // Do not include the salted/hashed password.
+                    Email = authenticated.Email,
+                    Role = authenticated.Role,
+                    DateCreated = authenticated.DateCreated,
+                    DateActivated = authenticated.DateActivated,
+                    DateLastLogin = authenticated.DateLastLogin
+                };
+
                 // Create a JWT.
-                var jwtManager = new JwtManager();
-                var userRole = (UserRole)authenticated.Role;
-                var jwt = jwtManager.EncodeJwt(authenticated.Id, userRole, JwtType.ACCESS);
+                var claims = new List<Claim>();
+                claims.Add(new Claim("id", authenticated.Id.ToString()));
+                claims.Add(new Claim("role", authenticated.Role));
+                var jwt = tokenService.EncodeJwt(claims);
                 response.Token = jwt;
 
                 response.Outcome = OutcomeType.Success;
