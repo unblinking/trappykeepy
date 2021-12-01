@@ -73,7 +73,7 @@ namespace TrappyKeepy.Data.Repositories
                 if (user.Email is not null) command.CommandText += $", '{user.Email}'";
                 else command.CommandText += $", null";
 
-                if (user.Role >= 0) command.CommandText += $", '{user.Role}'";
+                if (user.Role is not null) command.CommandText += $", '{user.Role}'";
                 else command.CommandText += $", null";
 
                 if (user.DateActivated is not null) command.CommandText += $", '{user.DateActivated}'";

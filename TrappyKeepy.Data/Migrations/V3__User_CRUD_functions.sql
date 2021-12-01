@@ -19,15 +19,15 @@
  * Parameters:  name VARCHAR(50) - Unique user display name.
  *              password TEXT - Plain text user password that will be salted/hashed.
  *              email TEXT - 
- *              role SMALLINT - 
- * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', '0');
+ *              role TEXT - 
+ * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', 'basic');
  * Returns:     
  */
 CREATE OR REPLACE FUNCTION tk.users_create (
     name VARCHAR( 50 ),
     password TEXT,
     email TEXT,
-    role SMALLINT
+    role TEXT
 )
     RETURNS TABLE (id UUID)
     LANGUAGE PLPGSQL
@@ -112,7 +112,7 @@ CREATE OR REPLACE FUNCTION tk.users_update (
     id UUID,
     name VARCHAR( 50 ) DEFAULT NULL,
     email TEXT DEFAULT NULL,
-    role SMALLINT DEFAULT NULL,
+    role TEXT DEFAULT NULL,
     date_activated TIMESTAMPTZ DEFAULT NULL,
     date_last_login TIMESTAMPTZ DEFAULT NULL
 )
