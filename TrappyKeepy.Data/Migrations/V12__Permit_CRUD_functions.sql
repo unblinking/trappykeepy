@@ -91,7 +91,7 @@ BEGIN
     WHERE tk.permits.keeper_id = $1;
 END;
 $$;
-COMMENT ON FUNCTION tk.permits_read_by_id IS 'Function to return all record from the permits table by keeper_id.';
+COMMENT ON FUNCTION tk.permits_read_by_keeper_id IS 'Function to return all record from the permits table by keeper_id.';
 
 /**
  * Function:    tk.permits_read_by_user_id
@@ -116,7 +116,7 @@ BEGIN
     WHERE tk.permits.user_id = $1;
 END;
 $$;
-COMMENT ON FUNCTION tk.permits_read_by_id IS 'Function to return all record from the permits table by user_id.';
+COMMENT ON FUNCTION tk.permits_read_by_user_id IS 'Function to return all record from the permits table by user_id.';
 
 /**
  * Function:    tk.permits_read_by_group_id
@@ -141,7 +141,7 @@ BEGIN
     WHERE tk.permits.group_id = $1;
 END;
 $$;
-COMMENT ON FUNCTION tk.permits_read_by_id IS 'Function to return all record from the permits table by group_id.';
+COMMENT ON FUNCTION tk.permits_read_by_group_id IS 'Function to return all record from the permits table by group_id.';
 
 /**
  * Function:    tk.permits_delete_by_id

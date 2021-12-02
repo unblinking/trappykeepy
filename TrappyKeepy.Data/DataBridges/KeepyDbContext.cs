@@ -21,6 +21,7 @@ namespace TrappyKeepy.Data
         public virtual DbSet<Group> Groups { get; set; } = null!;
         public virtual DbSet<Keeper> Keepers { get; set; } = null!;
         public virtual DbSet<Membership> Memberships { get; set; } = null!;
+        public virtual DbSet<Permit> Permits { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -127,6 +128,21 @@ namespace TrappyKeepy.Data
                     .HasConstraintName("fk_user_of_memberships");
             });
 
+            modelBuilder.Entity<Permit>(entity =>
+            {
+                entity.HasComment("Table to store permit records.");
+
+                entity.Property(e => e.Id)
+                    .HasDefaultValueSql("gen_random_uuid()")
+                    .HasComment("UUID primary key.");
+
+                entity.Property(e => e.GroupId).HasComment("UUID from the tk.groups table.");
+
+                entity.Property(e => e.KeeperId).HasComment("UUID from the tk.keepers table.");
+
+                entity.Property(e => e.UserId).HasComment("UUID from the tk.users table.");
+            });
+
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasComment("Table to store user records.");
@@ -135,7 +151,9 @@ namespace TrappyKeepy.Data
                     .HasDefaultValueSql("gen_random_uuid()")
                     .HasComment("UUID primary key.");
 
-                entity.Property(e => e.DateActivated).HasComment("Datetime the user was activated for login.");
+                entity.Property(e => e.DateActivated)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .HasComment("Datetime the user was activated for login.");
 
                 entity.Property(e => e.DateCreated)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP")

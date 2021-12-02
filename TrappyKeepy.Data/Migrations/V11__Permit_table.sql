@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS tk.permits OF tk.permit_type (
     keeper_id WITH OPTIONS NOT NULL
 );
 COMMENT ON TABLE tk.permits IS 'Table to store permit records.';
-COMMENT ON COLUMN tk.permit.id IS 'UUID primary key.';
-COMMENT ON COLUMN tk.permit.keeper_id IS 'UUID from the tk.keepers table.';
-COMMENT ON COLUMN tk.permit.user_id IS 'UUID from the tk.users table.';
-COMMENT ON COLUMN tk.permit.group_id IS 'UUID from the tk.groups table.';
+COMMENT ON COLUMN tk.permits.id IS 'UUID primary key.';
+COMMENT ON COLUMN tk.permits.keeper_id IS 'UUID from the tk.keepers table.';
+COMMENT ON COLUMN tk.permits.user_id IS 'UUID from the tk.users table.';
+COMMENT ON COLUMN tk.permits.group_id IS 'UUID from the tk.groups table.';
