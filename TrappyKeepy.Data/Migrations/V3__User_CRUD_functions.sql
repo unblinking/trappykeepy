@@ -76,7 +76,7 @@ COMMENT ON FUNCTION tk.users_read_all IS 'Function to return all records from th
  * Author:      Joshua Gray
  * Description: Function to return a record from the users table by id.
  * Parameters:  id_value UUID - The id of the user record.
- * Usage:       SELECT * FROM tk.users_read_by_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.users_read_by_id('00000000-0000-0000-0000-000000000000');
  * Returns:     All columns for a record from the tk.users table.
  */
 CREATE OR REPLACE FUNCTION tk.users_read_by_id (
@@ -105,7 +105,7 @@ COMMENT ON FUNCTION tk.users_read_by_id IS 'Function to return a record from the
  *              email TEXT
  *              date_activated TIMESTAMPTZ
  *              date_last_login TIMESTAMPTZ
- * Usage:       SELECT * FROM tk.users_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo', 'foo@example.com', '0', '2021-10-10T13:10:10', '2021-10-10T13:10:10');
+ * Usage:       SELECT * FROM tk.users_update('00000000-0000-0000-0000-000000000000', 'foo', 'foo@example.com', '0', '2021-10-10T13:10:10', '2021-10-10T13:10:10');
  * Returns:     True if the user was updated, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.users_update (
@@ -139,7 +139,7 @@ COMMENT ON FUNCTION tk.users_update IS 'Function to update a record in the users
  * Author:      Joshua Gray
  * Description: Function to delete a record from the users table by id.
  * Parameters:  id UUID - Primary key id for the record to be deleted.
- * Usage:       SELECT * FROM tk.users_delete_by_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.users_delete_by_id('00000000-0000-0000-0000-000000000000');
  * Returns:     True if the user was deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.users_delete_by_id (

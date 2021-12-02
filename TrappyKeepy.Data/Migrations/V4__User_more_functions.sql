@@ -44,7 +44,7 @@ COMMENT ON FUNCTION tk.users_authenticate IS 'Function to authenticate a user by
  * Description: Function to update a record in the users table with a new password.
  * Parameters:  id UUID - Primary key id for the record to be updated.
  *              password TEXT - The new plain text password to be salted/hashed and saved.
- * Usage:       SELECT * FROM tk.users_update_password('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'passwordfoo');
+ * Usage:       SELECT * FROM tk.users_update_password('00000000-0000-0000-0000-000000000000', 'passwordfoo');
  * Returns:     True if the user password was updated, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.users_update_password (

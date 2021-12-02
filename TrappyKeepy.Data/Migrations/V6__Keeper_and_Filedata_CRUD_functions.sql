@@ -24,7 +24,7 @@
  *              description TEXT - 
  *              category TEXT - 
  *              user_posted UUID -
- * Usage:       SELECT * FROM tk.keepers_create('foo.pdf', 'application/pdf', 'Important file.', 'Comedy', '204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.keepers_create('foo.pdf', 'application/pdf', 'Important file.', 'Comedy', '00000000-0000-0000-0000-000000000000');
  * Returns:     
  */
 CREATE OR REPLACE FUNCTION tk.keepers_create (
@@ -55,7 +55,7 @@ COMMENT ON FUNCTION tk.keepers_create IS 'Function to create a record in the kee
  * Description: Function to create a record in the filedatas table.
  * Parameters:  keeper_id UUID - 
  *              binary_data BYTEA - 
- * Usage:       SELECT * FROM tk.filedatas_create('foo.pdf', 'Important file.', 'Comedy', '204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.filedatas_create('foo.pdf', 'Important file.', 'Comedy', '00000000-0000-0000-0000-000000000000');
  * Returns:     
  */
 CREATE OR REPLACE FUNCTION tk.filedatas_create (
@@ -104,7 +104,7 @@ COMMENT ON FUNCTION tk.keepers_read_all IS 'Function to return all records from 
  * Author:      Joshua Gray
  * Description: Function to return a record from the keepers table by id.
  * Parameters:  id_value UUID - The id of the keeper record.
- * Usage:       SELECT * FROM tk.keepers_read_by_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.keepers_read_by_id('00000000-0000-0000-0000-000000000000');
  * Returns:     All columns for a record from the tk.keepers table.
  */
 CREATE OR REPLACE FUNCTION tk.keepers_read_by_id (
@@ -130,7 +130,7 @@ COMMENT ON FUNCTION tk.keepers_read_by_id IS 'Function to return a record from t
  * Author:      Joshua Gray
  * Description: Function to return a record from the filedatas table by keeper_id.
  * Parameters:  id_value UUID - The keeper_id of the filedata record.
- * Usage:       SELECT * FROM tk.filedatas_read_by_keeper_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.filedatas_read_by_keeper_id('00000000-0000-0000-0000-000000000000');
  * Returns:     All columns for a record from the tk.filedatas table.
  */
 CREATE OR REPLACE FUNCTION tk.filedatas_read_by_keeper_id (
@@ -158,7 +158,7 @@ COMMENT ON FUNCTION tk.filedatas_read_by_keeper_id IS 'Function to return a reco
  *              filename TEXT - 
  *              description TEXT - 
  *              category TEXT - 
- * Usage:       SELECT * FROM tk.keepers_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo.pdf', 'application/pdf', 'Simple PDF file.', 'Drama');
+ * Usage:       SELECT * FROM tk.keepers_update('00000000-0000-0000-0000-000000000000', 'foo.pdf', 'application/pdf', 'Simple PDF file.', 'Drama');
  * Returns:     True if the keeper was updated, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.keepers_update (
@@ -188,7 +188,7 @@ COMMENT ON FUNCTION tk.keepers_update IS 'Function to update a record in the kee
  * Author:      Joshua Gray
  * Description: Function to delete a record from the keepers table by id.
  * Parameters:  id UUID - Primary key id for the record to be deleted.
- * Usage:       SELECT * FROM tk.keepers_delete_by_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.keepers_delete_by_id('00000000-0000-0000-0000-000000000000');
  * Returns:     True if the keeper was deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.keepers_delete_by_id (
@@ -213,7 +213,7 @@ COMMENT ON FUNCTION tk.keepers_delete_by_id IS 'Function to delete a record from
  * Author:      Joshua Gray
  * Description: Function to delete a record from the filedatas table by id.
  * Parameters:  id UUID - Primary key id for the record to be deleted.
- * Usage:       SELECT * FROM tk.filedatas_delete_by_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.filedatas_delete_by_id('00000000-0000-0000-0000-000000000000');
  * Returns:     True if the filedata was deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.filedatas_delete_by_keeper_id (

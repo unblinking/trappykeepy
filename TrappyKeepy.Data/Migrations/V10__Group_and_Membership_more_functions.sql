@@ -48,7 +48,7 @@ COMMENT ON FUNCTION tk.groups_count_by_column_value_text IS 'Function to count r
  * Description: Function to return the count of membership records that match a given column/value.
  * Parameters:  column_name TEXT - The name of the column to match on.
  *              column_value UUID - The value of the column to match on.
- * Usage:       SELECT * FROM tk.memberships_count_by_column_value_uuid('group_id', 'a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.memberships_count_by_column_value_uuid('group_id', '00000000-0000-0000-0000-000000000000');
  * Returns:     An integer count of the number of matching records found.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_count_by_column_value_uuid (
@@ -82,7 +82,7 @@ COMMENT ON FUNCTION tk.memberships_count_by_column_value_uuid IS 'Function to co
  *              See if a user is already in a group.
  * Parameters:  id_group UUID - The id of the group
  *              id_user UUID - The id of the user
- * Usage:       SELECT * FROM tk.memberships_count_by_group_and_user('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.memberships_count_by_group_and_user('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000');
  * Returns:     An integer count of the number of matching records found.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_count_by_group_and_user (

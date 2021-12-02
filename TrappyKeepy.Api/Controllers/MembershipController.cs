@@ -27,12 +27,20 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
-                if (membershipDto.GroupId is null || membershipDto.GroupId == Guid.Empty || (Guid)membershipDto.GroupId == Guid.Empty)
+                if (
+                    membershipDto.GroupId is null ||
+                    membershipDto.GroupId == Guid.Empty ||
+                    (Guid)membershipDto.GroupId == Guid.Empty
+                )
                 {
                     response.Fail("Group id is required to create a group membership.");
                     return BadRequest(response);
                 }
-                if (membershipDto.UserId is null || membershipDto.UserId == Guid.Empty || (Guid)membershipDto.UserId == Guid.Empty)
+                if (
+                    membershipDto.UserId is null ||
+                    membershipDto.UserId == Guid.Empty ||
+                    (Guid)membershipDto.UserId == Guid.Empty
+                )
                 {
                     response.Fail("User id is required to create a group membership.");
                     return BadRequest(response);
