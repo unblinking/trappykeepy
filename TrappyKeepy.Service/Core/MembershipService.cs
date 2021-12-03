@@ -231,9 +231,7 @@ namespace TrappyKeepy.Service
             var response = new MembershipServiceResponse();
 
             // Verify required parameters.
-            if (
-                request.Id is null || request.Id == Guid.Empty
-            )
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "Membership id is required to delete a specific membership by id.";

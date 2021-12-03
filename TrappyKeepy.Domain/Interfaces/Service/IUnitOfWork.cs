@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace TrappyKeepy.Domain.Interfaces
+﻿namespace TrappyKeepy.Domain.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
@@ -9,6 +6,7 @@ namespace TrappyKeepy.Domain.Interfaces
         IGroupRepository groups { get; }
         IKeeperRepository keepers { get; }
         IMembershipRepository memberships { get; }
+        IPermitRepository permits { get; }
         IUserRepository users { get; }
         void Begin();
         void Commit();

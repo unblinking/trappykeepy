@@ -151,9 +151,7 @@ namespace TrappyKeepy.Data
                     .HasDefaultValueSql("gen_random_uuid()")
                     .HasComment("UUID primary key.");
 
-                entity.Property(e => e.DateActivated)
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                    .HasComment("Datetime the user was activated for login.");
+                entity.Property(e => e.DateActivated).HasComment("Datetime the user was activated for login.");
 
                 entity.Property(e => e.DateCreated)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP")

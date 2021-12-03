@@ -52,8 +52,7 @@ CREATE TABLE IF NOT EXISTS tk.users OF tk.user_type (
     password WITH OPTIONS NOT NULL,
     email WITH OPTIONS UNIQUE NOT NULL,
     role WITH OPTIONS NOT NULL CHECK (role IN ('basic', 'manager', 'admin')) DEFAULT 'basic',
-    date_created WITH OPTIONS NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_activated WITH OPTIONS NOT NULL DEFAULT CURRENT_TIMESTAMP
+    date_created WITH OPTIONS NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX user_role_index ON tk.users (role);
 COMMENT ON TABLE tk.users IS 'Table to store user records.';

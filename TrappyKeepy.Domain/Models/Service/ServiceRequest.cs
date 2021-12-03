@@ -112,13 +112,11 @@
     public class MembershipServiceRequest : ServiceRequest<Membership>
     {
         /// <summary>
-        /// The memberships table doesn't have an id colum.
         /// This can specify the group_id column value in a request.
         /// </summary>
         public Guid? GroupId { get; set; }
 
         /// <summary>
-        /// The memberships table doesn't have an id colum.
         /// This can specify the user_id column value in a request.
         /// </summary>
         public Guid? UserId { get; set; }
@@ -160,6 +158,40 @@
         {
             this.GroupId = groupId;
             this.UserId = userId;
+        }
+    }
+
+    /// <summary>
+    /// Permit service request.
+    /// </summary>
+    public class PermitServiceRequest : ServiceRequest<PermitDto>
+    {
+        /// <summary>
+        ///  If no permit is provided, instantiate a new one.
+        /// </summary>
+        public PermitServiceRequest()
+        {
+            this.Item = new PermitDto();
+        }
+
+        /// <summary>
+        /// If a permit is provided, set the permit as the Item of the
+        /// request. Example could be a request to create a new permit.
+        /// </summary>
+        /// <param name="permit"></param>
+        public PermitServiceRequest(PermitDto permitDto)
+        {
+            this.Item = permitDto;
+        }
+
+        /// <summary>
+        /// Used to request permits by group id or user id, or delete
+        /// permits by group id or user id.
+        /// </summary>
+        /// <param name="id"></param>
+        public PermitServiceRequest(Guid id)
+        {
+            this.Id = id;
         }
     }
 }

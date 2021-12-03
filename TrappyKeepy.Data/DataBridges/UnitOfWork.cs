@@ -17,6 +17,7 @@ namespace TrappyKeepy.Data
         private IGroupRepository? groupRepository;
         private IKeeperRepository? keeperRepository;
         private IMembershipRepository? membershipRepository;
+        private IPermitRepository? permitRepository;
         private IUserRepository? userRepository;
 
         #endregion Private repository objects.
@@ -120,6 +121,19 @@ namespace TrappyKeepy.Data
             {
                 if (this.membershipRepository is null) membershipRepository = new MembershipRepository(connection);
                 return membershipRepository;
+            }
+        }
+
+        /// <summary>
+        /// The permits repository.
+        /// </summary>
+        /// <value></value>
+        public IPermitRepository permits
+        {
+            get
+            {
+                if (this.permitRepository is null) permitRepository = new PermitRepository(connection);
+                return permitRepository;
             }
         }
 

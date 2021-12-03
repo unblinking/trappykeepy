@@ -159,4 +159,38 @@
             this.List = membershipDtos;
         }
     }
+
+    /// <summary>
+    /// Permit service response class.
+    /// </summary>
+    public class PermitServiceResponse : ServiceResponse<PermitDto>
+    {
+        /// <summary>
+        /// If no permit is provided, instantiate a new one in the Item.
+        /// </summary>
+        public PermitServiceResponse()
+        {
+            this.Item = new PermitDto();
+        }
+
+        /// <summary>
+        /// If a permit was provided, set the permit to the response Item.
+        /// Example could be a lookup for a single permit by keeper id.
+        /// </summary>
+        /// <param name="permitDto"></param>
+        public PermitServiceResponse(PermitDto permitDto)
+        {
+            this.Item = permitDto;
+        }
+
+        /// <summary>
+        /// If a list of permits was provided, set the list to the response Item.
+        /// Example could be a lookup for all permits by keeper id.
+        /// </summary>
+        /// <param name="permitsDtos"></param>
+        public PermitServiceResponse(List<PermitDto> permitDtos)
+        {
+            this.List = permitDtos;
+        }
+    }
 }

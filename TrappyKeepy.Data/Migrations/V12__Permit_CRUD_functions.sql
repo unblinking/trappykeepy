@@ -25,14 +25,14 @@
  *              group_id UUID - 
  * Usage:       SELECT * FROM tk.permits_create('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', null);
  *              SELECT * FROM tk.permits_create('00000000-0000-0000-0000-000000000000', null, '00000000-0000-0000-0000-000000000000');
- * Returns:     The id (UUID) for the record that was created.
+ * Returns:     The record that was created.
  */
 CREATE OR REPLACE FUNCTION tk.permits_create (
     keeper_id UUID,
     user_id UUID,
     group_id UUID
 )
-    RETURNS TABLE (id UUID)
+    RETURNS SETOF tk.permits
     LANGUAGE PLPGSQL
     AS
 $$
@@ -41,14 +41,14 @@ BEGIN
     INSERT
     INTO tk.permits (keeper_id, user_id, group_id)
     VALUES ($1, $2, $3)
-    RETURNING tk.permits.id;
+    RETURNING *;
 END;
 $$;
 COMMENT ON FUNCTION tk.permits_create IS 'Function to create a record in the permits table.';
 
 /**
  * Function:    tk.permits_read_all
- * Created:     2021-11-20
+ * Created:     2021-12-01
  * Author:      Joshua Gray
  * Description: Function to return all records from the permits table.
  * Parameters:  None
@@ -67,6 +67,31 @@ BEGIN
 END;
 $$;
 COMMENT ON FUNCTION tk.permits_read_all IS 'Function to return all records from the permits table.';
+
+/**
+ * Function:    tk.permits_read_by_id
+ * Created:     2021-12-02
+ * Author:      Joshua Gray
+ * Description: Function to return a record from the permits table by id.
+ * Parameters:  id_value UUID - The id of the permit record.
+ * Usage:       SELECT * FROM tk.permits_read_by_id('00000000-0000-0000-0000-000000000000');
+ * Returns:     All columns for a record from the tk.permits table.
+ */
+CREATE OR REPLACE FUNCTION tk.permits_read_by_id (
+    id_value UUID
+)
+    RETURNS SETOF tk.permits
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT *
+    FROM tk.permits
+    WHERE tk.permits.id = $1;
+END;
+$$;
+COMMENT ON FUNCTION tk.permits_read_by_id IS 'Function to return a record from the permits table by id.';
 
 /**
  * Function:    tk.permits_read_by_keeper_id

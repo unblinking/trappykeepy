@@ -57,7 +57,7 @@ namespace TrappyKeepy.Domain.Models
         /// Datetime the user was activated for login.
         /// </summary>
         [Column("date_activated")]
-        public DateTime DateActivated { get; set; }
+        public DateTime? DateActivated { get; set; }
         /// <summary>
         /// Datetime the user last logged into the system successfully.
         /// </summary>

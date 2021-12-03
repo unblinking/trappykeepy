@@ -63,5 +63,16 @@ namespace TrappyKeepy.Domain.Maps
                 UserId = Guid.Parse($"{reader["user_id"].ToString()}"),
             };
         }
+
+        public Permit Permit(NpgsqlDataReader reader)
+        {
+            return new Permit()
+            {
+                Id = Guid.Parse($"{reader["id"].ToString()}"),
+                KeeperId = Guid.Parse($"{reader["keeper_id"].ToString()}"),
+                UserId = reader["user_id"] is not DBNull ? Guid.Parse($"{reader["user_id"].ToString()}") : null,
+                GroupId = reader["group_id"] is not DBNull ? Guid.Parse($"{reader["group_id"].ToString()}") : null,
+            };
+        }
     }
 }
