@@ -4,14 +4,14 @@ namespace TrappyKeepy.Domain.Interfaces
 {
     public interface IPermitService
     {
-        Task<PermitServiceResponse> Create(PermitServiceRequest request);
-        Task<PermitServiceResponse> ReadAll(PermitServiceRequest request);
-        Task<PermitServiceResponse> ReadByKeeperId(PermitServiceRequest request);
-        Task<PermitServiceResponse> ReadByUserId(PermitServiceRequest request);
-        Task<PermitServiceResponse> ReadByGroupId(PermitServiceRequest request);
-        Task<PermitServiceResponse> DeleteById(PermitServiceRequest request);
-        Task<PermitServiceResponse> DeleteByKeeperId(PermitServiceRequest request);
-        Task<PermitServiceResponse> DeleteByUserId(PermitServiceRequest request);
-        Task<PermitServiceResponse> DeleteByGroupId(PermitServiceRequest request);
+        Task<IPermitServiceResponse> Create(IPermitServiceRequest request);
+        Task<IPermitServiceResponse> ReadAll(IPermitServiceRequest request);
+        Task<IPermitServiceResponse> ReadByKeeperId(IPermitServiceRequest request);
+        Task<IPermitServiceResponse> ReadByUserId(IPermitServiceRequest request);
+        Task<IPermitServiceResponse> ReadByGroupId(IPermitServiceRequest request);
+        Task<IPermitServiceResponse> DeleteById(IPermitServiceRequest request);
+        Task<IPermitServiceResponse> DeleteByKeeperId(IPermitServiceRequest request);
+        Task<IPermitServiceResponse> DeleteByUserId(IPermitServiceRequest request);
+        Task<IPermitServiceResponse> DeleteByGroupId(IPermitServiceRequest request);
     }
 }

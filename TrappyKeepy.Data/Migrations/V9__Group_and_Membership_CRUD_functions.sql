@@ -32,7 +32,7 @@ CREATE OR REPLACE FUNCTION tk.groups_create (
     name TEXT,
     description TEXT DEFAULT NULL
 )
-    RETURNS TABLE (id UUID)
+    RETURNS SETOF tk.groups
     LANGUAGE PLPGSQL
     AS
 $$
@@ -41,7 +41,7 @@ BEGIN
     INSERT
     INTO tk.groups (name, description)
     VALUES ($1, $2)
-    RETURNING tk.groups.id;
+    RETURNING *;
 END;
 $$;
 COMMENT ON FUNCTION tk.groups_create IS 'Function to create a record in the groups table.';
@@ -60,7 +60,7 @@ CREATE OR REPLACE FUNCTION tk.memberships_create (
     group_id UUID,
     user_id UUID
 )
-    RETURNS TABLE (id UUID)
+    RETURNS SETOF tk.memberships
     LANGUAGE PLPGSQL
     AS
 $$
@@ -69,7 +69,7 @@ BEGIN
     INSERT
     INTO tk.memberships (group_id, user_id)
     VALUES ($1, $2)
-    RETURNING tk.memberships.id;
+    RETURNING *;
 END;
 $$;
 COMMENT ON FUNCTION tk.memberships_create IS 'Function to create a record in the memberships table.';
@@ -144,6 +144,30 @@ END;
 $$;
 COMMENT ON FUNCTION tk.groups_read_by_id IS 'Function to return a record from the groups table by id.';
 
+/**
+ * Function:    tk.memberships_read_by_id
+ * Created:     2021-11-28
+ * Author:      Joshua Gray
+ * Description: Function to return a record from the memberships table by id.
+ * Parameters:  id_value UUID - The id of the membership record.
+ * Usage:       SELECT * FROM tk.memberships_read_by_id('00000000-0000-0000-0000-000000000000');
+ * Returns:     All columns for a record from the tk.memberships table.
+ */
+CREATE OR REPLACE FUNCTION tk.memberships_read_by_id (
+    id_value UUID
+)
+    RETURNS SETOF tk.memberships
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT *
+    FROM tk.memberships
+    WHERE tk.memberships.id = $1;
+END;
+$$;
+COMMENT ON FUNCTION tk.memberships_read_by_id IS 'Function to return a record from the memberships table by id.';
 
 /**
  * Function:    tk.memberships_read_by_group_id

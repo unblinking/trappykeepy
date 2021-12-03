@@ -43,6 +43,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = "SELECT * FROM tk.permits_read_all();";
+
                 var reader = await RunQuery(command);
                 var permits = new List<Permit>();
                 while (await reader.ReadAsync())
@@ -60,6 +61,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_read_by_id('{id}');";
+
                 var reader = await RunQuery(command);
                 var permit = new Permit();
                 while (await reader.ReadAsync())
@@ -77,6 +79,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_read_by_keeper_id('{id}');";
+
                 var reader = await RunQuery(command);
                 var permits = new List<Permit>();
                 while (await reader.ReadAsync())
@@ -94,6 +97,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_read_by_user_id('{id}');";
+
                 var reader = await RunQuery(command);
                 var permits = new List<Permit>();
                 while (await reader.ReadAsync())
@@ -111,6 +115,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_read_by_group_id('{id}');";
+
                 var reader = await RunQuery(command);
                 var permits = new List<Permit>();
                 while (await reader.ReadAsync())
@@ -128,6 +133,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_delete_by_id('{id}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -143,6 +149,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_delete_by_keeper_id('{id}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -158,6 +165,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_delete_by_user_id('{id}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -173,6 +181,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_delete_by_group_id('{id}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -212,6 +221,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_count_by_column_value_uuid('{column}', '{id}');";
+                
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)

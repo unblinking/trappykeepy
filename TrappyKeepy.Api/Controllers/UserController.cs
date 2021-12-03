@@ -13,42 +13,46 @@ namespace TrappyKeepy.Api.Controllers
     [Authorize(Roles = "admin")]
     public class UserController : ControllerBase
     {
-        private readonly IUserService userService;
+        /// <summary>
+        /// The user service.
+        /// </summary>
+        private readonly IUserService _userService;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="userService"></param>
         public UserController(IUserService userService)
         {
-            this.userService = userService;
+            _userService = userService;
         }
 
+        /// <summary>
+        /// Creates a new user.
+        /// </summary>
+        /// <param name="userDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request POST 'https://localhost:7294/v1/user' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "Name": "foo",
+        ///     "Password": "passwordfoo",
+        ///     "Email": "foo@example.com",
+        ///     "Role": "basic"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns>The new user object including the unique id.</returns>
         [HttpPost("")]
-        public async Task<ActionResult> Create([FromBody] UserDto userDto)
+        public async Task<ActionResult> Create([FromBody] IUserDto userDto)
         {
             try
             {
+                var serviceRequest = new UserServiceRequest(userDto);
+                var serviceResponse = await _userService.Create(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (userDto.Name is null || userDto.Password is null || userDto.Email is null)
-                {
-                    response.Fail("Name, password, and email are required to create a user.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User()
-                {
-                    Name = userDto.Name,
-                    Password = userDto.Password,
-                    Email = userDto.Email
-                };
-                if (userDto.Role is not null) user.Role = userDto.Role;
-
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.Create(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -58,7 +62,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // UserDto with new id from db insert.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -66,25 +70,27 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Read all existing users.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://localhost:7294/v1/user' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>An array of all existing user objects.</returns>
         [HttpGet("")]
         public async Task<ActionResult> ReadAll()
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new UserServiceRequest();
-
-                // Wait for the service response.
-                var serviceResponse = await userService.ReadAll(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _userService.ReadAll(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -94,7 +100,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.List); // UserDto objects.
+                        response.Success(serviceResponse.List);
                         return Ok(response);
                 }
             }
@@ -102,25 +108,28 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Read one existing user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        // curl --location --request GET 'https://localhost:7294/v1/user/00000000-0000-0000-0000-000000000000' \
+        // --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>An existing user object.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult> ReadById(Guid id)
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new UserServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.ReadById(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _userService.ReadById(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -130,7 +139,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // UserDto object.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -138,42 +147,35 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Update one existing user.
+        /// </summary>
+        /// <param name="userDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request PUT 'https://localhost:7294/v1/user' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "Id": "00000000-0000-0000-0000-000000000000",
+        ///     "Name": "bar",
+        ///     "Email": "bar@example.com",
+        ///     "Role": "manager"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns>A message if successful.</returns>
         [HttpPut("")]
-        public async Task<ActionResult> UpdateById([FromBody] UserDto userDto)
+        public async Task<ActionResult> UpdateById([FromBody] IUserDto userDto)
         {
             try
             {
+                var serviceRequest = new UserServiceRequest(userDto);
+                var serviceResponse = await _userService.UpdateById(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty)
-                {
-                    response.Fail("User id is required to update a user by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User() { Id = (Guid)userDto.Id };
-                if (userDto.Name is not null) user.Name = userDto.Name;
-                if (userDto.Email is not null) user.Email = userDto.Email;
-
-                // Determine if we are updating the user role.
-                if (userDto.Role is not null)
-                {
-                    user.Role = userDto.Role;
-                }
-
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.UpdateById(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -191,38 +193,33 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Update one existing user's password.
+        /// </summary>
+        /// <param name="userDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request PUT 'https://localhost:7294/v1/user/password' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "Id": "00000000-0000-0000-0000-000000000000",
+        ///     "password": "passwordbar"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns>A message if successful.</returns>
         [HttpPut("/v1/user/password")]
-        public async Task<ActionResult> UpdatePasswordById([FromBody] UserDto userDto)
+        public async Task<ActionResult> UpdatePasswordById([FromBody] IUserDto userDto)
         {
             try
             {
+                var serviceRequest = new UserServiceRequest(userDto);
+                var serviceResponse = await _userService.UpdatePasswordById(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty || userDto.Password is null)
-                {
-                    response.Fail("User id and password are required to update a user pasword.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User()
-                {
-                    Id = (Guid)userDto.Id,
-                    Password = userDto.Password
-                };
-
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.UpdatePasswordById(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -240,31 +237,28 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Delete one existing user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request DELETE 'https://localhost:7294/v1/user/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>A message if successful.</returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteById(Guid id)
         {
             try
             {
-                var response = new ControllerResponse();
-
-                if (id == Guid.Empty || (Guid)id == Guid.Empty)
-                {
-                    response.Fail("User id is required to delete a user by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare the service request.
                 var serviceRequest = new UserServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.DeleteById(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _userService.DeleteById(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -282,44 +276,33 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
         /// <summary>
         /// Create a user session token.
         /// </summary>
-        /// <param name="userSessionDto">{"email":"foo","password":"passwordfoo"}</param>
-        /// <returns></returns>
+        /// <param name="userSessionDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request POST 'https://localhost:7294/v1/user/session' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "email": "foo@example.com",
+        ///     "password": "passwordfoo"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns>A JSON web token to use in the Authorization header for Bearer Token type authorization.</returns>
         [HttpPost("/v1/user/session")]
         [AllowAnonymous]
-        public async Task<ActionResult> Authenticate([FromBody] UserSessionDto userSessionDto)
+        public async Task<ActionResult> Authenticate([FromBody] IUserSessionDto userSessionDto)
         {
             try
             {
+                var serviceRequest = new UserServiceRequest(userSessionDto);
+                var serviceResponse = await _userService.Authenticate(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (userSessionDto.Email is null || userSessionDto.Password is null)
-                {
-                    response.Fail("User email and password are required to authenticate a user.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userSessionDto to pass to the service.
-                var user = new User()
-                {
-                    Email = userSessionDto.Email,
-                    Password = userSessionDto.Password
-                };
-
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.Authenticate(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -337,8 +320,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
     }

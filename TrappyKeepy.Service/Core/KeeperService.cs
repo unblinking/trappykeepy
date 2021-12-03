@@ -1,4 +1,5 @@
-﻿using TrappyKeepy.Domain.Interfaces;
+﻿using AutoMapper;
+using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Service
@@ -14,15 +15,21 @@ namespace TrappyKeepy.Service
         /// <summary>
         /// Group database operations into a single transaction (unit of work).
         /// </summary>
-        private readonly IUnitOfWork uow;
+        private readonly IUnitOfWork _uow;
+
+        /// <summary>
+        /// Automapper http://automapper.org/
+        /// </summary>
+        private readonly IMapper _mapper;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="unitOfWork"></param>
-        public KeeperService(IUnitOfWork unitOfWork)
+        public KeeperService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            this.uow = unitOfWork;
+            _uow = unitOfWork;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -30,40 +37,43 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<KeeperServiceResponse> Create(KeeperServiceRequest request)
+        public async Task<IKeeperServiceResponse> Create(IKeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
 
             // Verify required parameters.
-            if (request.Item?.Filename is null || request.Item.ContentType is null || request?.BinaryData is null)
+            if (request.Item?.UserPosted == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "File name, content type, and binary data are required to create a keeper.";
+                response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to create a keeper.";
                 return response;
             }
-            if (request.Item.UserPosted == Guid.Empty)
+            if (request.Item?.Filename is null || request.Item.ContentType is null || request.BinaryData is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "An authorized user is required to create a keeper.";
+                response.ErrorMessage = "Filename (TEXT), ContentType (TEXT), and File (binary file data sent with the Http request) are required to create a keeper.";
                 return response;
             }
 
             try
             {
+                // Map the controller's DTO to a domain object for the repository.
+                var keeper = _mapper.Map<Keeper>(request.Item);
+
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify the user_posted id is a user in the database.
-                var user = await uow.users.ReadById(request.Item.UserPosted);
-                if (user.Id != request.Item.UserPosted)
+                var user = await _uow.users.ReadById(keeper.UserPosted);
+                if (user.Id != keeper.UserPosted)
                 {
                     response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Cannot create the keeper because the userPosted was not found with the specified id. A valid userPosted user id is required to create a keeper.";
+                    response.ErrorMessage = "Bearer token issued to a user Id that does not exist.";
                     return response;
                 }
 
                 // Verify the requested file name is not already in use.
-                var existingNameCount = await uow.keepers.CountByColumnValue("filename", request.Item.Filename);
+                var existingNameCount = await _uow.keepers.CountByColumnValue("filename", keeper.Filename);
                 if (existingNameCount > 0)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -72,21 +82,21 @@ namespace TrappyKeepy.Service
                 }
 
                 // Create the new keeper record now.
-                var id = await uow.keepers.Create(request.Item);
+                var newKeeper = await _uow.keepers.Create(keeper);
 
                 // Create the new filedata record now.
                 var filedata = new Filedata()
                 {
-                    KeeperId = id,
+                    KeeperId = newKeeper.Id,
                     BinaryData = request.BinaryData
                 };
-                await uow.filedatas.Create(filedata);
+                await _uow.filedatas.Create(filedata);
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
-                // Pass a KeeperDto back to the controller.
-                response.Item = new KeeperDto() { Id = id };
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<IKeeperDto>(newKeeper);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -104,30 +114,18 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<KeeperServiceResponse> ReadAll(KeeperServiceRequest request)
+        public async Task<IKeeperServiceResponse> ReadAll(IKeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
 
             try
             {
                 // Read the keeper records now.
-                var keepers = await uow.keepers.ReadAll();
+                var keepers = await _uow.keepers.ReadAll();
 
-                // Pass a list of keeperDtos back to the controller.
-                var keeperDtos = new List<KeeperDto>();
-                foreach (var keeper in keepers)
-                {
-                    var keeperDto = new KeeperDto()
-                    {
-                        Id = keeper.Id,
-                        Filename = keeper.Filename,
-                        Description = keeper.Description,
-                        Category = keeper.Category,
-                        DatePosted = keeper.DatePosted,
-                        UserPosted = keeper.UserPosted,
-                    };
-                    keeperDtos.Add(keeperDto);
-                }
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var keeperDtos = new List<IKeeperDto>();
+                foreach (var keeper in keepers) keeperDtos.Add(_mapper.Map<IKeeperDto>(keeper));
                 response.List = keeperDtos;
 
                 // Success if we made it this far.
@@ -146,37 +144,29 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request">A KeeperServiceRequest including the requested keeper id.</param>
         /// <returns>KeeperServiceResponse - A KeeperDto that includes the BinaryData for the file.</returns>
-        public async Task<KeeperServiceResponse> ReadById(KeeperServiceRequest request)
+        public async Task<IKeeperServiceResponse> ReadById(IKeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
 
             // Verify required parameters.
-            if (request.Id is null)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Keeper id is required to find a keeper by id.";
+                response.ErrorMessage = "Id (UUID) is required to find a keeper by keeper id.";
                 return response;
             }
 
             try
             {
                 // Read the keeper record now.
-                var keeper = await uow.keepers.ReadById((Guid)request.Id);
+                var keeper = await _uow.keepers.ReadById((Guid)request.Id);
 
                 // Read the filedata record now.
-                var filedata = await uow.filedatas.ReadByKeeperId((Guid)request.Id);
+                var filedata = await _uow.filedatas.ReadByKeeperId((Guid)request.Id);
 
-                // Pass a KeeperDto back to the controller. This DTO includes the filedata (binary data).
-                response.Item = new KeeperDto()
-                {
-                    Id = keeper.Id,
-                    Filename = keeper.Filename,
-                    Description = keeper.Description,
-                    Category = keeper.Category,
-                    DatePosted = keeper.DatePosted,
-                    UserPosted = keeper.UserPosted,
-                    BinaryData = filedata.BinaryData
-                };
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<IKeeperDto>(keeper);
+                response.BinaryData = filedata.BinaryData;
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -197,26 +187,29 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<KeeperServiceResponse> UpdateById(KeeperServiceRequest request)
+        public async Task<IKeeperServiceResponse> UpdateById(IKeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
 
             // Verify required parameters.
-            if (request.Item is null || request.Item.Id == Guid.Empty)
+            if (request.Item?.Id is null || request.Item.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Keeper id is required to update a keeper by id.";
+                response.ErrorMessage = "Id (UUID) is required to update a keeper by id.";
                 return response;
             }
 
             try
             {
+                // Map the controller's DTO to a domain object for the repository.
+                var keeper = _mapper.Map<Keeper>(request.Item);
+
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that the keeper exists.
-                var existing = await uow.keepers.ReadById(request.Item.Id);
-                if (existing.Id != request.Item.Id)
+                var existing = await _uow.keepers.ReadById(keeper.Id);
+                if (existing.Id != keeper.Id)
                 {
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Requested keeper id for update does not exist.";
@@ -224,19 +217,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Update the keeper record now.
-                var successful = await uow.keepers.UpdateById(request.Item);
+                var successful = await _uow.keepers.UpdateById(keeper);
 
                 // If the keeper record couldn't be updated, rollback and return to the controller.
                 if (!successful)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Keeper was not updated.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }
@@ -255,7 +248,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<KeeperServiceResponse> DeleteById(KeeperServiceRequest request)
+        public async Task<IKeeperServiceResponse> DeleteById(IKeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
 
@@ -263,50 +256,50 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Keeper id is required to delete a keeper by id.";
+                response.ErrorMessage = "Id (UUID) is required to delete a keeper by keeper id.";
                 return response;
             }
 
             try
             {
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that the keeper exists.
-                var existing = await uow.keepers.ReadById((Guid)request.Id);
+                var existing = await _uow.keepers.ReadById((Guid)request.Id);
                 if (existing.Id != request.Id)
                 {
                     response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Requested keeper id for update does not exist.";
+                    response.ErrorMessage = "Requested keeper id for delete does not exist.";
                     return response;
                 }
 
                 // Delete the keeper record now.
-                var successfulKeeperDelete = await uow.keepers.DeleteById((Guid)request.Id);
+                var successfulKeeperDelete = await _uow.keepers.DeleteById((Guid)request.Id);
 
                 // If the keeper record could't be deleted, rollback and return to the controller.
                 if (!successfulKeeperDelete)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Keeper was not deleted.";
                     return response;
                 }
 
                 // If we made it this far the keeper was deleted. Now delete the associated filedata.
-                var successfulFiledataDelete = await uow.filedatas.DeleteByKeeperId((Guid)request.Id);
+                var successfulFiledataDelete = await _uow.filedatas.DeleteByKeeperId((Guid)request.Id);
 
                 // If the filedata record couldn't be deleted, rollback and return to the controller.
                 if (!successfulFiledataDelete)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Keeper was not deleted.";
                     return response;
                 }
 
                 // If we made it this far, both keeper and filedata records were deleted. Commit.
-                uow.Commit();
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }

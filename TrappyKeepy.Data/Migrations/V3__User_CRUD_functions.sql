@@ -21,7 +21,7 @@
  *              email TEXT - 
  *              role TEXT - 
  * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', 'basic');
- * Returns:     
+ * Returns:     The record that was created.
  */
 CREATE OR REPLACE FUNCTION tk.users_create (
     name VARCHAR( 50 ),
@@ -29,7 +29,7 @@ CREATE OR REPLACE FUNCTION tk.users_create (
     email TEXT,
     role TEXT
 )
-    RETURNS TABLE (id UUID)
+    RETURNS SETOF tk.users
     LANGUAGE PLPGSQL
     AS
 $$
@@ -43,7 +43,7 @@ BEGIN
     INSERT
     INTO tk.users (name, password, email, role)
     VALUES ($1, saltedhash, $3, $4)
-    RETURNING tk.users.id;
+    RETURNING *;
 END;
 $$;
 COMMENT ON FUNCTION tk.users_create IS 'Function to create a record in the users table.';

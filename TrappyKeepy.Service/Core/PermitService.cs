@@ -31,7 +31,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> Create(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> Create(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -76,8 +76,8 @@ namespace TrappyKeepy.Service
                 // Commit changes in this transaction.
                 _uow.Commit();
 
-                // Map the repository's domain object to a DTO for the controller.
-                response.Item = _mapper.Map<PermitDto>(newPermit);
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<IPermitDto>(newPermit);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -95,7 +95,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> ReadAll(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> ReadAll(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -104,19 +104,9 @@ namespace TrappyKeepy.Service
                 // Read the permit records now.
                 var permits = await _uow.permits.ReadAll();
 
-                // Pass a list of permitDtos back to the controller.
-                var permitDtos = new List<PermitDto>();
-                foreach (var permit in permits)
-                {
-                    var permitDto = new PermitDto()
-                    {
-                        Id = permit.Id,
-                        KeeperId = permit.KeeperId,
-                        UserId = permit.UserId,
-                        GroupId = permit.GroupId,
-                    };
-                    permitDtos.Add(permitDto);
-                }
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var permitDtos = new List<IPermitDto>();
+                foreach (var permit in permits) permitDtos.Add(_mapper.Map<IPermitDto>(permit));
                 response.List = permitDtos;
 
                 // Success if we made it this far.
@@ -135,7 +125,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> ReadByKeeperId(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> ReadByKeeperId(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -152,9 +142,9 @@ namespace TrappyKeepy.Service
                 // Read the permit record now.
                 var permits = await _uow.permits.ReadByKeeperId((Guid)request.Item.KeeperId);
 
-                // Map the repository's domain objects to DTOs for the controller.
-                var permitDtos = new List<PermitDto>();
-                foreach (var permit in permits) permitDtos.Add(_mapper.Map<PermitDto>(permit));
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var permitDtos = new List<IPermitDto>();
+                foreach (var permit in permits) permitDtos.Add(_mapper.Map<IPermitDto>(permit));
                 response.List = permitDtos;
 
                 // Success if we made it this far.
@@ -173,7 +163,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> ReadByUserId(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> ReadByUserId(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -190,9 +180,9 @@ namespace TrappyKeepy.Service
                 // Read the permit record now.
                 var permits = await _uow.permits.ReadByUserId((Guid)request.Item.UserId);
 
-                // Map the repository's domain objects to DTOs for the controller.
-                var permitDtos = new List<PermitDto>();
-                foreach (var permit in permits) permitDtos.Add(_mapper.Map<PermitDto>(permit));
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var permitDtos = new List<IPermitDto>();
+                foreach (var permit in permits) permitDtos.Add(_mapper.Map<IPermitDto>(permit));
                 response.List = permitDtos;
 
                 // Success if we made it this far.
@@ -211,7 +201,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> ReadByGroupId(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> ReadByGroupId(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -228,9 +218,9 @@ namespace TrappyKeepy.Service
                 // Read the permit record now.
                 var permits = await _uow.permits.ReadByGroupId((Guid)request.Item.GroupId);
 
-                // Map the repository's domain objects to DTOs for the controller.
-                var permitDtos = new List<PermitDto>();
-                foreach (var permit in permits) permitDtos.Add(_mapper.Map<PermitDto>(permit));
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var permitDtos = new List<IPermitDto>();
+                foreach (var permit in permits) permitDtos.Add(_mapper.Map<IPermitDto>(permit));
                 response.List = permitDtos;
 
                 // Success if we made it this far.
@@ -249,7 +239,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> DeleteById(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> DeleteById(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -305,7 +295,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> DeleteByKeeperId(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> DeleteByKeeperId(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -313,7 +303,7 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Id is required to delete permit(s) by keeper id.";
+                response.ErrorMessage = "Id (UUID) is required to delete permit(s) by keeper id.";
                 return response;
             }
 
@@ -361,7 +351,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> DeleteByUserId(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> DeleteByUserId(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -369,7 +359,7 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Id is required to delete permit(s) by user id.";
+                response.ErrorMessage = "Id (UUID) is required to delete permit(s) by user id.";
                 return response;
             }
 
@@ -417,7 +407,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<PermitServiceResponse> DeleteByGroupId(PermitServiceRequest request)
+        public async Task<IPermitServiceResponse> DeleteByGroupId(IPermitServiceRequest request)
         {
             var response = new PermitServiceResponse();
 
@@ -425,7 +415,7 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Id is required to delete permit(s) by group id.";
+                response.ErrorMessage = "Id (UUID) is required to delete permit(s) by group id.";
                 return response;
             }
 

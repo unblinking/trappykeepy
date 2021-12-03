@@ -4,12 +4,12 @@ namespace TrappyKeepy.Domain.Interfaces
 {
     public interface IMembershipService
     {
-        Task<MembershipServiceResponse> Create(MembershipServiceRequest request);
-        Task<MembershipServiceResponse> ReadAll(MembershipServiceRequest request);
-        Task<MembershipServiceResponse> ReadByGroupId(MembershipServiceRequest request);
-        Task<MembershipServiceResponse> ReadByUserId(MembershipServiceRequest request);
-        Task<MembershipServiceResponse> DeleteById(MembershipServiceRequest request);
-        Task<MembershipServiceResponse> DeleteByGroupId(MembershipServiceRequest request);
-        Task<MembershipServiceResponse> DeleteByUserId(MembershipServiceRequest request);
+        Task<IMembershipServiceResponse> Create(IMembershipServiceRequest request);
+        Task<IMembershipServiceResponse> ReadAll(IMembershipServiceRequest request);
+        Task<IMembershipServiceResponse> ReadByGroupId(IMembershipServiceRequest request);
+        Task<IMembershipServiceResponse> ReadByUserId(IMembershipServiceRequest request);
+        Task<IMembershipServiceResponse> DeleteById(IMembershipServiceRequest request);
+        Task<IMembershipServiceResponse> DeleteByGroupId(IMembershipServiceRequest request);
+        Task<IMembershipServiceResponse> DeleteByUserId(IMembershipServiceRequest request);
     }
 }

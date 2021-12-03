@@ -4,7 +4,7 @@ namespace TrappyKeepy.Domain.Interfaces
 {
     public interface IGroupRepository
     {
-        Task<Guid> Create(Group group);
+        Task<Group> Create(Group group);
         Task<List<Group>> ReadAll();
         Task<Group> ReadById(Guid id);
         Task<bool> UpdateById(Group group);

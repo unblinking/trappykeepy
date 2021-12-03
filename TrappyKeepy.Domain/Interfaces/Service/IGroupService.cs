@@ -4,10 +4,10 @@ namespace TrappyKeepy.Domain.Interfaces
 {
     public interface IGroupService
     {
-        Task<GroupServiceResponse> Create(GroupServiceRequest request);
-        Task<GroupServiceResponse> ReadAll(GroupServiceRequest request);
-        Task<GroupServiceResponse> ReadById(GroupServiceRequest request);
-        Task<GroupServiceResponse> UpdateById(GroupServiceRequest request);
-        Task<GroupServiceResponse> DeleteById(GroupServiceRequest request);
+        Task<IGroupServiceResponse> Create(IGroupServiceRequest request);
+        Task<IGroupServiceResponse> ReadAll(IGroupServiceRequest request);
+        Task<IGroupServiceResponse> ReadById(IGroupServiceRequest request);
+        Task<IGroupServiceResponse> UpdateById(IGroupServiceRequest request);
+        Task<IGroupServiceResponse> DeleteById(IGroupServiceRequest request);
     }
 }

@@ -25,7 +25,7 @@
  *              category TEXT - 
  *              user_posted UUID -
  * Usage:       SELECT * FROM tk.keepers_create('foo.pdf', 'application/pdf', 'Important file.', 'Comedy', '00000000-0000-0000-0000-000000000000');
- * Returns:     
+ * Returns:     The record that was created.
  */
 CREATE OR REPLACE FUNCTION tk.keepers_create (
     filename TEXT,
@@ -34,7 +34,7 @@ CREATE OR REPLACE FUNCTION tk.keepers_create (
     description TEXT DEFAULT NULL,
     category TEXT DEFAULT NULL
 )
-    RETURNS TABLE (id UUID)
+    RETURNS SETOF tk.keepers
     LANGUAGE PLPGSQL
     AS
 $$
@@ -43,7 +43,7 @@ BEGIN
     INSERT
     INTO tk.keepers (filename, content_type, description, category, user_posted)
     VALUES ($1, $2, $4, $5, $3)
-    RETURNING tk.keepers.id;
+    RETURNING *;
 END;
 $$;
 COMMENT ON FUNCTION tk.keepers_create IS 'Function to create a record in the keepers table.';
@@ -56,7 +56,7 @@ COMMENT ON FUNCTION tk.keepers_create IS 'Function to create a record in the kee
  * Parameters:  keeper_id UUID - 
  *              binary_data BYTEA - 
  * Usage:       SELECT * FROM tk.filedatas_create('foo.pdf', 'Important file.', 'Comedy', '00000000-0000-0000-0000-000000000000');
- * Returns:     
+ * Returns:     The keeper_id of the record that was created.
  */
 CREATE OR REPLACE FUNCTION tk.filedatas_create (
     keeper_id UUID,

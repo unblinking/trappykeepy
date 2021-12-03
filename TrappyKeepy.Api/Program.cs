@@ -52,7 +52,8 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
         Title = "TrappyKeepy",
-        Version = "v0.1.0"
+        Version = "v0.1.0",
+        Description = "A simple document storage web API."
     });
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
     {

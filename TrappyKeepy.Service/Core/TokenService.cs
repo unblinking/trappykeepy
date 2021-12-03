@@ -30,8 +30,14 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="claims"></param>
         /// <returns></returns>
-        public string EncodeJwt(List<Claim> claims)
+        public string Encode(Guid id, string role)
         {
+            var claims = new List<Claim>()
+            {
+                new Claim("id", id.ToString()),
+                new Claim("role", role)
+            };
+
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var jwtTokenDescriptor = new JwtSecurityToken(

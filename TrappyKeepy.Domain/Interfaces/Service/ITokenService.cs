@@ -4,6 +4,6 @@ namespace TrappyKeepy.Domain.Interfaces
 {
     public interface ITokenService
     {
-        string EncodeJwt(List<Claim> claims);
+        string Encode(Guid id, string role);
     }
 }

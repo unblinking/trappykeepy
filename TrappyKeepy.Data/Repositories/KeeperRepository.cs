@@ -12,7 +12,7 @@ namespace TrappyKeepy.Data.Repositories
             this.connection = connection;
         }
 
-        public async Task<Guid> Create(Keeper keeper)
+        public async Task<Keeper> Create(Keeper keeper)
         {
             using (var command = new NpgsqlCommand())
             {
@@ -26,13 +26,16 @@ namespace TrappyKeepy.Data.Repositories
 
                 command.CommandText += $");";
 
-                var result = await RunScalar(command);
-                var newId = Guid.Empty;
-                if (result is not null)
+                var reader = await RunQuery(command);
+
+                var newKeeper = new Keeper();
+                while (await reader.ReadAsync())
                 {
-                    newId = Guid.Parse($"{result.ToString()}");
+                    var map = new PgsqlReaderMap();
+                    newKeeper = map.Keeper(reader);
                 }
-                return newId;
+                reader.Close();
+                return newKeeper;
             }
         }
 
@@ -41,6 +44,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = "SELECT * FROM tk.keepers_read_all();";
+
                 var reader = await RunQuery(command);
                 var keepers = new List<Keeper>();
                 while (await reader.ReadAsync())
@@ -58,6 +62,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.keepers_read_by_id('{id}');";
+
                 var reader = await RunQuery(command);
                 var keeper = new Keeper();
                 while (await reader.ReadAsync())
@@ -99,6 +104,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.keepers_delete_by_id('{id}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -114,6 +120,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.keepers_count_by_column_value_text('{column}', '{value}');";
+                
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)

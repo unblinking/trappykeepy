@@ -7,18 +7,23 @@ namespace TrappyKeepy.Domain.Maps
     {
         public AutoMapperProfile()
         {
-            CreateMap<Group, GroupDto>();
-            CreateMap<GroupDto, Group>();
-            CreateMap<Keeper, KeeperDto>();
-            CreateMap<KeeperDto, Keeper>();
-            CreateMap<Membership, MembershipDto>();
-            CreateMap<MembershipDto, Membership>();
-            CreateMap<Permit, PermitDto>();
-            CreateMap<PermitDto, Permit>();
-            CreateMap<User, UserDto>()
+            CreateMap<Group, IGroupDto>();
+            CreateMap<IGroupDto, Group>();
+
+            CreateMap<Keeper, IKeeperDto>();
+            CreateMap<IKeeperDto, Keeper>();
+
+            CreateMap<Membership, IMembershipDto>();
+            CreateMap<IMembershipDto, Membership>();
+
+            CreateMap<Permit, IPermitDto>();
+            CreateMap<IPermitDto, Permit>();
+
+            CreateMap<User, IUserDto>()
                 // Always ignore User.Password when mapping to UserDTO
                 .ForMember(dest => dest.Password, opt => opt.Ignore());
-            CreateMap<UserDto, User>();
+            CreateMap<IUserDto, User>();
+            CreateMap<IUserSessionDto, User>();
         }
     }
 }
