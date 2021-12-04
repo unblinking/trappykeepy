@@ -9,7 +9,7 @@ namespace TrappyKeepy.Api.Controllers
     /// <summary>
     /// The keeper controller.
     /// </summary>
-    [Route("v1/keeper")]
+    [Route("v1/keepers")]
     [ApiController]
     [Authorize]
     public class KeeperController : ControllerBase
@@ -20,19 +20,36 @@ namespace TrappyKeepy.Api.Controllers
         private readonly IKeeperService _keeperService;
 
         /// <summary>
+        /// The permit service.
+        /// </summary>
+        private readonly IPermitService _permitService;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="keeperService"></param>
-        public KeeperController(IKeeperService keeperService)
+        public KeeperController(IKeeperService keeperService, IPermitService permitService)
         {
             _keeperService = keeperService;
+            _permitService = permitService;
         }
+
+        #region CREATE
 
         /// <summary>
         /// Creates a new keeper.
         /// </summary>
         /// <param name="metadata"></param>
         /// <param name="file"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request POST 'https://api.trappykeepy.com/v1/keepers' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --form 'file=@"AOhhVLaro/dummy.pdf"' \
+        /// --form 'filename="dummy6"' \
+        /// --form 'description="A pdf file"'
+        /// </code>
+        /// </example>
         /// <returns></returns>
         [HttpPost("")]
         [Authorize(Roles = "manager, admin")]
@@ -121,7 +138,22 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
+        #endregion CREATE
+
+        #region READ
+
+        /// <summary>
+        /// Read all existing keepers.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/keepers' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
         [HttpGet("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadAll()
         {
             try
@@ -150,6 +182,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadById(Guid id)
         {
             try
@@ -193,6 +226,50 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Read all existing permits for a keeper.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/keepers/00000000-0000-0000-0000-000000000000/permits' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>An array of all existing permit objects for the specified keeper id.</returns>
+        [HttpGet("v1/keepers/{id}/permits")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> ReadPermitsByKeeperId(Guid id)
+        {
+            try
+            {
+                var serviceRequest = new PermitServiceRequest(id);
+                var serviceResponse = await _permitService.ReadByKeeperId(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.Item);
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
+        #endregion READ
+
+        #region UPDATE
+
         [HttpPut("")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> UpdateById([FromBody] KeeperDto keeperDto)
@@ -222,6 +299,10 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
+        #endregion UPDATE
+
+        #region DELETE
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteById(Guid id)
@@ -250,5 +331,7 @@ namespace TrappyKeepy.Api.Controllers
             }
             return StatusCode(500);
         }
+
+        #endregion DELETE
     }
 }

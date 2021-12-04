@@ -8,9 +8,9 @@ namespace TrappyKeepy.Api.Controllers
     /// <summary>
     /// The membership controller.
     /// </summary>
-    [Route("v1/membership")]
+    [Route("v1/memberships")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+    [Authorize]
     public class MembershipController : ControllerBase
     {
         /// <summary>
@@ -28,6 +28,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpPost("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Create([FromBody] MembershipDto membershipDto)
         {
             try
@@ -56,6 +57,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpGet("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadAll()
         {
             try
@@ -84,6 +86,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpGet("/v1/membership/group/{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadByGroupId(Guid id)
         {
             try
@@ -112,6 +115,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpGet("/v1/membership/user/{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadByUserId(Guid id)
         {
             try
@@ -140,6 +144,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteById(Guid id)
         {
             try
@@ -168,6 +173,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpDelete("/v1/membership/group/{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteByGroupId(Guid id)
         {
             try
@@ -196,6 +202,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpDelete("/v1/membership/user/{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteByUserId(Guid id)
         {
             try

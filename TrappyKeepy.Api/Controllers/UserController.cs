@@ -10,7 +10,7 @@ namespace TrappyKeepy.Api.Controllers
     /// </summary>
     [Route("v1/users")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -41,6 +41,7 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns>The new user object including the unique id.</returns>
         [HttpPost("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Create([FromBody] UserDto userDto)
         {
             try
@@ -83,6 +84,7 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns>An array of all existing user objects.</returns>
         [HttpGet("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadAll()
         {
             try
@@ -122,6 +124,7 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns>An existing user object.</returns>
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadById(Guid id)
         {
             try
@@ -172,6 +175,7 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns>A message if successful.</returns>
         [HttpPut("/v1/users/{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Update([FromRoute] Guid id, [FromBody] UserDto userDto)
         {
             try
@@ -219,6 +223,7 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns>A message if successful.</returns>
         [HttpPut("/v1/users/{id}/password")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> UpdatePassword([FromRoute] Guid id, [FromBody] UserDto userDto)
         {
             try
@@ -265,6 +270,7 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns>A message if successful.</returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteById(Guid id)
         {
             try

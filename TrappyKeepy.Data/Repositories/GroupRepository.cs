@@ -16,7 +16,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.groups_create('{group.Name}');";
+                command.CommandText = $"SELECT * FROM tk.groups_create('{group.Name}'";
 
                 if (group.Description is not null) command.CommandText += $", '{group.Description}'";
                 else command.CommandText += $", null";

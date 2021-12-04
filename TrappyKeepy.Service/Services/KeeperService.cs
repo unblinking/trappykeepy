@@ -72,6 +72,8 @@ namespace TrappyKeepy.Service
                     return response;
                 }
 
+                // TODO: Verify the user has permission to upload (manager or admin).
+
                 // Verify the requested file name is not already in use.
                 var existingNameCount = await _uow.keepers.CountByColumnValue("filename", keeper.Filename);
                 if (existingNameCount > 0)
@@ -120,6 +122,8 @@ namespace TrappyKeepy.Service
 
             try
             {
+                // TODO: Only read the documents that the authorized user has a permit to read.
+
                 // Read the keeper records now.
                 var keepers = await _uow.keepers.ReadAll();
 

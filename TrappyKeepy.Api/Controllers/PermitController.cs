@@ -8,9 +8,9 @@ namespace TrappyKeepy.Api.Controllers
     /// <summary>
     /// The permit controller.
     /// </summary>
-    [Route("v1/permit")]
+    [Route("v1/permits")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+    [Authorize]
     public class PermitController : ControllerBase
     {
         /// <summary>
@@ -44,6 +44,7 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns>The new permit object including the unique id.</returns>
         [HttpPost("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Create([FromBody] PermitDto permitDto)
         {
             try
@@ -70,6 +71,57 @@ namespace TrappyKeepy.Api.Controllers
             }
             return StatusCode(500);
         }
+
+        /// <summary>
+        /// Read all existing permits.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/permits' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>An array of all existing permit objects.</returns>
+        [HttpGet("")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> ReadAll()
+        {
+            try
+            {
+                var serviceRequest = new PermitServiceRequest();
+                var serviceResponse = await _permitService.ReadAll(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.List);
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -11,6 +11,7 @@ namespace TrappyKeepy.Api.Controllers
     /// </summary>
     [Route("v1/sessions")]
     [ApiController]
+    [Authorize]
     public class SessionController : ControllerBase
     {
         private readonly IUserService _userService;

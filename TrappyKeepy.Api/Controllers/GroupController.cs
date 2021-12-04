@@ -8,9 +8,9 @@ namespace TrappyKeepy.Api.Controllers
     /// <summary>
     /// The group controller.
     /// </summary>
-    [Route("v1/group")]
+    [Route("v1/groups")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+    [Authorize]
     public class GroupController : ControllerBase
     {
         /// <summary>
@@ -33,11 +33,18 @@ namespace TrappyKeepy.Api.Controllers
         /// <param name="groupDto"></param>
         /// <example>
         /// <code>
-
+        /// curl --location --request POST 'https://api.trappykeepy.com/v1/groups' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "name": "foo",
+        ///     "description": "bar"
+        /// }'
         /// </code>
         /// </example>
         /// <returns></returns>
         [HttpPost("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Create([FromBody] GroupDto groupDto)
         {
             try
@@ -66,6 +73,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpGet("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadAll()
         {
             try
@@ -96,6 +104,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadById(Guid id)
         {
             try
@@ -124,6 +133,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpPut("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> UpdateById([FromBody] GroupDto groupDto)
         {
             try
@@ -152,6 +162,7 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteById(Guid id)
         {
             try
