@@ -9,7 +9,7 @@ namespace TrappyKeepy.Data.Repositories
     {
         public PermitRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
         public async Task<Permit> Create(Permit permit)
@@ -221,7 +221,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.permits_count_by_column_value_uuid('{column}', '{id}');";
-                
+
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)

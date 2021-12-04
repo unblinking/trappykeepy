@@ -87,7 +87,7 @@
         /// The associated Filedata.BinaryData value.
         /// </summary>
         public byte[]? BinaryData { get; set; }
-        
+
         /// <summary>
         /// If no keeper is provided, instantiate a new one in the Item.
         /// </summary>

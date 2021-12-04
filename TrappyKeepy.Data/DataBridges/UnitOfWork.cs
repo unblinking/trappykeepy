@@ -13,19 +13,19 @@ namespace TrappyKeepy.Data
     {
         #region Private repository objects.
 
-        private IFiledataRepository? filedataRepository;
-        private IGroupRepository? groupRepository;
-        private IKeeperRepository? keeperRepository;
-        private IMembershipRepository? membershipRepository;
-        private IPermitRepository? permitRepository;
-        private IUserRepository? userRepository;
+        private IFiledataRepository? _filedataRepository;
+        private IGroupRepository? _groupRepository;
+        private IKeeperRepository? _keeperRepository;
+        private IMembershipRepository? _membershipRepository;
+        private IPermitRepository? _permitRepository;
+        private IUserRepository? _userRepository;
 
         #endregion Private repository objects.
 
         // Private database connection and transaction.
-        private string connectionString = $"{Environment.GetEnvironmentVariable("TKDB_CONN_STRING")}";
-        private NpgsqlConnection connection;
-        private NpgsqlTransaction? transaction;
+        private string _connectionString = $"{Environment.GetEnvironmentVariable("TKDB_CONN_STRING")}";
+        private NpgsqlConnection _connection;
+        private NpgsqlTransaction? _transaction;
 
         private bool disposed;
 
@@ -35,8 +35,8 @@ namespace TrappyKeepy.Data
         /// </summary>
         public UnitOfWork()
         {
-            this.connection = new NpgsqlConnection(this.connectionString);
-            this.connection.Open();
+            _connection = new NpgsqlConnection(_connectionString);
+            _connection.Open();
         }
 
         #region Transaction methods.
@@ -46,7 +46,7 @@ namespace TrappyKeepy.Data
         /// </summary>
         public void Begin()
         {
-            this.transaction = connection.BeginTransaction();
+            _transaction = _connection.BeginTransaction();
         }
 
         /// <summary>
@@ -54,9 +54,9 @@ namespace TrappyKeepy.Data
         /// </summary>
         public void Commit()
         {
-            if (transaction is not null) transaction.Commit();
-            if (transaction is not null && transaction.Connection is not null) transaction.Connection.Close();
-            if (connection is not null) connection.Close();
+            if (_transaction is not null) _transaction.Commit();
+            if (_transaction is not null && _transaction.Connection is not null) _transaction.Connection.Close();
+            if (_connection is not null) _connection.Close();
         }
 
         /// <summary>
@@ -64,8 +64,8 @@ namespace TrappyKeepy.Data
         /// </summary>
         public void Rollback()
         {
-            if (transaction is not null) transaction.Rollback();
-            if (transaction is not null && transaction.Connection is not null) transaction.Connection.Close();
+            if (_transaction is not null) _transaction.Rollback();
+            if (_transaction is not null && _transaction.Connection is not null) _transaction.Connection.Close();
         }
 
         #endregion Transaction methods.
@@ -80,8 +80,8 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.filedataRepository is null) filedataRepository = new FiledataRepository(connection);
-                return filedataRepository;
+                if (_filedataRepository is null) _filedataRepository = new FiledataRepository(_connection);
+                return _filedataRepository;
             }
         }
 
@@ -93,8 +93,8 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.groupRepository is null) groupRepository = new GroupRepository(connection);
-                return groupRepository;
+                if (_groupRepository is null) _groupRepository = new GroupRepository(_connection);
+                return _groupRepository;
             }
         }
 
@@ -106,8 +106,8 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.keeperRepository is null) keeperRepository = new KeeperRepository(connection);
-                return keeperRepository;
+                if (_keeperRepository is null) _keeperRepository = new KeeperRepository(_connection);
+                return _keeperRepository;
             }
         }
 
@@ -119,8 +119,8 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.membershipRepository is null) membershipRepository = new MembershipRepository(connection);
-                return membershipRepository;
+                if (_membershipRepository is null) _membershipRepository = new MembershipRepository(_connection);
+                return _membershipRepository;
             }
         }
 
@@ -132,8 +132,8 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.permitRepository is null) permitRepository = new PermitRepository(connection);
-                return permitRepository;
+                if (_permitRepository is null) _permitRepository = new PermitRepository(_connection);
+                return _permitRepository;
             }
         }
 
@@ -145,8 +145,8 @@ namespace TrappyKeepy.Data
         {
             get
             {
-                if (this.userRepository is null) userRepository = new UserRepository(connection);
-                return userRepository;
+                if (_userRepository is null) _userRepository = new UserRepository(_connection);
+                return _userRepository;
             }
         }
 
@@ -167,15 +167,15 @@ namespace TrappyKeepy.Data
                 // If we are in a transaction, but the connection wasn't closed,
                 // then something went wrong. The connection should be closed
                 // immediately after the transaction commit.
-                if (transaction is not null && transaction.Connection is not null)
+                if (_transaction is not null && _transaction.Connection is not null)
                 {
-                    transaction.Rollback();
-                    transaction.Connection.Close();
+                    _transaction.Rollback();
+                    _transaction.Connection.Close();
                 }
-                if (connection is not null)
+                if (_connection is not null)
                 {
-                    connection.Close();
-                    connection.Dispose();
+                    _connection.Close();
+                    _connection.Dispose();
                 }
                 disposed = true;
             }

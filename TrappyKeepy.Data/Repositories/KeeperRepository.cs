@@ -9,7 +9,7 @@ namespace TrappyKeepy.Data.Repositories
     {
         public KeeperRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
         public async Task<Keeper> Create(Keeper keeper)
@@ -120,7 +120,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.keepers_count_by_column_value_text('{column}', '{value}');";
-                
+
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)

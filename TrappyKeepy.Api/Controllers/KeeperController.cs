@@ -14,13 +14,26 @@ namespace TrappyKeepy.Api.Controllers
     [Authorize]
     public class KeeperController : ControllerBase
     {
-        private readonly IKeeperService keeperService;
+        /// <summary>
+        /// The keeper service.
+        /// </summary>
+        private readonly IKeeperService _keeperService;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="keeperService"></param>
         public KeeperController(IKeeperService keeperService)
         {
-            this.keeperService = keeperService;
+            _keeperService = keeperService;
         }
 
+        /// <summary>
+        /// Creates a new keeper.
+        /// </summary>
+        /// <param name="metadata"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
         [HttpPost("")]
         [Authorize(Roles = "manager, admin")]
         public async Task<ActionResult> Create(IFormCollection metadata, IFormFile file)
@@ -29,6 +42,7 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
+                // Determine the id of the user from their authorization token.
                 string? authorizedIdString = User?.FindFirst("id")?.Value;
                 if (authorizedIdString is null)
                 {
@@ -53,7 +67,7 @@ namespace TrappyKeepy.Api.Controllers
                     await file.CopyToAsync(ms);
                     binaryData = ms.ToArray();
                 }
-                // Verify the binar file data was successfully received.
+                // Verify the binary file data was successfully received.
                 if (binaryData is not { Length: > 0 })
                 {
                     response.Fail("No file data was received.");
@@ -71,7 +85,7 @@ namespace TrappyKeepy.Api.Controllers
                 var serviceRequest = new KeeperServiceRequest()
                 {
                     BinaryData = binaryData,
-                    Item = new Keeper()
+                    Item = new KeeperDto()
                     {
                         Filename = filename,
                         ContentType = contentType,
@@ -82,7 +96,7 @@ namespace TrappyKeepy.Api.Controllers
                 };
 
                 // Wait for the service response.
-                var serviceResponse = await keeperService.Create(serviceRequest);
+                var serviceResponse = await _keeperService.Create(serviceRequest);
 
                 // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
@@ -112,15 +126,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new KeeperServiceRequest();
-
-                // Wait for the service response.
-                var serviceResponse = await keeperService.ReadAll(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _keeperService.ReadAll(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -130,7 +138,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.List); // KeeperDto objects.
+                        response.Success(serviceResponse.List);
                         return Ok(response);
                 }
             }
@@ -138,8 +146,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -148,15 +154,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new KeeperServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await keeperService.ReadById(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _keeperService.ReadById(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -167,7 +167,7 @@ namespace TrappyKeepy.Api.Controllers
                         return BadRequest(response);
                     case OutcomeType.Success:
                         // Verify we really have the filename and binary data if we think we have achieved success.
-                        if (serviceResponse.Item?.Filename is null || serviceResponse.Item?.BinaryData is not { Length: > 0 })
+                        if (serviceResponse.Item?.Filename is null || serviceResponse.BinaryData is not { Length: > 0 })
                         {
                             throw new Exception("Keeper service replied with succcess but filename or binary data not returned.");
                         }
@@ -179,7 +179,7 @@ namespace TrappyKeepy.Api.Controllers
                             throw new Exception("Could not determine content type for a keeper from the database.");
                         }
                         // Set and return the file content result.
-                        var fileContentResult = new FileContentResult(serviceResponse.Item.BinaryData, contentType)
+                        var fileContentResult = new FileContentResult(serviceResponse.BinaryData, contentType)
                         {
                             FileDownloadName = serviceResponse.Item.Filename
                         };
@@ -190,8 +190,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -201,27 +199,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
+                var serviceRequest = new KeeperServiceRequest(keeperDto);
+                var serviceResponse = await _keeperService.UpdateById(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (keeperDto.Id is null || keeperDto.Id == Guid.Empty || (Guid)keeperDto.Id == Guid.Empty)
-                {
-                    response.Fail("Keeper id is required to update a keeper by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a keeper from the keeperDto to pass to the service.
-                var keeper = new Keeper() { Id = (Guid)keeperDto.Id };
-                if (keeperDto.Filename is not null) keeper.Filename = keeperDto.Filename;
-                if (keeperDto.Description is not null) keeper.Description = keeperDto.Description;
-                if (keeperDto.Category is not null) keeper.Category = keeperDto.Category;
-
-                // Prepare the service request.
-                var serviceRequest = new KeeperServiceRequest(keeper);
-
-                // Wait for the service response.
-                var serviceResponse = await keeperService.UpdateById(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -239,8 +219,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -250,21 +228,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                if (id == Guid.Empty || (Guid)id == Guid.Empty)
-                {
-                    response.Fail("Keeper id is required to delete a keeper by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare the service request.
                 var serviceRequest = new KeeperServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await keeperService.DeleteById(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _keeperService.DeleteById(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -282,8 +248,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
     }

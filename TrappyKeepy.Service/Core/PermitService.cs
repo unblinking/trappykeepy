@@ -130,17 +130,17 @@ namespace TrappyKeepy.Service
             var response = new PermitServiceResponse();
 
             // Verify required parameters.
-            if (request.Item?.KeeperId is null || request.Item.KeeperId == Guid.Empty)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "KeeperId (UUID) is required to find a permit by keeper id.";
+                response.ErrorMessage = "Id (UUID) is required to find a permit by keeper id.";
                 return response;
             }
 
             try
             {
                 // Read the permit record now.
-                var permits = await _uow.permits.ReadByKeeperId((Guid)request.Item.KeeperId);
+                var permits = await _uow.permits.ReadByKeeperId((Guid)request.Id);
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var permitDtos = new List<IPermitDto>();
@@ -168,17 +168,17 @@ namespace TrappyKeepy.Service
             var response = new PermitServiceResponse();
 
             // Verify required parameters.
-            if (request.Item?.UserId is null || request.Item.UserId == Guid.Empty)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "UserId (UUID) is required to find a permit by user id.";
+                response.ErrorMessage = "Id (UUID) is required to find a permit by user id.";
                 return response;
             }
 
             try
             {
                 // Read the permit record now.
-                var permits = await _uow.permits.ReadByUserId((Guid)request.Item.UserId);
+                var permits = await _uow.permits.ReadByUserId((Guid)request.Id);
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var permitDtos = new List<IPermitDto>();
@@ -206,17 +206,17 @@ namespace TrappyKeepy.Service
             var response = new PermitServiceResponse();
 
             // Verify required parameters.
-            if (request.Item?.GroupId is null || request.Item.GroupId == Guid.Empty)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "GroupId (UUID) is required to find a permit by group id.";
+                response.ErrorMessage = "Id (UUID) is required to find a permit by group id.";
                 return response;
             }
 
             try
             {
                 // Read the permit record now.
-                var permits = await _uow.permits.ReadByGroupId((Guid)request.Item.GroupId);
+                var permits = await _uow.permits.ReadByGroupId((Guid)request.Id);
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var permitDtos = new List<IPermitDto>();

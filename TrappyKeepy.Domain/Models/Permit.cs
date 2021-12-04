@@ -33,5 +33,15 @@ namespace TrappyKeepy.Domain.Models
         /// </summary>
         [Column("group_id")]
         public Guid? GroupId { get; set; }
+
+        [ForeignKey(nameof(GroupId))]
+        [InverseProperty("Permits")]
+        public virtual Group? Group { get; set; }
+        [ForeignKey(nameof(KeeperId))]
+        [InverseProperty("Permits")]
+        public virtual Keeper Keeper { get; set; } = null!;
+        [ForeignKey(nameof(UserId))]
+        [InverseProperty("Permits")]
+        public virtual User? User { get; set; }
     }
 }

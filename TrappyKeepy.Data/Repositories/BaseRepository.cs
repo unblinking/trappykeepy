@@ -5,16 +5,16 @@ namespace TrappyKeepy.Data.Repositories
 {
     public abstract class BaseRepository : IBaseRepository
     {
-        protected NpgsqlConnection connection;
+        protected NpgsqlConnection _connection;
 
         public BaseRepository(NpgsqlConnection connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
         public async Task<NpgsqlDataReader> RunQuery(NpgsqlCommand command)
         {
-            command.Connection = this.connection;
+            command.Connection = _connection;
             await command.PrepareAsync();
             var reader = await command.ExecuteReaderAsync();
             return reader;
@@ -22,14 +22,14 @@ namespace TrappyKeepy.Data.Repositories
 
         public async Task RunNonQuery(NpgsqlCommand command)
         {
-            command.Connection = this.connection;
+            command.Connection = _connection;
             await command.PrepareAsync();
             await command.ExecuteNonQueryAsync();
         }
 
         public async Task<object?> RunScalar(NpgsqlCommand command)
         {
-            command.Connection = this.connection;
+            command.Connection = _connection;
             object? result = await command.ExecuteScalarAsync();
             return result;
         }

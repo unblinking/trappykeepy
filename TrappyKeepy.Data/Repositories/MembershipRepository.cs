@@ -9,7 +9,7 @@ namespace TrappyKeepy.Data.Repositories
     {
         public MembershipRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
         public async Task<Membership> Create(Membership membership)

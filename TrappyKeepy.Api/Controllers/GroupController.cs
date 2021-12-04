@@ -13,40 +13,38 @@ namespace TrappyKeepy.Api.Controllers
     [Authorize(Roles = "admin")]
     public class GroupController : ControllerBase
     {
-        private readonly IGroupService groupService;
+        /// <summary>
+        /// The group service.
+        /// </summary>
+        private readonly IGroupService _groupService;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="groupService"></param>
         public GroupController(IGroupService groupService)
         {
-            this.groupService = groupService;
+            _groupService = groupService;
         }
 
+        /// <summary>
+        /// Creates a new group.
+        /// </summary>
+        /// <param name="groupDto"></param>
+        /// <example>
+        /// <code>
+
+        /// </code>
+        /// </example>
+        /// <returns></returns>
         [HttpPost("")]
         public async Task<ActionResult> Create([FromBody] GroupDto groupDto)
         {
             try
             {
+                var serviceRequest = new GroupServiceRequest(groupDto);
+                var serviceResponse = await _groupService.Create(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (groupDto.Name is null)
-                {
-                    response.Fail("Name is required to create a group.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a group from the groupDto to pass to the service.
-                var group = new Group()
-                {
-                    Name = groupDto.Name,
-                    Description = groupDto.Description
-                };
-
-                // Prepare the service request.
-                var serviceRequest = new GroupServiceRequest(group);
-
-                // Wait for the service response.
-                var serviceResponse = await groupService.Create(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -56,7 +54,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // GroupDto with new id from db insert.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -64,8 +62,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -74,15 +70,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new GroupServiceRequest();
-
-                // Wait for the service response.
-                var serviceResponse = await groupService.ReadAll(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _groupService.ReadAll(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -92,7 +82,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.List); // GroupDto objects.
+                        response.Success(serviceResponse.List);
                         return Ok(response);
                 }
             }
@@ -110,15 +100,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new GroupServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await groupService.ReadById(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _groupService.ReadById(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -128,7 +112,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // GroupDto object.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -136,8 +120,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -146,26 +128,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
+                var serviceRequest = new GroupServiceRequest(groupDto);
+                var serviceResponse = await _groupService.UpdateById(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (groupDto.Id is null || groupDto.Id == Guid.Empty || (Guid)groupDto.Id == Guid.Empty)
-                {
-                    response.Fail("Group id is required to update a group by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a group from the groupDto to pass to the service.
-                var group = new Group() { Id = (Guid)groupDto.Id };
-                if (groupDto.Name is not null) group.Name = groupDto.Name;
-                if (groupDto.Description is not null) group.Description = groupDto.Description;
-
-                // Prepare the service request.
-                var serviceRequest = new GroupServiceRequest(group);
-
-                // Wait for the service response.
-                var serviceResponse = await groupService.UpdateById(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -183,8 +148,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -193,21 +156,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                if (id == Guid.Empty || (Guid)id == Guid.Empty)
-                {
-                    response.Fail("Group id is required to delete a group by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare the service request.
                 var serviceRequest = new GroupServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await groupService.DeleteById(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _groupService.DeleteById(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -225,10 +176,7 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
-
     }
 }

@@ -125,7 +125,7 @@ namespace TrappyKeepy.Service
             var response = new GroupServiceResponse();
 
             // Verify required parameters.
-            if (request.Id is null)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "Id (UUID) is required to find a group by group id.";

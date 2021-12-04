@@ -9,7 +9,7 @@ namespace TrappyKeepy.Data.Repositories
     {
         public UserRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
         public async Task<User> Create(User user)
@@ -152,7 +152,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_authenticate('{user.Email}', '{user.Password}');";
-                
+
                 var reader = await RunQuery(command);
                 var authenticatedUser = new User();
                 while (await reader.ReadAsync())

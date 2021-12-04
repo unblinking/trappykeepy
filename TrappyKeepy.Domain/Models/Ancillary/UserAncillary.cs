@@ -35,10 +35,10 @@
         public string Email { get; set; }
         public string Password { get; set; }
 
-        public UserSessionDto(string e, string p)
+        public UserSessionDto(string email, string password)
         {
-            Email = e;
-            Password = p;
+            Email = email;
+            Password = password;
         }
     }
 }

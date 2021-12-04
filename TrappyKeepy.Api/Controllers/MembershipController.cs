@@ -13,11 +13,18 @@ namespace TrappyKeepy.Api.Controllers
     [Authorize(Roles = "admin")]
     public class MembershipController : ControllerBase
     {
-        private readonly IMembershipService membershipService;
+        /// <summary>
+        /// The membership service.
+        /// </summary>
+        private readonly IMembershipService _membershipService;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="membershipService"></param>
         public MembershipController(IMembershipService membershipService)
         {
-            this.membershipService = membershipService;
+            _membershipService = membershipService;
         }
 
         [HttpPost("")]
@@ -25,41 +32,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
+                var serviceRequest = new MembershipServiceRequest(membershipDto);
+                var serviceResponse = await _membershipService.Create(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (
-                    membershipDto.GroupId is null ||
-                    membershipDto.GroupId == Guid.Empty ||
-                    (Guid)membershipDto.GroupId == Guid.Empty
-                )
-                {
-                    response.Fail("Group id is required to create a group membership.");
-                    return BadRequest(response);
-                }
-                if (
-                    membershipDto.UserId is null ||
-                    membershipDto.UserId == Guid.Empty ||
-                    (Guid)membershipDto.UserId == Guid.Empty
-                )
-                {
-                    response.Fail("User id is required to create a group membership.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a membership from the membershipDto to pass to the service.
-                var membership = new Membership()
-                {
-                    GroupId = (Guid)membershipDto.GroupId,
-                    UserId = (Guid)membershipDto.UserId
-                };
-
-                // Prepare the service request.
-                var serviceRequest = new MembershipServiceRequest(membership);
-
-                // Wait for the service response.
-                var serviceResponse = await membershipService.Create(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -69,7 +44,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // MembershipDto with new id from db insert.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -77,8 +52,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -87,15 +60,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new MembershipServiceRequest();
-
-                // Wait for the service response.
-                var serviceResponse = await membershipService.ReadAll(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _membershipService.ReadAll(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -105,7 +72,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.List); // MembershipDto objects.
+                        response.Success(serviceResponse.List);
                         return Ok(response);
                 }
             }
@@ -113,25 +80,17 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
         [HttpGet("/v1/membership/group/{id}")]
-        public async Task<ActionResult> ReadByGroupId(Guid group_id)
+        public async Task<ActionResult> ReadByGroupId(Guid id)
         {
             try
             {
+                var serviceRequest = new MembershipServiceRequest(id);
+                var serviceResponse = await _membershipService.ReadByGroupId(serviceRequest);
                 var response = new ControllerResponse();
-
-                // Prepare the service request.
-                var serviceRequest = new MembershipServiceRequest(group_id);
-
-                // Wait for the service response.
-                var serviceResponse = await membershipService.ReadByGroupId(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -141,7 +100,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // MembershipDto object.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -149,25 +108,17 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
         [HttpGet("/v1/membership/user/{id}")]
-        public async Task<ActionResult> ReadByUserId(Guid user_id)
+        public async Task<ActionResult> ReadByUserId(Guid id)
         {
             try
             {
+                var serviceRequest = new MembershipServiceRequest(id);
+                var serviceResponse = await _membershipService.ReadByUserId(serviceRequest);
                 var response = new ControllerResponse();
-
-                // Prepare the service request.
-                var serviceRequest = new MembershipServiceRequest(user_id);
-
-                // Wait for the service response.
-                var serviceResponse = await membershipService.ReadByUserId(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -177,7 +128,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // MembershipDto object.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -185,8 +136,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -195,21 +144,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                if (id == Guid.Empty || (Guid)id == Guid.Empty)
-                {
-                    response.Fail("Membership id is required to delete a specific user membership by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare the service request.
                 var serviceRequest = new MembershipServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await membershipService.DeleteByUserId(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _membershipService.DeleteByUserId(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -227,31 +164,17 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
         [HttpDelete("/v1/membership/group/{id}")]
-        public async Task<ActionResult> DeleteByGroupId(Guid group_id)
+        public async Task<ActionResult> DeleteByGroupId(Guid id)
         {
             try
             {
+                var serviceRequest = new MembershipServiceRequest(id);
+                var serviceResponse = await _membershipService.DeleteByGroupId(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (group_id == Guid.Empty || (Guid)group_id == Guid.Empty)
-                {
-                    response.Fail("Group id is required to delete all memberships by group id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare the service request.
-                var serviceRequest = new MembershipServiceRequest(group_id);
-
-                // Wait for the service response.
-                var serviceResponse = await membershipService.DeleteByGroupId(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -269,31 +192,17 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
         [HttpDelete("/v1/membership/user/{id}")]
-        public async Task<ActionResult> DeleteByUserId(Guid user_id)
+        public async Task<ActionResult> DeleteByUserId(Guid id)
         {
             try
             {
+                var serviceRequest = new MembershipServiceRequest(id);
+                var serviceResponse = await _membershipService.DeleteByUserId(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (user_id == Guid.Empty || (Guid)user_id == Guid.Empty)
-                {
-                    response.Fail("User id is required to delete all memberships by user id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare the service request.
-                var serviceRequest = new MembershipServiceRequest(user_id);
-
-                // Wait for the service response.
-                var serviceResponse = await membershipService.DeleteByUserId(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -311,8 +220,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
     }

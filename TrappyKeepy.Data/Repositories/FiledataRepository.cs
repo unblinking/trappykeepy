@@ -9,7 +9,7 @@ namespace TrappyKeepy.Data.Repositories
     {
         public FiledataRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
         public async Task<Guid> Create(Filedata filedata)
@@ -56,7 +56,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.filedatas_delete_by_keeper_id('{id}');";
-                
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)

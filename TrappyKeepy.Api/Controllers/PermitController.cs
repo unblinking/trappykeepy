@@ -13,13 +13,36 @@ namespace TrappyKeepy.Api.Controllers
     [Authorize(Roles = "admin")]
     public class PermitController : ControllerBase
     {
+        /// <summary>
+        /// The permit service.
+        /// </summary>
         private readonly IPermitService _permitService;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="permitService"></param>
         public PermitController(IPermitService permitService)
         {
             _permitService = permitService;
         }
 
+        /// <summary>
+        /// Creates a new permit.
+        /// </summary>
+        /// <param name="permitDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request POST 'https://localhost:7294/v1/permit' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "KeeperId": "079e0237-fa94-453d-b089-5ff7480adc32",
+        ///     "UserId": "079e0237-fa94-453d-b089-5ff7480adc32"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns>The new permit object including the unique id.</returns>
         [HttpPost("")]
         public async Task<ActionResult> Create([FromBody] PermitDto permitDto)
         {
@@ -47,6 +70,9 @@ namespace TrappyKeepy.Api.Controllers
             }
             return StatusCode(500);
         }
+
+
+
 
     }
 }

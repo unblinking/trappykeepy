@@ -14,6 +14,11 @@ namespace TrappyKeepy.Domain.Models
     [Index(nameof(UserPosted), Name = "user_posted_index")]
     public partial class Keeper
     {
+        public Keeper()
+        {
+            Permits = new HashSet<Permit>();
+        }
+
         /// <summary>
         /// UUID primary key.
         /// </summary>
@@ -56,5 +61,7 @@ namespace TrappyKeepy.Domain.Models
         public virtual User UserPostedNavigation { get; set; } = null!;
         [InverseProperty("Keeper")]
         public virtual Filedata Filedata { get; set; } = null!;
+        [InverseProperty(nameof(Permit.Keeper))]
+        public virtual ICollection<Permit> Permits { get; set; }
     }
 }

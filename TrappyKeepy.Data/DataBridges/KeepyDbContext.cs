@@ -141,6 +141,22 @@ namespace TrappyKeepy.Data
                 entity.Property(e => e.KeeperId).HasComment("UUID from the tk.keepers table.");
 
                 entity.Property(e => e.UserId).HasComment("UUID from the tk.users table.");
+
+                entity.HasOne(d => d.Group)
+                    .WithMany(p => p.Permits)
+                    .HasForeignKey(d => d.GroupId)
+                    .HasConstraintName("fk_group_of_permits");
+
+                entity.HasOne(d => d.Keeper)
+                    .WithMany(p => p.Permits)
+                    .HasForeignKey(d => d.KeeperId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_keeper_of_permits");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Permits)
+                    .HasForeignKey(d => d.UserId)
+                    .HasConstraintName("fk_user_of_permits");
             });
 
             modelBuilder.Entity<User>(entity =>

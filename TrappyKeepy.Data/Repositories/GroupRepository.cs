@@ -9,7 +9,7 @@ namespace TrappyKeepy.Data.Repositories
     {
         public GroupRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
         public async Task<Group> Create(Group group)
@@ -116,7 +116,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.groups_count_by_column_value_text('{column}', '{value}');";
-                
+
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)
