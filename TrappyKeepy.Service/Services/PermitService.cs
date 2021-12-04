@@ -77,7 +77,7 @@ namespace TrappyKeepy.Service
                 _uow.Commit();
 
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<IPermitDto>(newPermit);
+                response.Item = _mapper.Map<PermitDto>(newPermit);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -106,7 +106,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var permitDtos = new List<IPermitDto>();
-                foreach (var permit in permits) permitDtos.Add(_mapper.Map<IPermitDto>(permit));
+                foreach (var permit in permits) permitDtos.Add(_mapper.Map<PermitDto>(permit));
                 response.List = permitDtos;
 
                 // Success if we made it this far.
@@ -144,7 +144,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var permitDtos = new List<IPermitDto>();
-                foreach (var permit in permits) permitDtos.Add(_mapper.Map<IPermitDto>(permit));
+                foreach (var permit in permits) permitDtos.Add(_mapper.Map<PermitDto>(permit));
                 response.List = permitDtos;
 
                 // Success if we made it this far.
@@ -182,7 +182,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var permitDtos = new List<IPermitDto>();
-                foreach (var permit in permits) permitDtos.Add(_mapper.Map<IPermitDto>(permit));
+                foreach (var permit in permits) permitDtos.Add(_mapper.Map<PermitDto>(permit));
                 response.List = permitDtos;
 
                 // Success if we made it this far.
@@ -220,7 +220,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var permitDtos = new List<IPermitDto>();
-                foreach (var permit in permits) permitDtos.Add(_mapper.Map<IPermitDto>(permit));
+                foreach (var permit in permits) permitDtos.Add(_mapper.Map<PermitDto>(permit));
                 response.List = permitDtos;
 
                 // Success if we made it this far.

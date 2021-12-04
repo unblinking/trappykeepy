@@ -75,7 +75,7 @@ namespace TrappyKeepy.Service
                 _uow.Commit();
 
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<IMembershipDto>(newMembership);
+                response.Item = _mapper.Map<MembershipDto>(newMembership);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -104,7 +104,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var membershipDtos = new List<IMembershipDto>();
-                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<IMembershipDto>(membership));
+                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<MembershipDto>(membership));
                 response.List = membershipDtos;
 
                 // Success if we made it this far.
@@ -142,7 +142,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var membershipDtos = new List<IMembershipDto>();
-                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<IMembershipDto>(membership));
+                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<MembershipDto>(membership));
                 response.List = membershipDtos;
 
                 // Success if we made it this far.
@@ -180,7 +180,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var membershipDtos = new List<IMembershipDto>();
-                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<IMembershipDto>(membership));
+                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<MembershipDto>(membership));
                 response.List = membershipDtos;
 
                 // Success if we made it this far.

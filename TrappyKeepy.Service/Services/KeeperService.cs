@@ -96,7 +96,7 @@ namespace TrappyKeepy.Service
                 _uow.Commit();
 
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<IKeeperDto>(newKeeper);
+                response.Item = _mapper.Map<KeeperDto>(newKeeper);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -125,7 +125,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var keeperDtos = new List<IKeeperDto>();
-                foreach (var keeper in keepers) keeperDtos.Add(_mapper.Map<IKeeperDto>(keeper));
+                foreach (var keeper in keepers) keeperDtos.Add(_mapper.Map<KeeperDto>(keeper));
                 response.List = keeperDtos;
 
                 // Success if we made it this far.
@@ -165,7 +165,7 @@ namespace TrappyKeepy.Service
                 var filedata = await _uow.filedatas.ReadByKeeperId((Guid)request.Id);
 
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<IKeeperDto>(keeper);
+                response.Item = _mapper.Map<KeeperDto>(keeper);
                 response.BinaryData = filedata.BinaryData;
 
                 // Success if we made it this far.

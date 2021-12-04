@@ -72,7 +72,7 @@ namespace TrappyKeepy.Service
                 _uow.Commit();
 
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<IGroupDto>(newGroup);
+                response.Item = _mapper.Map<GroupDto>(newGroup);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -101,7 +101,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var groupDtos = new List<IGroupDto>();
-                foreach (var group in groups) groupDtos.Add(_mapper.Map<IGroupDto>(group));
+                foreach (var group in groups) groupDtos.Add(_mapper.Map<GroupDto>(group));
                 response.List = groupDtos;
 
                 // Success if we made it this far.
@@ -146,7 +146,7 @@ namespace TrappyKeepy.Service
                 }
 
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<IGroupDto>(group);
+                response.Item = _mapper.Map<GroupDto>(group);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;

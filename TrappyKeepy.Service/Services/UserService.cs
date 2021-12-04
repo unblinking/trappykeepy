@@ -86,7 +86,7 @@ namespace TrappyKeepy.Service
                 _uow.Commit();
 
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<IUserDto>(newUser);
+                response.Item = _mapper.Map<UserDto>(newUser);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -115,7 +115,7 @@ namespace TrappyKeepy.Service
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var userDtos = new List<IUserDto>();
-                foreach (var user in users) userDtos.Add(_mapper.Map<IUserDto>(user));
+                foreach (var user in users) userDtos.Add(_mapper.Map<UserDto>(user));
                 response.List = userDtos;
 
                 // Success if we made it this far.
@@ -160,7 +160,7 @@ namespace TrappyKeepy.Service
                 }
 
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<IUserDto>(user);
+                response.Item = _mapper.Map<UserDto>(user);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -179,7 +179,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<IUserServiceResponse> UpdateById(IUserServiceRequest request)
+        public async Task<IUserServiceResponse> Update(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
@@ -187,7 +187,7 @@ namespace TrappyKeepy.Service
             if (request.Item?.Id is null || request.Item.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Id (UUID) is required to update a user by user id.";
+                response.ErrorMessage = "Id (UUID) is required to update a user.";
                 return response;
             }
 
@@ -238,7 +238,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<IUserServiceResponse> UpdatePasswordById(IUserServiceRequest request)
+        public async Task<IUserServiceResponse> UpdatePassword(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
@@ -246,7 +246,7 @@ namespace TrappyKeepy.Service
             if (request.Item?.Id is null || request.Item?.Id == Guid.Empty || request.Item?.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Id (UUID) and Password (TEXT) are required to update a user password by user id.";
+                response.ErrorMessage = "Id (UUID) and Password (TEXT) are required to update a user password.";
                 return response;
             }
 
@@ -372,7 +372,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<IUserServiceResponse> Authenticate(IUserServiceRequest request)
+        public async Task<IUserServiceResponse> CreateSession(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
@@ -404,6 +404,8 @@ namespace TrappyKeepy.Service
 
                 // Create an authentication token for the response to the controller.
                 response.Token = _jwt.Encode(authenticated.Id, authenticated.Role);
+
+                // TODO: Update the user's date_last_login.
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
