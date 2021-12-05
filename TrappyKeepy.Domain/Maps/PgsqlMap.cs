@@ -27,6 +27,7 @@ namespace TrappyKeepy.Domain.Maps
             {
                 Id = Guid.Parse($"{reader["id"].ToString()}"),
                 Filename = $"{reader["filename"].ToString()}",
+                ContentType = $"{reader["content_type"].ToString()}",
                 Description = reader["description"] is not DBNull ? $"{reader["description"].ToString()}" : null,
                 Category = reader["category"] is not DBNull ? $"{reader["category"].ToString()}" : null,
                 DatePosted = DateTime.Parse($"{reader["date_posted"].ToString()}"),

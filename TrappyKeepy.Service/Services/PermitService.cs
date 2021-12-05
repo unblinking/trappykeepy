@@ -61,6 +61,39 @@ namespace TrappyKeepy.Service
                 // Begin this transaction.
                 _uow.Begin();
 
+                // Verify that the KeeperId actually exists.
+                var existingKeeper = await _uow.keepers.ReadById(permit.KeeperId);
+                if (existingKeeper.Id != permit.KeeperId)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Requested new permit's KeeperId does not exist.";
+                    return response;
+                }
+
+                // If a UserId was given, verify that the UserId actually exists.
+                if (permit.UserId is not null && permit.UserId != Guid.Empty)
+                {
+                    var existingUser = await _uow.users.ReadById((Guid)permit.UserId);
+                    if (existingUser.Id != permit.UserId)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Requested new permit's UserId does not exist.";
+                        return response;
+                    }
+                }
+
+                // If a GroupId was given, verify that the GroupId actually exists.
+                if (permit.GroupId is not null && permit.GroupId != Guid.Empty)
+                {
+                    var existingGroup = await _uow.groups.ReadById((Guid)permit.GroupId);
+                    if (existingGroup.Id != permit.GroupId)
+                    {
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "Requested new permit's GroupId does not exist.";
+                        return response;
+                    }
+                }
+
                 // Verify the requested new permit doesn't already exist.
                 var existingCount = await _uow.permits.PermitMatchCount(permit);
                 if (existingCount > 0)

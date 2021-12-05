@@ -33,7 +33,7 @@ namespace TrappyKeepy.Api.Controllers
         /// <param name="permitDto"></param>
         /// <example>
         /// <code>
-        /// curl --location --request POST 'https://localhost:7294/v1/permit' \
+        /// curl --location --request POST 'https://api.trappykeepy.com/v1/permit' \
         /// --header 'Authorization: Bearer <token>' \
         /// --header 'Content-Type: application/json' \
         /// --data-raw '{

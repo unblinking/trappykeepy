@@ -79,7 +79,10 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_update('{keeper.Id}', '{keeper.Filename}'";
+                command.CommandText = $"SELECT * FROM tk.keepers_update('{keeper.Id}'";
+
+                if (keeper.Filename is not null) command.CommandText += $", '{keeper.Filename}'";
+                else command.CommandText += $", null";
 
                 if (keeper.Description is not null) command.CommandText += $", '{keeper.Description}'";
                 else command.CommandText += $", null";

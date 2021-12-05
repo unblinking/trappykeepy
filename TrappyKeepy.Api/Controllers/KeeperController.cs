@@ -45,9 +45,10 @@ namespace TrappyKeepy.Api.Controllers
         /// <code>
         /// curl --location --request POST 'https://api.trappykeepy.com/v1/keepers' \
         /// --header 'Authorization: Bearer <token>' \
-        /// --form 'file=@"AOhhVLaro/dummy.pdf"' \
-        /// --form 'filename="dummy6"' \
-        /// --form 'description="A pdf file"'
+        /// --form 'file=@"dummy.pdf"' \
+        /// --form 'filename="dummy.pdf"' \
+        /// --form 'description="A pdf file"' \
+        /// --form 'category="Comedy"'
         /// </code>
         /// </example>
         /// <returns></returns>
@@ -60,22 +61,13 @@ namespace TrappyKeepy.Api.Controllers
                 var response = new ControllerResponse();
 
                 // Determine the id of the user from their authorization token.
-                string? authorizedIdString = User?.FindFirst("id")?.Value;
-                if (authorizedIdString is null)
+                string? userPostedString = User?.FindFirst("id")?.Value;
+                if (userPostedString is null)
                 {
                     response.Fail("Error reading authorized user id from bearer token.");
                     return StatusCode(400, response);
                 }
-                var authorizedId = new Guid(authorizedIdString);
-
-                // Try to determine the content type.
-                new FileExtensionContentTypeProvider()
-                    .TryGetContentType(file.FileName, out var contentType);
-                if (contentType is null)
-                {
-                    response.Fail("Unsupported file content type.");
-                    return BadRequest(response);
-                }
+                var userPosted = new Guid(userPostedString);
 
                 // Read the binary file data.
                 byte[] binaryData;
@@ -105,10 +97,10 @@ namespace TrappyKeepy.Api.Controllers
                     Item = new KeeperDto()
                     {
                         Filename = filename,
-                        ContentType = contentType,
+                        ContentType = file.ContentType,
                         Description = metadata["description"],
                         Category = metadata["category"],
-                        UserPosted = authorizedId
+                        UserPosted = userPosted
                     }
                 };
 
@@ -181,6 +173,17 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Download the binary file data for one existing keeper record.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/keepers/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
         [HttpGet("{id}")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadById(Guid id)
@@ -200,19 +203,15 @@ namespace TrappyKeepy.Api.Controllers
                         return BadRequest(response);
                     case OutcomeType.Success:
                         // Verify we really have the filename and binary data if we think we have achieved success.
-                        if (serviceResponse.Item?.Filename is null || serviceResponse.BinaryData is not { Length: > 0 })
+                        if (
+                            serviceResponse.Item?.Filename is null || serviceResponse.Item.ContentType is null ||
+                            serviceResponse.BinaryData is not { Length: > 0 }
+                        )
                         {
                             throw new Exception("Keeper service replied with succcess but filename or binary data not returned.");
                         }
-                        // Try to determine the content type.
-                        new FileExtensionContentTypeProvider()
-                            .TryGetContentType(serviceResponse.Item.Filename, out var contentType);
-                        if (contentType is null)
-                        {
-                            throw new Exception("Could not determine content type for a keeper from the database.");
-                        }
                         // Set and return the file content result.
-                        var fileContentResult = new FileContentResult(serviceResponse.BinaryData, contentType)
+                        var fileContentResult = new FileContentResult(serviceResponse.BinaryData, serviceResponse.Item.ContentType)
                         {
                             FileDownloadName = serviceResponse.Item.Filename
                         };
@@ -237,7 +236,7 @@ namespace TrappyKeepy.Api.Controllers
         /// </code>
         /// </example>
         /// <returns>An array of all existing permit objects for the specified keeper id.</returns>
-        [HttpGet("v1/keepers/{id}/permits")]
+        [HttpGet("/v1/keepers/{id}/permits")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadPermitsByKeeperId(Guid id)
         {
@@ -255,7 +254,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item);
+                        response.Success(serviceResponse.List);
                         return Ok(response);
                 }
             }
@@ -270,14 +269,34 @@ namespace TrappyKeepy.Api.Controllers
 
         #region UPDATE
 
-        [HttpPut("")]
+        /// <summary>
+        /// Update one existing keeper.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="keeperDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request PUT 'https://api.trappykeepy.com/v1/keepers/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "id": "00000000-0000-0000-0000-000000000000",
+        ///     "category": "drama"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        [HttpPut("/v1/keepers/{id}")]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult> UpdateById([FromBody] KeeperDto keeperDto)
+        public async Task<ActionResult> Update([FromRoute] Guid id, [FromBody] KeeperDto keeperDto)
         {
             try
             {
+                // Verify the route/path parameter (id) matches the body parameter (keeperDto.Id).
+                if (id != keeperDto.Id) return BadRequest($"Id mismatch: Route {id} ≠ Body {keeperDto.Id}");
+
                 var serviceRequest = new KeeperServiceRequest(keeperDto);
-                var serviceResponse = await _keeperService.UpdateById(serviceRequest);
+                var serviceResponse = await _keeperService.Update(serviceRequest);
                 var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
@@ -303,6 +322,17 @@ namespace TrappyKeepy.Api.Controllers
 
         #region DELETE
 
+        /// <summary>
+        /// Delete one existing keeper.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request DELETE 'https://api.trappykeepy.com/v1/keepers/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteById(Guid id)

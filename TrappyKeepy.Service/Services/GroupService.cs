@@ -164,7 +164,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<IGroupServiceResponse> UpdateById(IGroupServiceRequest request)
+        public async Task<IGroupServiceResponse> Update(IGroupServiceRequest request)
         {
             var response = new GroupServiceResponse();
 

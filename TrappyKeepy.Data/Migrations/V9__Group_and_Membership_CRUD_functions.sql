@@ -233,7 +233,7 @@ COMMENT ON FUNCTION tk.memberships_read_by_user_id IS 'Function to return record
  */
 CREATE OR REPLACE FUNCTION tk.groups_update (
     id UUID,
-    name TEXT,
+    name TEXT DEFAULT NULL,
     description TEXT DEFAULT NULL
 )
     RETURNS BOOLEAN
@@ -242,7 +242,7 @@ CREATE OR REPLACE FUNCTION tk.groups_update (
 $$
 BEGIN
     UPDATE tk.groups
-    SET name = COALESCE($2, tk.groups.filename),
+    SET name = COALESCE($2, tk.groups.name),
         description = COALESCE($3, tk.groups.description)
     WHERE tk.groups.id = $1;
     RETURN FOUND;

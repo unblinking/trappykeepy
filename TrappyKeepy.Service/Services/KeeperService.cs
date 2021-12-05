@@ -191,7 +191,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<IKeeperServiceResponse> UpdateById(IKeeperServiceRequest request)
+        public async Task<IKeeperServiceResponse> Update(IKeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
 
@@ -278,22 +278,11 @@ namespace TrappyKeepy.Service
                     return response;
                 }
 
-                // Delete the keeper record now.
-                var successfulKeeperDelete = await _uow.keepers.DeleteById((Guid)request.Id);
-
-                // If the keeper record could't be deleted, rollback and return to the controller.
-                if (!successfulKeeperDelete)
-                {
-                    _uow.Rollback();
-                    response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Keeper was not deleted.";
-                    return response;
-                }
-
-                // If we made it this far the keeper was deleted. Now delete the associated filedata.
+                // Delete the filedata first. It has a foreign key constraint on the keeper id
+                // so the keeper must be deleted last.
                 var successfulFiledataDelete = await _uow.filedatas.DeleteByKeeperId((Guid)request.Id);
 
-                // If the filedata record couldn't be deleted, rollback and return to the controller.
+                // If the filedata record could't be deleted, rollback and return to the controller.
                 if (!successfulFiledataDelete)
                 {
                     _uow.Rollback();
@@ -302,7 +291,19 @@ namespace TrappyKeepy.Service
                     return response;
                 }
 
-                // If we made it this far, both keeper and filedata records were deleted. Commit.
+                // If we made it this far, the filedata can be deleted. Now delete the associated keeper record.
+                var successfulKeeperDelete = await _uow.keepers.DeleteById((Guid)request.Id);
+
+                // If the keeper record couldn't be deleted, rollback and return to the controller.
+                if (!successfulKeeperDelete)
+                {
+                    _uow.Rollback();
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Keeper was not deleted.";
+                    return response;
+                }
+
+                // If we made it this far, both keeper and filedata records can be deleted. Commit.
                 _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;

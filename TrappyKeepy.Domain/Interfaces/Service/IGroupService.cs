@@ -7,7 +7,7 @@ namespace TrappyKeepy.Domain.Interfaces
         Task<IGroupServiceResponse> Create(IGroupServiceRequest request);
         Task<IGroupServiceResponse> ReadAll(IGroupServiceRequest request);
         Task<IGroupServiceResponse> ReadById(IGroupServiceRequest request);
-        Task<IGroupServiceResponse> UpdateById(IGroupServiceRequest request);
+        Task<IGroupServiceResponse> Update(IGroupServiceRequest request);
         Task<IGroupServiceResponse> DeleteById(IGroupServiceRequest request);
     }
 }

@@ -15,9 +15,15 @@ namespace TrappyKeepy.Api.Controllers
     {
         private readonly IUserService _userService;
 
-        public UserController(IUserService userService)
+        /// <summary>
+        /// The permit service.
+        /// </summary>
+        private readonly IPermitService _permitService;
+
+        public UserController(IUserService userService, IPermitService permitService)
         {
             _userService = userService;
+            _permitService = permitService;
         }
 
         #region CREATE
@@ -152,6 +158,46 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Read all existing permits for a user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/permits' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>An array of all existing permit objects for the specified user id.</returns>
+        [HttpGet("/v1/users/{id}/permits")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> ReadPermitsByUserId(Guid id)
+        {
+            try
+            {
+                var serviceRequest = new PermitServiceRequest(id);
+                var serviceResponse = await _permitService.ReadByUserId(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.List);
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
         #endregion READ
 
         #region UPDATE
@@ -159,6 +205,7 @@ namespace TrappyKeepy.Api.Controllers
         /// <summary>
         /// Update one existing user.
         /// </summary>
+        /// <param name="id"></param>
         /// <param name="userDto"></param>
         /// <example>
         /// <code>
@@ -173,7 +220,7 @@ namespace TrappyKeepy.Api.Controllers
         /// }'
         /// </code>
         /// </example>
-        /// <returns>A message if successful.</returns>
+        /// <returns></returns>
         [HttpPut("/v1/users/{id}")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> Update([FromRoute] Guid id, [FromBody] UserDto userDto)
