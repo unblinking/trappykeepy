@@ -43,7 +43,7 @@ namespace TrappyKeepy.Data.Repositories
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = "SELECT * FROM tk.keepers_read_all();";
+                command.CommandText = $"SELECT * FROM tk.keepers_read_all();";
 
                 var reader = await RunQuery(command);
                 var keepers = new List<Keeper>();
@@ -62,6 +62,42 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.keepers_read_by_id('{id}');";
+
+                var reader = await RunQuery(command);
+                var keeper = new Keeper();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    keeper = map.Keeper(reader);
+                }
+                reader.Close();
+                return keeper;
+            }
+        }
+
+        public async Task<List<Keeper>> ReadAllPermitted(Guid requestingUserId)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.keepers_read_all_permitted('{requestingUserId}');";
+
+                var reader = await RunQuery(command);
+                var keepers = new List<Keeper>();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    keepers.Add(map.Keeper(reader));
+                }
+                reader.Close();
+                return keepers;
+            }
+        }
+
+        public async Task<Keeper> ReadByIdPermitted(Guid keeperId, Guid requestingUserId)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.keepers_read_by_id_permitted('{keeperId}', '{requestingUserId}');";
 
                 var reader = await RunQuery(command);
                 var keeper = new Keeper();

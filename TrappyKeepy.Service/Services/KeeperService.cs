@@ -72,8 +72,6 @@ namespace TrappyKeepy.Service
                     return response;
                 }
 
-                // TODO: Verify the user has permission to upload (manager or admin).
-
                 // Verify the requested file name is not already in use.
                 var existingNameCount = await _uow.keepers.CountByColumnValue("filename", keeper.Filename);
                 if (existingNameCount > 0)
@@ -120,12 +118,20 @@ namespace TrappyKeepy.Service
         {
             var response = new KeeperServiceResponse();
 
+            // Verify required parameters.
+            if (request.RequestingUserId is null || request.RequestingUserId == Guid.Empty)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to read keepers.";
+                return response;
+            }
+
             try
             {
                 // TODO: Only read the documents that the authorized user has a permit to read.
 
                 // Read the keeper records now.
-                var keepers = await _uow.keepers.ReadAll();
+                var keepers = await _uow.keepers.ReadAllPermitted((Guid)request.RequestingUserId);
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var keeperDtos = new List<IKeeperDto>();
@@ -159,11 +165,19 @@ namespace TrappyKeepy.Service
                 response.ErrorMessage = "Id (UUID) is required to find a keeper by keeper id.";
                 return response;
             }
+            if (request.RequestingUserId is null || request.RequestingUserId == Guid.Empty)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to read keepers.";
+                return response;
+            }
 
             try
             {
+                // TODO: Only read the documents that the authorized user has a permit to read.
+
                 // Read the keeper record now.
-                var keeper = await _uow.keepers.ReadById((Guid)request.Id);
+                var keeper = await _uow.keepers.ReadByIdPermitted((Guid)request.Id, (Guid)request.RequestingUserId);
 
                 // Read the filedata record now.
                 var filedata = await _uow.filedatas.ReadByKeeperId((Guid)request.Id);

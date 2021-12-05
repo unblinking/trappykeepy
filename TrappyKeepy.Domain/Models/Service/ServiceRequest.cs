@@ -64,6 +64,7 @@
     public interface IKeeperServiceRequest : IServiceRequest<IKeeperDto>
     {
         byte[]? BinaryData { get; }
+        Guid? RequestingUserId { get; }
     }
 
     /// <summary>
@@ -75,6 +76,8 @@
         /// The associated Filedata.BinaryData value.
         /// </summary>
         public byte[]? BinaryData { get; set; }
+
+        public Guid? RequestingUserId { get; set; }
 
         /// <summary>
         ///  If no keeper is provided, instantiate a new one.

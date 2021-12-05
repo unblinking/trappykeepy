@@ -145,14 +145,25 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns></returns>
         [HttpGet("")]
-        [Authorize(Roles = "admin")]
+        [Authorize]
         public async Task<ActionResult> ReadAll()
         {
             try
             {
-                var serviceRequest = new KeeperServiceRequest();
-                var serviceResponse = await _keeperService.ReadAll(serviceRequest);
                 var response = new ControllerResponse();
+
+                // Determine the id of the user from their authorization token.
+                string? userIdString = User?.FindFirst("id")?.Value;
+                if (userIdString is null)
+                {
+                    response.Fail("Error reading authorized user id from bearer token.");
+                    return StatusCode(400, response);
+                }
+                var userId = new Guid(userIdString);
+
+                var serviceRequest = new KeeperServiceRequest() { RequestingUserId = userId };
+                var serviceResponse = await _keeperService.ReadAll(serviceRequest);
+
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -185,14 +196,29 @@ namespace TrappyKeepy.Api.Controllers
         /// </example>
         /// <returns></returns>
         [HttpGet("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize]
         public async Task<ActionResult> ReadById(Guid id)
         {
             try
             {
-                var serviceRequest = new KeeperServiceRequest(id);
-                var serviceResponse = await _keeperService.ReadById(serviceRequest);
                 var response = new ControllerResponse();
+
+                // Determine the id of the user from their authorization token.
+                string? userIdString = User?.FindFirst("id")?.Value;
+                if (userIdString is null)
+                {
+                    response.Fail("Error reading authorized user id from bearer token.");
+                    return StatusCode(400, response);
+                }
+                var userId = new Guid(userIdString);
+
+                var serviceRequest = new KeeperServiceRequest()
+                {
+                    Id = id,
+                    RequestingUserId = userId
+                };
+                var serviceResponse = await _keeperService.ReadById(serviceRequest);
+
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
