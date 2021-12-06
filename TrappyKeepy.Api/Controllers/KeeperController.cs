@@ -1,33 +1,21 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Api.Controllers
 {
     /// <summary>
-    /// The keeper controller.
+    /// The keepers controller.
     /// </summary>
     [Route("v1/keepers")]
     [ApiController]
     [Authorize]
     public class KeeperController : ControllerBase
     {
-        /// <summary>
-        /// The keeper service.
-        /// </summary>
         private readonly IKeeperService _keeperService;
-
-        /// <summary>
-        /// The permit service.
-        /// </summary>
         private readonly IPermitService _permitService;
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="keeperService"></param>
         public KeeperController(IKeeperService keeperService, IPermitService permitService)
         {
             _keeperService = keeperService;

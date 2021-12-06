@@ -21,7 +21,7 @@ namespace TrappyKeepy.Domain.Maps
 
             CreateMap<User, UserDto>()
                 // Always ignore User.Password when mapping to UserDTO
-                .ForMember(dest => dest.Password, opt => opt.Ignore()); 
+                .ForMember(dest => dest.Password, opt => opt.Ignore());
             CreateMap<UserDto, User>();
             CreateMap<UserSessionDto, User>();
         }

@@ -6,7 +6,7 @@ using TrappyKeepy.Domain.Models;
 namespace TrappyKeepy.Api.Controllers
 {
     /// <summary>
-    /// The group controller.
+    /// The groups controller.
     /// </summary>
     [Route("v1/groups")]
     [ApiController]

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Test.TestObjects
 {
     public class UserDtoTestObjects
     {
-        public UserDto TestUserDtoReadOne
+        public IUserDto TestUserDtoReadOne
         {
             get
             {
@@ -24,11 +22,11 @@ namespace TrappyKeepy.Test.TestObjects
             }
         }
 
-        public List<UserDto> TestUserDtoReadAll
+        public List<IUserDto> TestUserDtoReadAll
         {
             get
             {
-                return new List<UserDto>()
+                return new List<IUserDto>()
                 {
                     TestUserDtoReadOne,
                     TestUserDtoReadOne
