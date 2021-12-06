@@ -84,17 +84,36 @@ service postgresql restart
 
 cat << EOF | su - postgres -c psql
 -- Create the database app user:
-CREATE USER $APP_DB_USER WITH PASSWORD '$APP_DB_PASS';
+CREATE ROLE $APP_DB_USER
+    PASSWORD '$APP_DB_PASS'
+    NOSUPERUSER
+    NOCREATEDB
+    NOCREATEROLE
+    NOINHERIT
+    LOGIN
+    NOREPLICATION
+    NOBYPASSRLS
+    CONNECTION LIMIT -1;
 
 -- Create the database owner user:
-CREATE USER $APP_DB_OWNER WITH PASSWORD '$APP_DB_PASS';
+CREATE ROLE $APP_DB_OWNER
+    PASSWORD '$APP_DB_PASS'
+    NOSUPERUSER
+    NOCREATEDB
+    CREATEROLE
+    NOINHERIT
+    LOGIN
+    NOREPLICATION
+    NOBYPASSRLS
+    CONNECTION LIMIT 1;
 
 -- Create the database:
-CREATE DATABASE $APP_DB_NAME WITH OWNER=$APP_DB_OWNER
-                                  LC_COLLATE='en_US.utf8'
-                                  LC_CTYPE='en_US.utf8'
-                                  ENCODING='UTF8'
-                                  TEMPLATE=template0;
+CREATE DATABASE $APP_DB_NAME
+    WITH OWNER=$APP_DB_OWNER
+    LC_COLLATE='en_US.utf8'
+    LC_CTYPE='en_US.utf8'
+    ENCODING='UTF8'
+    TEMPLATE=template0;
 EOF
 
 # Install extensions.

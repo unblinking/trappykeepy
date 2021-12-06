@@ -1,11 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TrappyKeepy.Domain.Models
+﻿namespace TrappyKeepy.Domain.Models
 {
-    public class UserDto
+    public interface IUserDto
+    {
+        Guid? Id { get; }
+        string? Name { get; }
+        string? Password { get; }
+        string? Email { get; }
+        string? Role { get; }
+        DateTime? DateCreated { get; }
+        DateTime? DateActivated { get; }
+        DateTime? DateLastLogin { get; }
+    }
+
+    public class UserDto : IUserDto
     {
         public Guid? Id { get; set; }
-        [StringLength(50)]
         public string? Name { get; set; }
         public string? Password { get; set; }
         public string? Email { get; set; }
@@ -15,9 +24,21 @@ namespace TrappyKeepy.Domain.Models
         public DateTime? DateLastLogin { get; set; }
     }
 
-    public class UserSessionDto
+    public interface IUserSessionDto
     {
-        public string? Email { get; set; }
-        public string? Password { get; set; }
+        string Email { get; }
+        string Password { get; }
+    }
+
+    public class UserSessionDto : IUserSessionDto
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+
+        public UserSessionDto(string email, string password)
+        {
+            Email = email;
+            Password = password;
+        }
     }
 }

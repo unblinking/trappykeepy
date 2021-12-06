@@ -9,27 +9,29 @@ namespace TrappyKeepy.Data.Repositories
     {
         public GroupRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
-        public async Task<Guid> Create(Group group)
+        public async Task<Group> Create(Group group)
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.groups_create('{group.Name}');";
+                command.CommandText = $"SELECT * FROM tk.groups_create('{group.Name}'";
 
                 if (group.Description is not null) command.CommandText += $", '{group.Description}'";
                 else command.CommandText += $", null";
 
                 command.CommandText += ");";
 
-                var result = await RunScalar(command);
-                var newId = Guid.Empty;
-                if (result is not null)
+                var reader = await RunQuery(command);
+                var newGroup = new Group();
+                while (await reader.ReadAsync())
                 {
-                    newId = Guid.Parse($"{result.ToString()}");
+                    var map = new PgsqlReaderMap();
+                    newGroup = map.Group(reader);
                 }
-                return newId;
+                reader.Close();
+                return newGroup;
             }
         }
 
@@ -38,6 +40,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = "SELECT * FROM tk.groups_read_all();";
+
                 var reader = await RunQuery(command);
                 var groups = new List<Group>();
                 while (await reader.ReadAsync())
@@ -55,6 +58,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.groups_read_by_id('{id}');";
+
                 var reader = await RunQuery(command);
                 var group = new Group();
                 while (await reader.ReadAsync())
@@ -96,6 +100,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.groups_delete_by_id('{id}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -111,6 +116,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.groups_count_by_column_value_text('{column}', '{value}');";
+
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)

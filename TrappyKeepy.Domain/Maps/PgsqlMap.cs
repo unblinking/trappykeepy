@@ -27,6 +27,7 @@ namespace TrappyKeepy.Domain.Maps
             {
                 Id = Guid.Parse($"{reader["id"].ToString()}"),
                 Filename = $"{reader["filename"].ToString()}",
+                ContentType = $"{reader["content_type"].ToString()}",
                 Description = reader["description"] is not DBNull ? $"{reader["description"].ToString()}" : null,
                 Category = reader["category"] is not DBNull ? $"{reader["category"].ToString()}" : null,
                 DatePosted = DateTime.Parse($"{reader["date_posted"].ToString()}"),
@@ -61,6 +62,17 @@ namespace TrappyKeepy.Domain.Maps
                 Id = Guid.Parse($"{reader["id"].ToString()}"),
                 GroupId = Guid.Parse($"{reader["group_id"].ToString()}"),
                 UserId = Guid.Parse($"{reader["user_id"].ToString()}"),
+            };
+        }
+
+        public Permit Permit(NpgsqlDataReader reader)
+        {
+            return new Permit()
+            {
+                Id = Guid.Parse($"{reader["id"].ToString()}"),
+                KeeperId = Guid.Parse($"{reader["keeper_id"].ToString()}"),
+                UserId = reader["user_id"] is not DBNull ? Guid.Parse($"{reader["user_id"].ToString()}") : null,
+                GroupId = reader["group_id"] is not DBNull ? Guid.Parse($"{reader["group_id"].ToString()}") : null,
             };
         }
     }

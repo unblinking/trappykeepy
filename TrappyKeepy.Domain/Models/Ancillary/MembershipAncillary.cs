@@ -1,6 +1,13 @@
 ﻿namespace TrappyKeepy.Domain.Models
 {
-    public class MembershipDto
+    public interface IMembershipDto
+    {
+        Guid? Id { get; }
+        Guid? GroupId { get; }
+        Guid? UserId { get; }
+    }
+
+    public class MembershipDto : IMembershipDto
     {
         public Guid? Id { get; set; }
         public Guid? GroupId { get; set; }

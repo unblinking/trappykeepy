@@ -4,7 +4,7 @@ namespace TrappyKeepy.Domain.Interfaces
 {
     public interface IUserRepository : IBaseRepository
     {
-        Task<Guid> Create(User user);
+        Task<User> Create(User user);
         Task<List<User>> ReadAll();
         Task<User> ReadById(Guid id);
         Task<bool> UpdateById(User user);

@@ -33,8 +33,8 @@
         /// </summary>
         public void Error()
         {
-            this.Status = "error";
-            this.Message = "An error occurred while processing your request.";
+            Status = "error";
+            Message = "An error occurred while processing your request.";
         }
 
         /// <summary>
@@ -43,8 +43,8 @@
         /// <param name="message"></param>
         public void Fail(string? message)
         {
-            this.Status = "fail";
-            this.Message = message;
+            Status = "fail";
+            Message = message;
         }
 
         /// <summary>
@@ -53,8 +53,8 @@
         /// <param name="data"></param>
         public void Success(object? data)
         {
-            this.Status = "success";
-            this.Data = data;
+            Status = "success";
+            Data = data;
         }
     }
 }

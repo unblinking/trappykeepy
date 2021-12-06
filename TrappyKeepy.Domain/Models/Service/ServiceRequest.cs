@@ -1,10 +1,16 @@
 ﻿namespace TrappyKeepy.Domain.Models
 {
+    public interface IServiceRequest<T>
+    {
+        Guid? Id { get; }
+        T? Item { get; }
+    }
+
     /// <summary>
     /// Base service request class.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ServiceRequest<T>
+    public class ServiceRequest<T> : IServiceRequest<T>
     {
         public Guid? Id { get; set; }
 
@@ -14,17 +20,24 @@
         public T? Item { get; set; }
     }
 
+    public interface IUserServiceRequest : IServiceRequest<IUserDto>
+    {
+        IUserSessionDto? UserSessionDto { get; }
+    }
+
     /// <summary>
     /// User service request.
     /// </summary>
-    public class UserServiceRequest : ServiceRequest<User>
+    public class UserServiceRequest : ServiceRequest<IUserDto>, IUserServiceRequest
     {
+        public IUserSessionDto? UserSessionDto { get; set; }
+
         /// <summary>
         ///  If no user is provided, instantiate a new one.
         /// </summary>
         public UserServiceRequest()
         {
-            this.Item = new User();
+            Item = new UserDto();
         }
 
         /// <summary>
@@ -32,33 +45,46 @@
         /// Example could be a request to create a new user.
         /// </summary>
         /// <param name="user"></param>
-        public UserServiceRequest(User user)
+        public UserServiceRequest(IUserDto user)
         {
-            this.Item = user;
+            Item = user;
+        }
+
+        public UserServiceRequest(IUserSessionDto user)
+        {
+            UserSessionDto = user;
         }
 
         public UserServiceRequest(Guid id)
         {
-            this.Id = id;
+            Id = id;
         }
+    }
+
+    public interface IKeeperServiceRequest : IServiceRequest<IKeeperDto>
+    {
+        byte[]? BinaryData { get; }
+        Guid? RequestingUserId { get; }
     }
 
     /// <summary>
     /// Keeper service request.
     /// </summary>
-    public class KeeperServiceRequest : ServiceRequest<Keeper>
+    public class KeeperServiceRequest : ServiceRequest<IKeeperDto>, IKeeperServiceRequest
     {
         /// <summary>
-        /// This holds the associated Filedata.BinaryData value.
+        /// The associated Filedata.BinaryData value.
         /// </summary>
         public byte[]? BinaryData { get; set; }
+
+        public Guid? RequestingUserId { get; set; }
 
         /// <summary>
         ///  If no keeper is provided, instantiate a new one.
         /// </summary>
         public KeeperServiceRequest()
         {
-            this.Item = new Keeper();
+            Item = new KeeperDto();
         }
 
         /// <summary>
@@ -66,28 +92,33 @@
         /// Example could be a request to create a new keeper.
         /// </summary>
         /// <param name="keeper"></param>
-        public KeeperServiceRequest(Keeper keeper)
+        public KeeperServiceRequest(IKeeperDto keeper)
         {
-            this.Item = keeper;
+            Item = keeper;
         }
 
         public KeeperServiceRequest(Guid id)
         {
-            this.Id = id;
+            Id = id;
         }
+    }
+
+    public interface IGroupServiceRequest : IServiceRequest<IGroupDto>
+    {
+
     }
 
     /// <summary>
     /// Group service request.
     /// </summary>
-    public class GroupServiceRequest : ServiceRequest<Group>
+    public class GroupServiceRequest : ServiceRequest<IGroupDto>, IGroupServiceRequest
     {
         /// <summary>
         ///  If no group is provided, instantiate a new one.
         /// </summary>
         public GroupServiceRequest()
         {
-            this.Item = new Group();
+            Item = new GroupDto();
         }
 
         /// <summary>
@@ -95,40 +126,33 @@
         /// Example could be a request to create a new group.
         /// </summary>
         /// <param name="group"></param>
-        public GroupServiceRequest(Group group)
+        public GroupServiceRequest(IGroupDto group)
         {
-            this.Item = group;
+            Item = group;
         }
 
         public GroupServiceRequest(Guid id)
         {
-            this.Id = id;
+            Id = id;
         }
+    }
+
+    public interface IMembershipServiceRequest : IServiceRequest<IMembershipDto>
+    {
+
     }
 
     /// <summary>
     /// Membership service request.
     /// </summary>
-    public class MembershipServiceRequest : ServiceRequest<Membership>
+    public class MembershipServiceRequest : ServiceRequest<IMembershipDto>, IMembershipServiceRequest
     {
-        /// <summary>
-        /// The memberships table doesn't have an id colum.
-        /// This can specify the group_id column value in a request.
-        /// </summary>
-        public Guid? GroupId { get; set; }
-
-        /// <summary>
-        /// The memberships table doesn't have an id colum.
-        /// This can specify the user_id column value in a request.
-        /// </summary>
-        public Guid? UserId { get; set; }
-
         /// <summary>
         ///  If no membership is provided, instantiate a new one.
         /// </summary>
         public MembershipServiceRequest()
         {
-            this.Item = new Membership();
+            Item = new MembershipDto();
         }
 
         /// <summary>
@@ -136,9 +160,9 @@
         /// request. Example could be a request to create a new membership.
         /// </summary>
         /// <param name="membership"></param>
-        public MembershipServiceRequest(Membership membership)
+        public MembershipServiceRequest(IMembershipDto membership)
         {
-            this.Item = membership;
+            Item = membership;
         }
 
         /// <summary>
@@ -148,18 +172,46 @@
         /// <param name="id"></param>
         public MembershipServiceRequest(Guid id)
         {
-            this.Id = id;
+            Id = id;
+        }
+    }
+
+    public interface IPermitServiceRequest : IServiceRequest<IPermitDto>
+    {
+
+    }
+
+    /// <summary>
+    /// Permit service request.
+    /// </summary>
+    public class PermitServiceRequest : ServiceRequest<IPermitDto>, IPermitServiceRequest
+    {
+        /// <summary>
+        ///  If no permit is provided, instantiate a new one.
+        /// </summary>
+        public PermitServiceRequest()
+        {
+            Item = new PermitDto();
         }
 
         /// <summary>
-        /// Used to request to delete a membership by groupId/userId.
+        /// If a permit is provided, set the permit as the Item of the
+        /// request. Example could be a request to create a new permit.
         /// </summary>
-        /// <param name="groupId"></param>
-        /// <param name="userId"></param>
-        public MembershipServiceRequest(Guid groupId, Guid userId)
+        /// <param name="permit"></param>
+        public PermitServiceRequest(IPermitDto permit)
         {
-            this.GroupId = groupId;
-            this.UserId = userId;
+            Item = permit;
+        }
+
+        /// <summary>
+        /// Used to request permits by group id or user id, or delete
+        /// permits by group id or user id.
+        /// </summary>
+        /// <param name="id"></param>
+        public PermitServiceRequest(Guid id)
+        {
+            Id = id;
         }
     }
 }

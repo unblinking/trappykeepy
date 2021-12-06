@@ -8,47 +8,51 @@ namespace TrappyKeepy.Api.Controllers
     /// <summary>
     /// The user controller.
     /// </summary>
-    [Route("v1/user")]
+    [Route("v1/users")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+    [Authorize]
     public class UserController : ControllerBase
     {
-        private readonly IUserService userService;
+        private readonly IMembershipService _membershipService;
+        private readonly IPermitService _permitService;
+        private readonly IUserService _userService;
 
-        public UserController(IUserService userService)
+        public UserController(IMembershipService membershipService, IPermitService permitService, IUserService userService)
         {
-            this.userService = userService;
+            _membershipService = membershipService;
+            _permitService = permitService;
+            _userService = userService;
         }
 
+        #region CREATE
+
+        /// <summary>
+        /// Creates a new user.
+        /// </summary>
+        /// <param name="userDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request POST 'https://api.trappykeepy.com/v1/users' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "Name": "foo",
+        ///     "Password": "passwordfoo",
+        ///     "Email": "foo@example.com",
+        ///     "Role": "basic"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns>The new user object including the unique id.</returns>
         [HttpPost("")]
-        public async Task<ActionResult> Create([FromBody] UserDto userDto)
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> CreateUser([FromBody] UserDto userDto)
         {
             try
             {
+                var serviceRequest = new UserServiceRequest(userDto);
+                var serviceResponse = await _userService.Create(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (userDto.Name is null || userDto.Password is null || userDto.Email is null)
-                {
-                    response.Fail("Name, password, and email are required to create a user.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User()
-                {
-                    Name = userDto.Name,
-                    Password = userDto.Password,
-                    Email = userDto.Email
-                };
-                if (userDto.Role is not null) user.Role = userDto.Role;
-
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.Create(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -58,7 +62,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // UserDto with new id from db insert.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -66,25 +70,129 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Create a new membership for an existing user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="membershipDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request POST 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/memberships' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "GroupId": "00000000-0000-0000-0000-000000000000",
+        ///     "UserId": "00000000-0000-0000-0000-000000000000"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        [HttpPost("/v1/users/{id}/memberships")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> CreateUserMembership([FromRoute] Guid id, [FromBody] MembershipDto membershipDto)
+        {
+            try
+            {
+                // Verify the route/path parameter (id) matches the body parameter (membershipDto.UserId).
+                if (id != membershipDto.UserId) return BadRequest($"Id mismatch: Route {id} ≠ Body {membershipDto.UserId}");
+
+                var serviceRequest = new MembershipServiceRequest(membershipDto);
+                var serviceResponse = await _membershipService.Create(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.Item);
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
+        /// <summary>
+        /// Creates a new permit for an existing user.
+        /// </summary>
+        /// <param name="permitDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request POST 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/permits' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "KeeperId": "00000000-0000-0000-0000-000000000000",
+        ///     "UserId": "00000000-0000-0000-0000-000000000000"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns>The new permit object including the unique id.</returns>
+        [HttpPost("/v1/users/{id}/permits")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> CreateUserPermit([FromRoute] Guid id, [FromBody] PermitDto permitDto)
+        {
+            try
+            {
+                // Verify the route/path parameter (id) matches the body parameter (permitDto.UserId).
+                if (id != permitDto.UserId) return BadRequest($"Id mismatch: Route {id} ≠ Body {permitDto.UserId}");
+
+                var serviceRequest = new PermitServiceRequest(permitDto);
+                var serviceResponse = await _permitService.Create(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.Item);
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
+        #endregion CREATE
+
+        #region READ
+
+        /// <summary>
+        /// Read all existing users.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/users' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>An array of all existing user objects.</returns>
         [HttpGet("")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadAll()
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new UserServiceRequest();
-
-                // Wait for the service response.
-                var serviceResponse = await userService.ReadAll(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _userService.ReadAll(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -94,7 +202,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.List); // UserDto objects.
+                        response.Success(serviceResponse.List);
                         return Ok(response);
                 }
             }
@@ -102,25 +210,29 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Read one existing user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>An existing user object.</returns>
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> ReadById(Guid id)
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Prepare the service request.
                 var serviceRequest = new UserServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.ReadById(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _userService.ReadById(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -130,7 +242,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // UserDto object.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -138,42 +250,124 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
-        [HttpPut("")]
-        public async Task<ActionResult> UpdateById([FromBody] UserDto userDto)
+        /// <summary>
+        /// Read all existing memberships for a user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/memberships' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        [HttpGet("/v1/users/{id}/memberships")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> ReadMembershipsByUserId(Guid id)
         {
             try
             {
+                var serviceRequest = new MembershipServiceRequest(id);
+                var serviceResponse = await _membershipService.ReadByUserId(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty)
+                switch (serviceResponse.Outcome)
                 {
-                    response.Fail("User id is required to update a user by id.");
-                    return BadRequest(response);
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.List);
+                        return Ok(response);
                 }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
 
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User() { Id = (Guid)userDto.Id };
-                if (userDto.Name is not null) user.Name = userDto.Name;
-                if (userDto.Email is not null) user.Email = userDto.Email;
-
-                // Determine if we are updating the user role.
-                if (userDto.Role is not null)
+        /// <summary>
+        /// Read all existing permits for a user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request GET 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/permits' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>An array of all existing permit objects for the specified user id.</returns>
+        [HttpGet("/v1/users/{id}/permits")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> ReadPermitsByUserId(Guid id)
+        {
+            try
+            {
+                var serviceRequest = new PermitServiceRequest(id);
+                var serviceResponse = await _permitService.ReadByUserId(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
                 {
-                    user.Role = userDto.Role;
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success(serviceResponse.List);
+                        return Ok(response);
                 }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
 
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
+        #endregion READ
 
-                // Wait for the service response.
-                var serviceResponse = await userService.UpdateById(serviceRequest);
+        #region UPDATE
 
-                // Send the controller response back to the client.
+        /// <summary>
+        /// Update one existing user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="userDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request PUT 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "Id": "00000000-0000-0000-0000-000000000000",
+        ///     "Name": "bar",
+        ///     "Email": "bar@example.com",
+        ///     "Role": "manager"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        [HttpPut("/v1/users/{id}")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> Update([FromRoute] Guid id, [FromBody] UserDto userDto)
+        {
+            try
+            {
+                // Verify the route/path parameter (id) matches the body parameter (userDto.Id).
+                if (id != userDto.Id) return BadRequest($"Id mismatch: Route {id} ≠ Body {userDto.Id}");
+
+                var serviceRequest = new UserServiceRequest(userDto);
+                var serviceResponse = await _userService.Update(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -191,38 +385,37 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
-        [HttpPut("/v1/user/password")]
-        public async Task<ActionResult> UpdatePasswordById([FromBody] UserDto userDto)
+        /// <summary>
+        /// Update one existing user's password.
+        /// </summary>
+        /// <param name="userDto"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request PUT 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/password' \
+        /// --header 'Authorization: Bearer <token>' \
+        /// --header 'Content-Type: application/json' \
+        /// --data-raw '{
+        ///     "Id": "00000000-0000-0000-0000-000000000000",
+        ///     "password": "passwordbar"
+        /// }'
+        /// </code>
+        /// </example>
+        /// <returns>A message if successful.</returns>
+        [HttpPut("/v1/users/{id}/password")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> UpdatePassword([FromRoute] Guid id, [FromBody] UserDto userDto)
         {
             try
             {
+                // Verify the route/path parameter (id) matches the body parameter (userDto.Id).
+                if (id != userDto.Id) return BadRequest($"Id mismatch: Route {id} ≠ Body {userDto.Id}");
+
+                var serviceRequest = new UserServiceRequest(userDto);
+                var serviceResponse = await _userService.UpdatePassword(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (userDto.Id is null || userDto.Id == Guid.Empty || (Guid)userDto.Id == Guid.Empty || userDto.Password is null)
-                {
-                    response.Fail("User id and password are required to update a user pasword.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userDto to pass to the service.
-                var user = new User()
-                {
-                    Id = (Guid)userDto.Id,
-                    Password = userDto.Password
-                };
-
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.UpdatePasswordById(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -240,31 +433,33 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
+        #endregion UPDATE
+
+        #region DELETE
+
+        /// <summary>
+        /// Delete one existing user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request DELETE 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns>A message if successful.</returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteById(Guid id)
         {
             try
             {
-                var response = new ControllerResponse();
-
-                if (id == Guid.Empty || (Guid)id == Guid.Empty)
-                {
-                    response.Fail("User id is required to delete a user by id.");
-                    return BadRequest(response);
-                }
-
-                // Prepare the service request.
                 var serviceRequest = new UserServiceRequest(id);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.DeleteById(serviceRequest);
-
-                // Send the controller response back to the client.
+                var serviceResponse = await _userService.DeleteById(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -282,44 +477,29 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
         /// <summary>
-        /// Create a user session token.
+        /// Delete all existing memberships for one user.
         /// </summary>
-        /// <param name="userSessionDto">{"email":"foo","password":"passwordfoo"}</param>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request DELETE 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/memberships' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
         /// <returns></returns>
-        [HttpPost("/v1/user/session")]
-        [AllowAnonymous]
-        public async Task<ActionResult> Authenticate([FromBody] UserSessionDto userSessionDto)
+        [HttpDelete("/v1/users/{id}/memberships")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> DeleteMembershipsByUserId(Guid id)
         {
             try
             {
+                var serviceRequest = new MembershipServiceRequest(id);
+                var serviceResponse = await _membershipService.DeleteByUserId(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (userSessionDto.Email is null || userSessionDto.Password is null)
-                {
-                    response.Fail("User email and password are required to authenticate a user.");
-                    return BadRequest(response);
-                }
-
-                // Prepare a user from the userSessionDto to pass to the service.
-                var user = new User()
-                {
-                    Email = userSessionDto.Email,
-                    Password = userSessionDto.Password
-                };
-
-                // Prepare the service request.
-                var serviceRequest = new UserServiceRequest(user);
-
-                // Wait for the service response.
-                var serviceResponse = await userService.Authenticate(serviceRequest);
-
-                // Send the controller response back to the client.
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -329,7 +509,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Token);
+                        response.Success("Memberships deleted.");
                         return Ok(response);
                 }
             }
@@ -337,9 +517,130 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
+
+        /// <summary>
+        /// Delete one existing membership for one user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request DELETE 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/memberships/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        [HttpDelete("/v1/users/{uid}/memberships/{mid}")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> DeleteMembershipByMembershipId(Guid uid, Guid mid)
+        {
+            try
+            {
+                var serviceRequest = new MembershipServiceRequest(mid);
+                var serviceResponse = await _membershipService.DeleteById(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Membership deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
+        /// <summary>
+        /// Delete all existing permits for one user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request DELETE 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/permits' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        [HttpDelete("/v1/users/{id}/permits")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> DeletePermitsByUserId(Guid id)
+        {
+            try
+            {
+                var serviceRequest = new PermitServiceRequest(id);
+                var serviceResponse = await _permitService.DeleteByUserId(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Permits deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
+        /// <summary>
+        /// Delete one existing permits for one user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request DELETE 'https://api.trappykeepy.com/v1/users/00000000-0000-0000-0000-000000000000/permits/00000000-0000-0000-0000-000000000000' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        [HttpDelete("/v1/users/{uid}/permits/{pid}")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> DeletePermitByPermitId(Guid uid, Guid pid)
+        {
+            try
+            {
+                var serviceRequest = new PermitServiceRequest(pid);
+                var serviceResponse = await _permitService.DeleteById(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Permit deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
+        #endregion DELETE
+
     }
 }

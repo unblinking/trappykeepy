@@ -16,6 +16,7 @@ namespace TrappyKeepy.Domain.Models
         public Group()
         {
             Memberships = new HashSet<Membership>();
+            Permits = new HashSet<Permit>();
         }
 
         /// <summary>
@@ -42,5 +43,7 @@ namespace TrappyKeepy.Domain.Models
 
         [InverseProperty(nameof(Membership.Group))]
         public virtual ICollection<Membership> Memberships { get; set; }
+        [InverseProperty(nameof(Permit.Group))]
+        public virtual ICollection<Permit> Permits { get; set; }
     }
 }

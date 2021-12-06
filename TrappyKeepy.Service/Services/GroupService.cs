@@ -1,4 +1,4 @@
-﻿using TrappyKeepy.Data;
+﻿using AutoMapper;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
@@ -14,15 +14,21 @@ namespace TrappyKeepy.Service
         /// <summary>
         /// Group database operations into a single transaction (unit of work).
         /// </summary>
-        private readonly IUnitOfWork uow;
+        private readonly IUnitOfWork _uow;
+
+        /// <summary>
+        /// Automapper http://automapper.org/
+        /// </summary>
+        private readonly IMapper _mapper;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="unitOfWork"></param>
-        public GroupService(IUnitOfWork unitOfWork)
+        public GroupService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            this.uow = unitOfWork;
+            _uow = unitOfWork;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -30,7 +36,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<GroupServiceResponse> Create(GroupServiceRequest request)
+        public async Task<IGroupServiceResponse> Create(IGroupServiceRequest request)
         {
             var response = new GroupServiceResponse();
 
@@ -38,17 +44,20 @@ namespace TrappyKeepy.Service
             if (request.Item?.Name is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Name is required to create a group.";
+                response.ErrorMessage = "Name (TEXT) is required to create a group.";
                 return response;
             }
 
             try
             {
+                // Map the controller's DTO to a domain object for the repository.
+                var group = _mapper.Map<Group>(request.Item);
+
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify the requested group name is not already in use.
-                var existingNameCount = await uow.groups.CountByColumnValue("name", request.Item.Name);
+                var existingNameCount = await _uow.groups.CountByColumnValue("name", group.Name);
                 if (existingNameCount > 0)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -57,13 +66,13 @@ namespace TrappyKeepy.Service
                 }
 
                 // Create the new group record now.
-                var id = await uow.groups.Create(request.Item);
+                var newGroup = await _uow.groups.Create(group);
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
-                // Pass a GroupDto back to the controller.
-                response.Item = new GroupDto() { Id = id };
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<GroupDto>(newGroup);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -81,28 +90,18 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<GroupServiceResponse> ReadAll(GroupServiceRequest request)
+        public async Task<IGroupServiceResponse> ReadAll(IGroupServiceRequest request)
         {
             var response = new GroupServiceResponse();
 
             try
             {
                 // Read the group records now.
-                var groups = await uow.groups.ReadAll();
+                var groups = await _uow.groups.ReadAll();
 
-                // Pass a list of groupDtos back to the controller.
-                var groupDtos = new List<GroupDto>();
-                foreach (var group in groups)
-                {
-                    var groupDto = new GroupDto()
-                    {
-                        Id = group.Id,
-                        Name = group.Name,
-                        Description = group.Description,
-                        DateCreated = group.DateCreated,
-                    };
-                    groupDtos.Add(groupDto);
-                }
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var groupDtos = new List<IGroupDto>();
+                foreach (var group in groups) groupDtos.Add(_mapper.Map<GroupDto>(group));
                 response.List = groupDtos;
 
                 // Success if we made it this far.
@@ -121,31 +120,33 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<GroupServiceResponse> ReadById(GroupServiceRequest request)
+        public async Task<IGroupServiceResponse> ReadById(IGroupServiceRequest request)
         {
             var response = new GroupServiceResponse();
 
             // Verify required parameters.
-            if (request.Id is null)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Group id is required to find a group by id.";
+                response.ErrorMessage = "Id (UUID) is required to find a group by group id.";
                 return response;
             }
 
             try
             {
                 // Read the group record now.
-                var group = await uow.groups.ReadById((Guid)request.Id);
+                var group = await _uow.groups.ReadById((Guid)request.Id);
 
-                // Pass a GroupDto back to the controller.
-                response.Item = new GroupDto()
+                // Verify the user was found.
+                if (group.Id != request.Id)
                 {
-                    Id = group.Id,
-                    Name = group.Name,
-                    Description = group.Description,
-                    DateCreated = group.DateCreated,
-                };
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Group was not found with the specified id.";
+                    return response;
+                }
+
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<GroupDto>(group);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -163,25 +164,28 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<GroupServiceResponse> UpdateById(GroupServiceRequest request)
+        public async Task<IGroupServiceResponse> Update(IGroupServiceRequest request)
         {
             var response = new GroupServiceResponse();
 
             // Verify required parameters.
-            if (request.Item is null || request.Item.Id == Guid.Empty)
+            if (request.Item?.Id is null || request.Item.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Group id is required to update a group by id.";
+                response.ErrorMessage = "Id (UUID) is required to update a group by group id.";
                 return response;
             }
 
             try
             {
+                // Map the controller's DTO to a domain object for the repository.
+                var group = _mapper.Map<Group>(request.Item);
+
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that the group exists.
-                var existing = await uow.groups.ReadById(request.Item.Id);
+                var existing = await _uow.groups.ReadById(group.Id);
                 if (existing.Id != request.Item.Id)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -190,19 +194,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Update the group record now.
-                var successful = await uow.groups.UpdateById(request.Item);
+                var successful = await _uow.groups.UpdateById(group);
 
                 // If the group record couldn't be updated, rollback and return to the controller.
                 if (!successful)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Group was not updated.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }
@@ -219,7 +223,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<GroupServiceResponse> DeleteById(GroupServiceRequest request)
+        public async Task<IGroupServiceResponse> DeleteById(IGroupServiceRequest request)
         {
             var response = new GroupServiceResponse();
 
@@ -227,17 +231,17 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Group id is required to delete a group by id.";
+                response.ErrorMessage = "Id (UUID) is required to delete a group by group id.";
                 return response;
             }
 
             try
             {
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that the group exists.
-                var existing = await uow.groups.ReadById((Guid)request.Id);
+                var existing = await _uow.groups.ReadById((Guid)request.Id);
                 if (existing.Id != request.Id)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -246,19 +250,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Delete the group record now.
-                var successful = await uow.groups.DeleteById((Guid)request.Id);
+                var successful = await _uow.groups.DeleteById((Guid)request.Id);
 
                 // If the group record couldn't be deleted, rollback and return to the controller.
                 if (!successful)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Group was not deleted.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }

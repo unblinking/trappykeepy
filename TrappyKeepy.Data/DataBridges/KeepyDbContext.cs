@@ -21,6 +21,7 @@ namespace TrappyKeepy.Data
         public virtual DbSet<Group> Groups { get; set; } = null!;
         public virtual DbSet<Keeper> Keepers { get; set; } = null!;
         public virtual DbSet<Membership> Memberships { get; set; } = null!;
+        public virtual DbSet<Permit> Permits { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -125,6 +126,37 @@ namespace TrappyKeepy.Data
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_user_of_memberships");
+            });
+
+            modelBuilder.Entity<Permit>(entity =>
+            {
+                entity.HasComment("Table to store permit records.");
+
+                entity.Property(e => e.Id)
+                    .HasDefaultValueSql("gen_random_uuid()")
+                    .HasComment("UUID primary key.");
+
+                entity.Property(e => e.GroupId).HasComment("UUID from the tk.groups table.");
+
+                entity.Property(e => e.KeeperId).HasComment("UUID from the tk.keepers table.");
+
+                entity.Property(e => e.UserId).HasComment("UUID from the tk.users table.");
+
+                entity.HasOne(d => d.Group)
+                    .WithMany(p => p.Permits)
+                    .HasForeignKey(d => d.GroupId)
+                    .HasConstraintName("fk_group_of_permits");
+
+                entity.HasOne(d => d.Keeper)
+                    .WithMany(p => p.Permits)
+                    .HasForeignKey(d => d.KeeperId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_keeper_of_permits");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Permits)
+                    .HasForeignKey(d => d.UserId)
+                    .HasConstraintName("fk_user_of_permits");
             });
 
             modelBuilder.Entity<User>(entity =>

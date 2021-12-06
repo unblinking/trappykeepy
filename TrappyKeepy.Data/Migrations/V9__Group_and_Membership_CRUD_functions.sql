@@ -32,7 +32,7 @@ CREATE OR REPLACE FUNCTION tk.groups_create (
     name TEXT,
     description TEXT DEFAULT NULL
 )
-    RETURNS TABLE (id UUID)
+    RETURNS SETOF tk.groups
     LANGUAGE PLPGSQL
     AS
 $$
@@ -41,7 +41,7 @@ BEGIN
     INSERT
     INTO tk.groups (name, description)
     VALUES ($1, $2)
-    RETURNING tk.groups.id;
+    RETURNING *;
 END;
 $$;
 COMMENT ON FUNCTION tk.groups_create IS 'Function to create a record in the groups table.';
@@ -53,14 +53,14 @@ COMMENT ON FUNCTION tk.groups_create IS 'Function to create a record in the grou
  * Description: Function to create a record in the memberships table.
  * Parameters:  group_id UUID - 
  *              user_id UUID - 
- * Usage:       SELECT * FROM tk.memberships_create('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea', '204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.memberships_create('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000');
  * Returns:     
  */
 CREATE OR REPLACE FUNCTION tk.memberships_create (
     group_id UUID,
     user_id UUID
 )
-    RETURNS TABLE (id UUID)
+    RETURNS SETOF tk.memberships
     LANGUAGE PLPGSQL
     AS
 $$
@@ -69,7 +69,7 @@ BEGIN
     INSERT
     INTO tk.memberships (group_id, user_id)
     VALUES ($1, $2)
-    RETURNING tk.memberships.id;
+    RETURNING *;
 END;
 $$;
 COMMENT ON FUNCTION tk.memberships_create IS 'Function to create a record in the memberships table.';
@@ -125,7 +125,7 @@ COMMENT ON FUNCTION tk.memberships_read_all IS 'Function to return all records f
  * Author:      Joshua Gray
  * Description: Function to return a record from the groups table by id.
  * Parameters:  id_value UUID - The id of the group record.
- * Usage:       SELECT * FROM tk.groups_read_by_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.groups_read_by_id('00000000-0000-0000-0000-000000000000');
  * Returns:     All columns for a record from the tk.groups table.
  */
 CREATE OR REPLACE FUNCTION tk.groups_read_by_id (
@@ -144,6 +144,30 @@ END;
 $$;
 COMMENT ON FUNCTION tk.groups_read_by_id IS 'Function to return a record from the groups table by id.';
 
+/**
+ * Function:    tk.memberships_read_by_id
+ * Created:     2021-11-28
+ * Author:      Joshua Gray
+ * Description: Function to return a record from the memberships table by id.
+ * Parameters:  id_value UUID - The id of the membership record.
+ * Usage:       SELECT * FROM tk.memberships_read_by_id('00000000-0000-0000-0000-000000000000');
+ * Returns:     All columns for a record from the tk.memberships table.
+ */
+CREATE OR REPLACE FUNCTION tk.memberships_read_by_id (
+    id_value UUID
+)
+    RETURNS SETOF tk.memberships
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT *
+    FROM tk.memberships
+    WHERE tk.memberships.id = $1;
+END;
+$$;
+COMMENT ON FUNCTION tk.memberships_read_by_id IS 'Function to return a record from the memberships table by id.';
 
 /**
  * Function:    tk.memberships_read_by_group_id
@@ -151,7 +175,7 @@ COMMENT ON FUNCTION tk.groups_read_by_id IS 'Function to return a record from th
  * Author:      Joshua Gray
  * Description: Function to return records from the memberships table by group_id.
  * Parameters:  id_value UUID - The group_id of the membership records.
- * Usage:       SELECT * FROM tk.memberships_read_by_group_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.memberships_read_by_group_id('00000000-0000-0000-0000-000000000000');
  * Returns:     All columns for all records from the tk.filedatas table that match a group_id.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_read_by_group_id (
@@ -176,7 +200,7 @@ COMMENT ON FUNCTION tk.memberships_read_by_group_id IS 'Function to return recor
  * Author:      Joshua Gray
  * Description: Function to return records from the memberships table by user_id.
  * Parameters:  id_value UUID - The user_id of the membership records.
- * Usage:       SELECT * FROM tk.memberships_read_by_user_id('204208b8-04d8-4c56-a08a-cb4b4f2ec5ea');
+ * Usage:       SELECT * FROM tk.memberships_read_by_user_id('00000000-0000-0000-0000-000000000000');
  * Returns:     All columns for all records from the tk.filedatas table that match a user_id.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_read_by_user_id (
@@ -204,12 +228,12 @@ COMMENT ON FUNCTION tk.memberships_read_by_user_id IS 'Function to return record
  * Parameters:  id UUID - Primary key id for the record to be updated.
  *              name TEXT - 
  *              description TEXT - 
- * Usage:       SELECT * FROM tk.groups_update('a1e84bb3-3429-4bfc-95c8-e184fceaa036', 'foo', 'Group of foo');
+ * Usage:       SELECT * FROM tk.groups_update('00000000-0000-0000-0000-000000000000', 'foo', 'Group of foo');
  * Returns:     True if the group was updated, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.groups_update (
     id UUID,
-    name TEXT,
+    name TEXT DEFAULT NULL,
     description TEXT DEFAULT NULL
 )
     RETURNS BOOLEAN
@@ -218,7 +242,7 @@ CREATE OR REPLACE FUNCTION tk.groups_update (
 $$
 BEGIN
     UPDATE tk.groups
-    SET name = COALESCE($2, tk.groups.filename),
+    SET name = COALESCE($2, tk.groups.name),
         description = COALESCE($3, tk.groups.description)
     WHERE tk.groups.id = $1;
     RETURN FOUND;
@@ -232,7 +256,7 @@ COMMENT ON FUNCTION tk.groups_update IS 'Function to update a record in the grou
  * Author:      Joshua Gray
  * Description: Function to delete a record from the groups table by id.
  * Parameters:  id UUID - Primary key id for the record to be deleted.
- * Usage:       SELECT * FROM tk.groups_delete_by_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.groups_delete_by_id('00000000-0000-0000-0000-000000000000');
  * Returns:     True if the group was deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.groups_delete_by_id (
@@ -257,7 +281,7 @@ COMMENT ON FUNCTION tk.groups_delete_by_id IS 'Function to delete a record from 
  * Author:      Joshua Gray
  * Description: Function to delete a record from the memberships table by id.
  * Parameters:  id_value UUID - Primary key id for the record to be deleted.
- * Usage:       SELECT * FROM tk.memberships_delete_by_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.memberships_delete_by_id('00000000-0000-0000-0000-000000000000');
  * Returns:     True if the membership was deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_delete_by_id (
@@ -282,7 +306,7 @@ COMMENT ON FUNCTION tk.memberships_delete_by_id IS 'Function to delete a record 
  * Author:      Joshua Gray
  * Description: Function to delete all records from the memberships table by group_id.
  * Parameters:  id UUID - group_id for the records to be deleted.
- * Usage:       SELECT * FROM tk.memberships_delete_by_group_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.memberships_delete_by_group_id('00000000-0000-0000-0000-000000000000');
  * Returns:     True if the memberships were deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_delete_by_group_id (
@@ -307,7 +331,7 @@ COMMENT ON FUNCTION tk.memberships_delete_by_group_id IS 'Function to delete all
  * Author:      Joshua Gray
  * Description: Function to delete all records from the memberships table by user_id.
  * Parameters:  id UUID - user_id for the records to be deleted.
- * Usage:       SELECT * FROM tk.memberships_delete_by_user_id('a1e84bb3-3429-4bfc-95c8-e184fceaa036');
+ * Usage:       SELECT * FROM tk.memberships_delete_by_user_id('00000000-0000-0000-0000-000000000000');
  * Returns:     True if the memberships were deleted, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.memberships_delete_by_user_id (

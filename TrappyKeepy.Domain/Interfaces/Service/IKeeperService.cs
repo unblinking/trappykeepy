@@ -4,10 +4,12 @@ namespace TrappyKeepy.Domain.Interfaces
 {
     public interface IKeeperService
     {
-        Task<KeeperServiceResponse> Create(KeeperServiceRequest request);
-        Task<KeeperServiceResponse> ReadAll(KeeperServiceRequest request);
-        Task<KeeperServiceResponse> ReadById(KeeperServiceRequest request);
-        Task<KeeperServiceResponse> UpdateById(KeeperServiceRequest request);
-        Task<KeeperServiceResponse> DeleteById(KeeperServiceRequest request);
+        Task<IKeeperServiceResponse> Create(IKeeperServiceRequest request);
+        Task<IKeeperServiceResponse> ReadAll(IKeeperServiceRequest request);
+        Task<IKeeperServiceResponse> ReadAllPermitted(IKeeperServiceRequest request);
+        Task<IKeeperServiceResponse> ReadById(IKeeperServiceRequest request);
+        Task<IKeeperServiceResponse> ReadByIdPermitted(IKeeperServiceRequest request);
+        Task<IKeeperServiceResponse> Update(IKeeperServiceRequest request);
+        Task<IKeeperServiceResponse> DeleteById(IKeeperServiceRequest request);
     }
 }

@@ -9,21 +9,24 @@ namespace TrappyKeepy.Data.Repositories
     {
         public MembershipRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
-        public async Task<Guid> Create(Membership membership)
+        public async Task<Membership> Create(Membership membership)
         {
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.memberships_create('{membership.GroupId}', '{membership.UserId}');";
-                var result = await RunScalar(command);
-                var newId = Guid.Empty;
-                if (result is not null)
+
+                var reader = await RunQuery(command);
+                var newMembership = new Membership();
+                while (await reader.ReadAsync())
                 {
-                    newId = Guid.Parse($"{result.ToString()}");
+                    var map = new PgsqlReaderMap();
+                    newMembership = map.Membership(reader);
                 }
-                return newId;
+                reader.Close();
+                return newMembership;
             }
         }
 
@@ -41,6 +44,24 @@ namespace TrappyKeepy.Data.Repositories
                 }
                 reader.Close();
                 return memberships;
+            }
+        }
+
+        public async Task<Membership> ReadById(Guid id)
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.memberships_read_by_id('{id}');";
+
+                var reader = await RunQuery(command);
+                var membership = new Membership();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    membership = map.Membership(reader);
+                }
+                reader.Close();
+                return membership;
             }
         }
 

@@ -1,22 +1,11 @@
 /*******************************************************************************
  * Migration:   TrappyKeepy
- * Version:     V6
- * Created:     2021-11-24
+ * Version:     V9999
+ * Created:     2021-12-02
  * Author:      Joshua Gray
- * Description: Create keeper and filedata functions for CRUD operations.
- *              - tk.keepers_create
- *              - tk.filedatas_create
- *              - tk.keepers_read_all
- *              - tk.keepers_read_by_id
- *              - tk.filedatas_read_by_keeper_id
- *              - tk.keepers_update
- *              - tk.keepers_delete_by_id
- *              - tk.filedatas_delete_by_keeper_id
+ * Description: Grant safe access to the API database user (dbuser).
  ******************************************************************************/
 
-/**
- * Grant access to the application user (dbuser).
- */
 GRANT CONNECT ON DATABASE keepydb TO dbuser;
 GRANT USAGE ON SCHEMA tk TO dbuser;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA tk TO dbuser;

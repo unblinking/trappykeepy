@@ -9,21 +9,24 @@ namespace TrappyKeepy.Data.Repositories
     {
         public UserRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
-        public async Task<Guid> Create(User user)
+        public async Task<User> Create(User user)
         {
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_create('{user.Name}', '{user.Password}', '{user.Email}', '{user.Role}');";
-                var result = await RunScalar(command);
-                var newId = Guid.Empty;
-                if (result is not null)
+
+                var reader = await RunQuery(command);
+                var newUser = new User();
+                while (await reader.ReadAsync())
                 {
-                    newId = Guid.Parse($"{result.ToString()}");
+                    var map = new PgsqlReaderMap();
+                    newUser = map.User(reader);
                 }
-                return newId;
+                reader.Close();
+                return newUser;
             }
         }
 
@@ -32,6 +35,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = "SELECT * FROM tk.users_read_all();";
+
                 var reader = await RunQuery(command);
                 var users = new List<User>();
                 while (await reader.ReadAsync())
@@ -49,6 +53,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_read_by_id('{id}');";
+
                 var reader = await RunQuery(command);
                 var user = new User();
                 while (await reader.ReadAsync())
@@ -99,6 +104,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_update_password('{user.Id}', '{user.Password}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -114,6 +120,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_delete_by_id('{id}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)
@@ -129,6 +136,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_count_by_column_value_text('{column}', '{value}');";
+
                 var result = await RunScalar(command);
                 int count = 0;
                 if (result is not null)
@@ -144,6 +152,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.users_authenticate('{user.Email}', '{user.Password}');";
+
                 var reader = await RunQuery(command);
                 var authenticatedUser = new User();
                 while (await reader.ReadAsync())

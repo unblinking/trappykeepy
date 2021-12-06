@@ -9,7 +9,7 @@ namespace TrappyKeepy.Data.Repositories
     {
         public FiledataRepository(NpgsqlConnection connection) : base(connection)
         {
-            this.connection = connection;
+            _connection = connection;
         }
 
         public async Task<Guid> Create(Filedata filedata)
@@ -17,9 +17,12 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.filedatas_create('{filedata.KeeperId}', :binary_data );";
+
                 var npgsqlParameter = new NpgsqlParameter("binary_data", NpgsqlTypes.NpgsqlDbType.Bytea);
                 npgsqlParameter.Value = filedata.BinaryData;
+
                 command.Parameters.Add(npgsqlParameter);
+
                 var result = await RunScalar(command);
                 var newId = Guid.Empty;
                 if (result is not null)
@@ -35,6 +38,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.filedatas_read_by_keeper_id('{id}');";
+
                 var reader = await RunQuery(command);
                 var filedata = new Filedata();
                 while (await reader.ReadAsync())
@@ -52,6 +56,7 @@ namespace TrappyKeepy.Data.Repositories
             using (var command = new NpgsqlCommand())
             {
                 command.CommandText = $"SELECT * FROM tk.filedatas_delete_by_keeper_id('{id}');";
+
                 var result = await RunScalar(command);
                 var success = false;
                 if (result is not null)

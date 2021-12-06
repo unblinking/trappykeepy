@@ -15,14 +15,14 @@ namespace TrappyKeepy.Service
         /// <summary>
         /// Secret cryptographic key/string.
         /// </summary>
-        private string key;
+        private string _key;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         public TokenService()
         {
-            this.key = $"{Environment.GetEnvironmentVariable("TK_CRYPTO_KEY")}";
+            _key = $"{Environment.GetEnvironmentVariable("TK_CRYPTO_KEY")}";
         }
 
         /// <summary>
@@ -30,9 +30,15 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="claims"></param>
         /// <returns></returns>
-        public string EncodeJwt(List<Claim> claims)
+        public string Encode(Guid id, string role)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var claims = new List<Claim>()
+            {
+                new Claim("id", id.ToString()),
+                new Claim("role", role)
+            };
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
             var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var jwtTokenDescriptor = new JwtSecurityToken(
                 issuer: "TrappyKeepy",

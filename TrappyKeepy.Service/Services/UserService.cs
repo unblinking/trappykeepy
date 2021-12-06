@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+﻿using AutoMapper;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
@@ -14,18 +14,27 @@ namespace TrappyKeepy.Service
         /// <summary>
         /// Group database operations into a single transaction (unit of work).
         /// </summary>
-        private readonly IUnitOfWork uow;
+        private readonly IUnitOfWork _uow;
 
-        private readonly ITokenService tokenService;
+        /// <summary>
+        /// Encode JSON web tokens.
+        /// </summary>
+        private readonly ITokenService _jwt;
+
+        /// <summary>
+        /// Automapper http://automapper.org/
+        /// </summary>
+        private readonly IMapper _mapper;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="unitOfWork"></param>
-        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService)
+        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService, IMapper mapper)
         {
-            this.uow = unitOfWork;
-            this.tokenService = tokenService;
+            _uow = unitOfWork;
+            _jwt = tokenService;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -33,7 +42,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<UserServiceResponse> Create(UserServiceRequest request)
+        public async Task<IUserServiceResponse> Create(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
@@ -41,17 +50,20 @@ namespace TrappyKeepy.Service
             if (request.Item?.Name is null || request.Item?.Email is null || request.Item?.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Name, email, password, and role are required to create a user.";
+                response.ErrorMessage = "Name (TEXT), Email (TEXT), Password (TEXT), and Role (basic, manager, or admin) are required to create a user.";
                 return response;
             }
 
             try
             {
+                // Map the controller's DTO to a domain object for the repository.
+                var user = _mapper.Map<User>(request.Item);
+
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify the requested user name is not already in use.
-                var existingNameCount = await uow.users.CountByColumnValue("name", request.Item.Name);
+                var existingNameCount = await _uow.users.CountByColumnValue("name", request.Item.Name);
                 if (existingNameCount > 0)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -59,7 +71,7 @@ namespace TrappyKeepy.Service
                     return response;
                 }
                 // Verify the requested user email is not already in use.
-                var existingEmailCount = await uow.users.CountByColumnValue("email", request.Item.Email);
+                var existingEmailCount = await _uow.users.CountByColumnValue("email", request.Item.Email);
                 if (existingEmailCount > 0)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -68,13 +80,13 @@ namespace TrappyKeepy.Service
                 }
 
                 // Create the new user record now.
-                var id = await uow.users.Create(request.Item);
+                var newUser = await _uow.users.Create(user);
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
-                // Pass a UserDto back to the controller.
-                response.Item = new UserDto() { Id = id };
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<UserDto>(newUser);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -92,32 +104,18 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<UserServiceResponse> ReadAll(UserServiceRequest request)
+        public async Task<IUserServiceResponse> ReadAll(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
             try
             {
                 // Read the user records now.
-                var users = await uow.users.ReadAll();
+                var users = await _uow.users.ReadAll();
 
-                // Pass a list of userDtos back to the controller.
-                var userDtos = new List<UserDto>();
-                foreach (var user in users)
-                {
-                    var userDto = new UserDto()
-                    {
-                        Id = user.Id,
-                        Name = user.Name,
-                        // Do not include the salted/hashed password.
-                        Email = user.Email,
-                        Role = user.Role,
-                        DateCreated = user.DateCreated,
-                        DateActivated = user.DateActivated,
-                        DateLastLogin = user.DateLastLogin
-                    };
-                    userDtos.Add(userDto);
-                }
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var userDtos = new List<IUserDto>();
+                foreach (var user in users) userDtos.Add(_mapper.Map<UserDto>(user));
                 response.List = userDtos;
 
                 // Success if we made it this far.
@@ -136,7 +134,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<UserServiceResponse> ReadById(UserServiceRequest request)
+        public async Task<IUserServiceResponse> ReadById(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
@@ -144,14 +142,14 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "User id is required to find a user by id.";
+                response.ErrorMessage = "Id (UUID) is required to find a user by user id.";
                 return response;
             }
 
             try
             {
                 // Read the user record now.
-                var user = await uow.users.ReadById((Guid)request.Id);
+                var user = await _uow.users.ReadById((Guid)request.Id);
 
                 // Verify the user was found.
                 if (user.Id != request.Id)
@@ -161,18 +159,8 @@ namespace TrappyKeepy.Service
                     return response;
                 }
 
-                // Pass a UserDto back to the controller.
-                response.Item = new UserDto()
-                {
-                    Id = user.Id,
-                    Name = user.Name,
-                    // Do not include the salted/hashed password.
-                    Email = user.Email,
-                    Role = user.Role,
-                    DateCreated = user.DateCreated,
-                    DateActivated = user.DateActivated,
-                    DateLastLogin = user.DateLastLogin
-                };
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<UserDto>(user);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -191,26 +179,29 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<UserServiceResponse> UpdateById(UserServiceRequest request)
+        public async Task<IUserServiceResponse> Update(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
             // Verify required parameters.
-            if (request.Item is null || request.Item.Id == Guid.Empty)
+            if (request.Item?.Id is null || request.Item.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "User id is required to update a user by id.";
+                response.ErrorMessage = "Id (UUID) is required to update a user.";
                 return response;
             }
 
             try
             {
+                // Map the controller's DTO to a domain object for the repository.
+                var user = _mapper.Map<User>(request.Item);
+
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that the user exists.
-                var existing = await uow.users.ReadById(request.Item.Id);
-                if (existing.Id != request.Item.Id)
+                var existing = await _uow.users.ReadById(user.Id);
+                if (existing.Id != user.Id)
                 {
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Requested user id for update does not exist.";
@@ -218,19 +209,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Update the user record now.
-                var successful = await uow.users.UpdateById(request.Item);
+                var successful = await _uow.users.UpdateById(user);
 
                 // If the user record couldn't be updated, rollback and return to the controller.
                 if (!successful)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "User was not updated.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }
@@ -247,26 +238,29 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<UserServiceResponse> UpdatePasswordById(UserServiceRequest request)
+        public async Task<IUserServiceResponse> UpdatePassword(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
             // Verify required parameters.
-            if (request.Item is null || request.Item.Id == Guid.Empty || request.Item.Password is null)
+            if (request.Item?.Id is null || request.Item?.Id == Guid.Empty || request.Item?.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "User id and password are required to update a user password.";
+                response.ErrorMessage = "Id (UUID) and Password (TEXT) are required to update a user password.";
                 return response;
             }
 
             try
             {
+                // Map the controller's DTO to a domain object for the repository.
+                var user = _mapper.Map<User>(request.Item);
+
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that the user exists.
-                var existing = await uow.users.ReadById(request.Item.Id);
-                if (existing.Id != request.Item.Id)
+                var existing = await _uow.users.ReadById(user.Id);
+                if (existing.Id != user.Id)
                 {
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Requested user or user id for update does not exist.";
@@ -274,19 +268,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Update the user password now.
-                var successful = await uow.users.UpdatePasswordById(request.Item);
+                var successful = await _uow.users.UpdatePasswordById(user);
 
                 // If the user password couldn't be updated, rollback and return to the controller.
                 if (!successful)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "User password was not updated.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }
@@ -303,7 +297,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<UserServiceResponse> DeleteById(UserServiceRequest request)
+        public async Task<IUserServiceResponse> DeleteById(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
@@ -311,17 +305,17 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "User id is required to delete a user by id.";
+                response.ErrorMessage = "Id (UUID) is required to delete a user by user id.";
                 return response;
             }
 
             try
             {
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that the user exists.
-                var existing = await uow.users.ReadById((Guid)request.Id);
+                var existing = await _uow.users.ReadById((Guid)request.Id);
                 if (existing.Id != request.Id)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -329,21 +323,19 @@ namespace TrappyKeepy.Service
                     return response;
                 }
 
-                // TODO: Figure out what to do with the keepers they are linked to.
-                // TODO: Just delete those keepers? Seems wrong to do that.
-
+                // TODO: Figure out what to do with the keepers they are linked to. Just delete those keepers? Seems wrong to do that.
                 // TODO: Don't allow a user to delete themselves?
 
                 // Delete any existing user memberships first.
-                var membershipsCount = await uow.memberships.CountByColumnValue("user_id", (Guid)request.Id);
+                var membershipsCount = await _uow.memberships.CountByColumnValue("user_id", (Guid)request.Id);
                 if (membershipsCount > 0)
                 {
-                    var successfulDeleteMemberships = await uow.memberships.DeleteByUserId((Guid)request.Id);
+                    var successfulDeleteMemberships = await _uow.memberships.DeleteByUserId((Guid)request.Id);
 
                     // If the user had memberships that couldn't be deleted, rollback and return to the controller.
                     if (!successfulDeleteMemberships)
                     {
-                        uow.Rollback();
+                        _uow.Rollback();
                         response.Outcome = OutcomeType.Fail;
                         response.ErrorMessage = "User was not deleted because existing memberships could not be deleted.";
                         return response;
@@ -351,19 +343,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Delete the user record now.
-                var successfulDeleteUser = await uow.users.DeleteById((Guid)request.Id);
+                var successfulDeleteUser = await _uow.users.DeleteById((Guid)request.Id);
 
                 // If the user record couldn't be deleted, rollback and return to the controller.
                 if (!successfulDeleteUser)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "User was not deleted.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }
@@ -380,49 +372,42 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<UserServiceResponse> Authenticate(UserServiceRequest request)
+        public async Task<IUserServiceResponse> CreateSession(IUserServiceRequest request)
         {
             var response = new UserServiceResponse();
 
             // Verify required parameters.
-            if (request.Item?.Email is null || request.Item?.Password is null)
+            if (request.UserSessionDto?.Email is null || request.UserSessionDto.Password is null)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "User email and password are required to authenticate a user.";
+                response.ErrorMessage = "Email (TEXT) and Password (TEXT) are required to authenticate a user.";
                 return response;
             }
 
             try
             {
-                var authenticated = await uow.users.Authenticate(request.Item);
+                // Map the controller's DTO to a domain object for the repository.
+                var user = _mapper.Map<User>(request.UserSessionDto);
 
+                var authenticated = await _uow.users.Authenticate(user);
+
+                // Verify that the repository located an actual user record.
                 if (authenticated.Id == Guid.Empty)
                 {
                     response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "No match found for user email and password. Please correct the email or password and try again.";
+                    response.ErrorMessage = "No match found for Email and Password.";
                     return response;
                 }
 
-                // Pass a UserDto back to the controller.
-                response.Item = new UserDto()
-                {
-                    Id = authenticated.Id,
-                    Name = authenticated.Name,
-                    // Do not include the salted/hashed password.
-                    Email = authenticated.Email,
-                    Role = authenticated.Role,
-                    DateCreated = authenticated.DateCreated,
-                    DateActivated = authenticated.DateActivated,
-                    DateLastLogin = authenticated.DateLastLogin
-                };
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<UserDto>(authenticated);
 
-                // Create a JWT.
-                var claims = new List<Claim>();
-                claims.Add(new Claim("id", authenticated.Id.ToString()));
-                claims.Add(new Claim("role", authenticated.Role));
-                var jwt = tokenService.EncodeJwt(claims);
-                response.Token = jwt;
+                // Create an authentication token for the response to the controller.
+                response.Token = _jwt.Encode(authenticated.Id, authenticated.Role);
 
+                // TODO: Update the user's date_last_login.
+
+                // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
             }
             catch (Exception)
@@ -432,5 +417,6 @@ namespace TrappyKeepy.Service
 
             return response;
         }
+
     }
 }

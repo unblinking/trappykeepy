@@ -1,4 +1,4 @@
-﻿using TrappyKeepy.Data;
+﻿using AutoMapper;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
@@ -13,15 +13,21 @@ namespace TrappyKeepy.Service
         /// <summary>
         /// Group database operations into a single transaction (unit of work).
         /// </summary>
-        private readonly IUnitOfWork uow;
+        private readonly IUnitOfWork _uow;
+
+        /// <summary>
+        /// Automapper http://automapper.org/
+        /// </summary>
+        private readonly IMapper _mapper;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="unitOfWork"></param>
-        public MembershipService(IUnitOfWork unitOfWork)
+        public MembershipService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            this.uow = unitOfWork;
+            _uow = unitOfWork;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -29,7 +35,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<MembershipServiceResponse> Create(MembershipServiceRequest request)
+        public async Task<IMembershipServiceResponse> Create(IMembershipServiceRequest request)
         {
             var response = new MembershipServiceResponse();
 
@@ -41,26 +47,20 @@ namespace TrappyKeepy.Service
             )
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Group id and user id are required to create a membership.";
+                response.ErrorMessage = "GroupId (UUID) and UserId (UUID) are required to create a membership.";
                 return response;
             }
 
             try
             {
-                // Begin this transaction.
-                uow.Begin();
+                // Map the controller's DTO to a domain object for the repository.
+                var membership = _mapper.Map<Membership>(request.Item);
 
-                if (request.Item is null) // Had to put this extra if() here to eliminate a "deferrence of possibly null reference" warning.
-                {
-                    response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Group id and user id are required to create a membership.";
-                    return response;
-                }
+                // Begin this transaction.
+                _uow.Begin();
+
                 // Verify the requested membership is not already created.
-                var existingMembershipCount = await uow.memberships.CountByGroupAndUser(
-                    request.Item.GroupId,
-                    request.Item.UserId
-                );
+                var existingMembershipCount = await _uow.memberships.CountByGroupAndUser(membership.GroupId, membership.UserId);
                 if (existingMembershipCount > 0)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -69,13 +69,13 @@ namespace TrappyKeepy.Service
                 }
 
                 // Create the new membership record now.
-                var id = await uow.memberships.Create(request.Item);
+                var newMembership = await _uow.memberships.Create(membership);
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
-                // Pass a MembershipDto back to the controller.
-                response.Item = new MembershipDto() { Id = id };
+                // Map the repository's domain object to a DTO for the response to the controller.
+                response.Item = _mapper.Map<MembershipDto>(newMembership);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;
@@ -93,27 +93,18 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<MembershipServiceResponse> ReadAll(MembershipServiceRequest request)
+        public async Task<IMembershipServiceResponse> ReadAll(IMembershipServiceRequest request)
         {
             var response = new MembershipServiceResponse();
 
             try
             {
                 // Read the membership records now.
-                var memberships = await uow.memberships.ReadAll();
+                var memberships = await _uow.memberships.ReadAll();
 
-                // Pass a list of membershipDtos back to the controller.
-                var membershipDtos = new List<MembershipDto>();
-                foreach (var membership in memberships)
-                {
-                    var membershipDto = new MembershipDto()
-                    {
-                        Id = membership.Id,
-                        GroupId = membership.GroupId,
-                        UserId = membership.UserId,
-                    };
-                    membershipDtos.Add(membershipDto);
-                }
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var membershipDtos = new List<IMembershipDto>();
+                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<MembershipDto>(membership));
                 response.List = membershipDtos;
 
                 // Success if we made it this far.
@@ -132,35 +123,26 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<MembershipServiceResponse> ReadByGroupId(MembershipServiceRequest request)
+        public async Task<IMembershipServiceResponse> ReadByGroupId(IMembershipServiceRequest request)
         {
             var response = new MembershipServiceResponse();
 
             // Verify required parameters.
-            if (request.Id is null)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Group id is required to find a membership by group id.";
+                response.ErrorMessage = "Id (UUID) is required to find a membership by group id.";
                 return response;
             }
 
             try
             {
                 // Read the membership records now.
-                var memberships = await uow.memberships.ReadByGroupId((Guid)request.Id);
+                var memberships = await _uow.memberships.ReadByGroupId((Guid)request.Id);
 
-                // Pass a list of membershipDtos back to the controller.
-                var membershipDtos = new List<MembershipDto>();
-                foreach (var membership in memberships)
-                {
-                    var membershipDto = new MembershipDto()
-                    {
-                        Id = membership.Id,
-                        GroupId = membership.GroupId,
-                        UserId = membership.UserId,
-                    };
-                    membershipDtos.Add(membershipDto);
-                }
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var membershipDtos = new List<IMembershipDto>();
+                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<MembershipDto>(membership));
                 response.List = membershipDtos;
 
                 // Success if we made it this far.
@@ -179,35 +161,26 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<MembershipServiceResponse> ReadByUserId(MembershipServiceRequest request)
+        public async Task<IMembershipServiceResponse> ReadByUserId(IMembershipServiceRequest request)
         {
             var response = new MembershipServiceResponse();
 
             // Verify required parameters.
-            if (request.Id is null)
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "User id is required to find a membership by user by id.";
+                response.ErrorMessage = "Id (UUID) is required to find a membership by user id.";
                 return response;
             }
 
             try
             {
                 // Read the membership record now.
-                var memberships = await uow.memberships.ReadByUserId((Guid)request.Id);
+                var memberships = await _uow.memberships.ReadByUserId((Guid)request.Id);
 
-                // Pass a list of membershipDtos back to the controller.
-                var membershipDtos = new List<MembershipDto>();
-                foreach (var membership in memberships)
-                {
-                    var membershipDto = new MembershipDto()
-                    {
-                        Id = membership.Id,
-                        GroupId = membership.GroupId,
-                        UserId = membership.UserId,
-                    };
-                    membershipDtos.Add(membershipDto);
-                }
+                // Map the repository's domain objects to DTOs for the response to the controller.
+                var membershipDtos = new List<IMembershipDto>();
+                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<MembershipDto>(membership));
                 response.List = membershipDtos;
 
                 // Success if we made it this far.
@@ -226,25 +199,26 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<MembershipServiceResponse> DeleteById(MembershipServiceRequest request)
+        public async Task<IMembershipServiceResponse> DeleteById(IMembershipServiceRequest request)
         {
             var response = new MembershipServiceResponse();
 
             // Verify required parameters.
-            if (
-                request.Id is null || request.Id == Guid.Empty
-            )
+            if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Membership id is required to delete a specific membership by id.";
+                response.ErrorMessage = "Id (UUID) is required to delete a specific membership by id.";
                 return response;
             }
 
             try
             {
+                // Begin this transaction.
+                _uow.Begin();
+
                 // Verify that the membership exists.
-                var existingCount = await uow.memberships.CountByColumnValue("id", (Guid)request.Id);
-                if (existingCount < 1)
+                var existing = await _uow.memberships.ReadById((Guid)request.Id);
+                if (existing.Id != request.Id)
                 {
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Requested membership for delete does not exist.";
@@ -252,19 +226,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Delete the membership record now.
-                var successful = await uow.memberships.DeleteById((Guid)request.Id);
+                var successful = await _uow.memberships.DeleteById((Guid)request.Id);
 
                 // If the membership record couldn't be deleted, rollback and return to the controller.
                 if (!successful)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Membership was not deleted.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }
@@ -281,7 +255,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<MembershipServiceResponse> DeleteByGroupId(MembershipServiceRequest request)
+        public async Task<IMembershipServiceResponse> DeleteByGroupId(IMembershipServiceRequest request)
         {
             var response = new MembershipServiceResponse();
 
@@ -289,17 +263,17 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Group id is required to delete membership(s) by group id.";
+                response.ErrorMessage = "Id (UUID) is required to delete membership(s) by group id.";
                 return response;
             }
 
             try
             {
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that at least one membership exists for the group.
-                var existingCount = await uow.memberships.CountByColumnValue("group_id", (Guid)request.Id);
+                var existingCount = await _uow.memberships.CountByColumnValue("group_id", (Guid)request.Id);
                 if (existingCount < 1)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -308,21 +282,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Delete the membership record(s) now.
-                var successful = await uow.memberships.DeleteByGroupId((Guid)request.Id);
+                var successful = await _uow.memberships.DeleteByGroupId((Guid)request.Id);
 
                 // If the membership record(s) couldn't be deleted, rollback and return to the controller.
                 if (!successful)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Membership(s) not deleted.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
-
-                // TODO: Return the number of memberships deleted?
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }
@@ -339,7 +311,7 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<MembershipServiceResponse> DeleteByUserId(MembershipServiceRequest request)
+        public async Task<IMembershipServiceResponse> DeleteByUserId(IMembershipServiceRequest request)
         {
             var response = new MembershipServiceResponse();
 
@@ -347,17 +319,17 @@ namespace TrappyKeepy.Service
             if (request.Id is null || request.Id == Guid.Empty)
             {
                 response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "User id is required to delete membership(s) by user id.";
+                response.ErrorMessage = "Id (UUID) is required to delete membership(s) by user id.";
                 return response;
             }
 
             try
             {
                 // Begin this transaction.
-                uow.Begin();
+                _uow.Begin();
 
                 // Verify that at least one membership exists for the user.
-                var existingCount = await uow.memberships.CountByColumnValue("user_id", (Guid)request.Id);
+                var existingCount = await _uow.memberships.CountByColumnValue("user_id", (Guid)request.Id);
                 if (existingCount < 1)
                 {
                     response.Outcome = OutcomeType.Fail;
@@ -366,21 +338,19 @@ namespace TrappyKeepy.Service
                 }
 
                 // Delete the membership record(s) now.
-                var successful = await uow.memberships.DeleteByUserId((Guid)request.Id);
+                var successful = await _uow.memberships.DeleteByUserId((Guid)request.Id);
 
                 // If the membership record(s) couldn't be deleted, rollback and return to the controller.
                 if (!successful)
                 {
-                    uow.Rollback();
+                    _uow.Rollback();
                     response.Outcome = OutcomeType.Fail;
                     response.ErrorMessage = "Membership(s) not deleted.";
                     return response;
                 }
 
                 // Commit changes in this transaction.
-                uow.Commit();
-
-                // TODO: Return the number of memberships deleted?
+                _uow.Commit();
 
                 response.Outcome = OutcomeType.Success;
             }
