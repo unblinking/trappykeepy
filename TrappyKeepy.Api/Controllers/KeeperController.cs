@@ -152,8 +152,14 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
+                if (User is null)
+                {
+                    response.Fail("Error reading authorized user from bearer token.");
+                    return StatusCode(400, response);
+                }
+
                 // Determine the id of the user from their authorization token.
-                string? userIdString = User?.FindFirst("id")?.Value;
+                string? userIdString = User.FindFirst("id")?.Value;
                 if (userIdString is null)
                 {
                     response.Fail("Error reading authorized user id from bearer token.");
@@ -161,8 +167,20 @@ namespace TrappyKeepy.Api.Controllers
                 }
                 var userId = new Guid(userIdString);
 
+                var isAdmin = false;
+                isAdmin = User.IsInRole("admin");
+
                 var serviceRequest = new KeeperServiceRequest() { RequestingUserId = userId };
-                var serviceResponse = await _keeperService.ReadAll(serviceRequest);
+
+                IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
+                if (isAdmin)
+                {
+                    serviceResponse = await _keeperService.ReadAll(serviceRequest);
+                }
+                else
+                {
+                    serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
+                }
 
                 switch (serviceResponse.Outcome)
                 {
@@ -203,8 +221,14 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var response = new ControllerResponse();
 
+                if (User is null)
+                {
+                    response.Fail("Error reading authorized user from bearer token.");
+                    return StatusCode(400, response);
+                }
+
                 // Determine the id of the user from their authorization token.
-                string? userIdString = User?.FindFirst("id")?.Value;
+                string? userIdString = User.FindFirst("id")?.Value;
                 if (userIdString is null)
                 {
                     response.Fail("Error reading authorized user id from bearer token.");
@@ -212,12 +236,24 @@ namespace TrappyKeepy.Api.Controllers
                 }
                 var userId = new Guid(userIdString);
 
+                var isAdmin = false;
+                isAdmin = User.IsInRole("admin");
+
                 var serviceRequest = new KeeperServiceRequest()
                 {
                     Id = id,
                     RequestingUserId = userId
                 };
-                var serviceResponse = await _keeperService.ReadById(serviceRequest);
+
+                IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
+                if (isAdmin)
+                {
+                    serviceResponse = await _keeperService.ReadById(serviceRequest);
+                }
+                else
+                {
+                    serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
+                }
 
                 switch (serviceResponse.Outcome)
                 {

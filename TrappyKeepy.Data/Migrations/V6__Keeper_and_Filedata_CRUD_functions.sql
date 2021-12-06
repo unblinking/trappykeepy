@@ -99,6 +99,37 @@ $$;
 COMMENT ON FUNCTION tk.keepers_read_all IS 'Function to return all records from the keepers table.';
 
 /**
+ * Function:    tk.keepers_read_all_permitted
+ * Created:     2021-12-05
+ * Author:      Joshua Gray
+ * Description: Function to return all records from the keepers table, that the requesting user is permitted to read.
+ * Parameters:  id_user UUID - 
+ * Usage:       SELECT * FROM tk.keepers_read_all_permitted('00000000-0000-0000-0000-000000000000');
+ * Returns:     All columns for all records from the tk.keepers table.
+ */
+CREATE OR REPLACE FUNCTION tk.keepers_read_all_permitted (
+    id_user UUID
+)
+    RETURNS SETOF tk.keepers
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT tk.keepers.*
+    FROM tk.keepers
+    INNER JOIN tk.permits ON tk.keepers.id = tk.permits.keeper_id
+    WHERE tk.permits.user_id = $1
+    OR tk.permits.group_id IN (
+        SELECT group_id
+        FROM tk.memberships
+        WHERE user_id = $1;
+    );
+END;
+$$;
+COMMENT ON FUNCTION tk.keepers_read_all_permitted IS 'Function to return all records from the keepers table, that the requesting user is permitted to read.';
+
+/**
  * Function:    tk.keepers_read_by_id
  * Created:     2021-11-22
  * Author:      Joshua Gray
@@ -123,6 +154,40 @@ END;
 $$;
 COMMENT ON FUNCTION tk.keepers_read_by_id IS 'Function to return a record from the keepers table by id.';
 
+/**
+ * Function:    tk.keepers_read_by_id_permitted
+ * Created:     2021-12-05
+ * Author:      Joshua Gray
+ * Description: Function to return a record from the keepers table by id, if the requesting user is permitted to read it.
+ * Parameters:  id_value UUID - The id of the keeper record.
+ * Usage:       SELECT * FROM tk.keepers_read_by_id_permitted('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000');
+ * Returns:     All columns for a record from the tk.keepers table.
+ */
+CREATE OR REPLACE FUNCTION tk.keepers_read_by_id_permitted (
+    id_keeper UUID,
+    id_user UUID
+)
+    RETURNS SETOF tk.keepers
+    LANGUAGE PLPGSQL
+    AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT tk.keepers.*
+    FROM tk.keepers
+    INNER JOIN tk.permits ON tk.keepers.id = tk.permits.keeper_id
+    WHERE tk.keepers.id = $1
+    AND (
+        tk.permits.user_id = $2
+        OR tk.permits.group_id IN (
+            SELECT group_id
+            FROM tk.memberships
+            WHERE user_id = $2;
+        )
+    );
+END;
+$$;
+COMMENT ON FUNCTION tk.keepers_read_by_id_permitted IS 'Function to return a record from the keepers table by id, if the requesting user is permitted to read it.';
 
 /**
  * Function:    tk.filedatas_read_by_keeper_id
