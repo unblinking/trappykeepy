@@ -24,7 +24,7 @@
     /// Base service response class.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ServiceResponse<T> : IServiceRequest<T>
+    public class ServiceResponse<T> : IServiceResponse<T>
     {
         public OutcomeType Outcome { get; set; } = OutcomeType.Error;
         public string? ErrorMessage { get; set; }

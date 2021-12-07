@@ -163,62 +163,6 @@ namespace TrappyKeepy.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<IKeeperServiceResponse> ReadAll(IKeeperServiceRequest request)
-        {
-            var response = new KeeperServiceResponse();
-
-            // Verify required parameters.
-            if (request.PrincipalUser is null)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to read keepers.";
-                return response;
-            }
-
-            try
-            {
-                var userIdString = request.PrincipalUser.FindFirst("id")?.Value;
-                if (userIdString is null)
-                {
-                    response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Error reading authorized user id from bearer token.";
-                    return response;
-                }
-                var userId = new Guid(userIdString);
-
-                // Verify the principal user is really an admin.
-                var user = await _uow.users.ReadById(userId);
-                if (user.Role != "admin")
-                {
-                    response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Authorized user id from bearer token is not an admin.";
-                    return response;
-                }
-
-                // Read the keeper records now.
-                var keepers = await _uow.keepers.ReadAll();
-
-                // Map the repository's domain objects to DTOs for the response to the controller.
-                var keeperDtos = new List<IKeeperDto>();
-                foreach (var keeper in keepers) keeperDtos.Add(_mapper.Map<KeeperDto>(keeper));
-                response.List = keeperDtos;
-
-                // Success if we made it this far.
-                response.Outcome = OutcomeType.Success;
-            }
-            catch (Exception)
-            {
-                response.Outcome = OutcomeType.Error;
-            }
-
-            return response;
-        }
-
-        /// <summary>
-        /// Read all keepers (all documents) from the database.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         public async Task<IKeeperServiceResponse> ReadAllPermitted(IKeeperServiceRequest request)
         {
             var response = new KeeperServiceResponse();
@@ -254,70 +198,6 @@ namespace TrappyKeepy.Service
                 var keeperDtos = new List<IKeeperDto>();
                 foreach (var keeper in keepers) keeperDtos.Add(_mapper.Map<KeeperDto>(keeper));
                 response.List = keeperDtos;
-
-                // Success if we made it this far.
-                response.Outcome = OutcomeType.Success;
-            }
-            catch (Exception)
-            {
-                response.Outcome = OutcomeType.Error;
-            }
-
-            return response;
-        }
-
-        /// <summary>
-        /// Read one keeper from the database (metadata), including the filedata (binary data).
-        /// </summary>
-        /// <param name="request">A KeeperServiceRequest including the requested keeper id.</param>
-        /// <returns>KeeperServiceResponse - A KeeperDto that includes the BinaryData for the file.</returns>
-        public async Task<IKeeperServiceResponse> ReadById(IKeeperServiceRequest request)
-        {
-            var response = new KeeperServiceResponse();
-
-            // Verify required parameters.
-            if (request.Id is null || request.Id == Guid.Empty)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Id (UUID) is required to find a keeper by keeper id.";
-                return response;
-            }
-            if (request.PrincipalUser is null)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to read keepers.";
-                return response;
-            }
-
-            try
-            {
-                var userIdString = request.PrincipalUser.FindFirst("id")?.Value;
-                if (userIdString is null)
-                {
-                    response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Error reading authorized user id from bearer token.";
-                    return response;
-                }
-                var userId = new Guid(userIdString);
-
-                // Verify the principal user is really an admin.
-                var user = await _uow.users.ReadById(userId);
-                if (user.Role != "admin")
-                {
-                    response.Outcome = OutcomeType.Fail;
-                    response.ErrorMessage = "Authorized user id from bearer token is not an admin.";
-                    return response;
-                }
-
-                // Read the keeper record now.
-                var keeper = await _uow.keepers.ReadById((Guid)request.Id);
-
-                // Read the filedata record now.
-                var filedata = await _uow.filedatas.ReadByKeeperId((Guid)request.Id);
-
-                // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<KeeperDto>(keeper);
-                response.BinaryData = filedata.BinaryData;
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;

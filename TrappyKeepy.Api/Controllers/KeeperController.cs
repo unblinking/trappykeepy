@@ -91,8 +91,7 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var serviceRequest = new KeeperServiceRequest() { PrincipalUser = User };
                 IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
-                if (User.IsInRole("admin")) serviceResponse = await _keeperService.ReadAll(serviceRequest);
-                else serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
+                serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
                 var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
@@ -133,8 +132,7 @@ namespace TrappyKeepy.Api.Controllers
             {
                 var serviceRequest = new KeeperServiceRequest() { Id = id, PrincipalUser = User };
                 IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
-                if (User.IsInRole("admin")) serviceResponse = await _keeperService.ReadById(serviceRequest);
-                else serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
+                serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
                 var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {

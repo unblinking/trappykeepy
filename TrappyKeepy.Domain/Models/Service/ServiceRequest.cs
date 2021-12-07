@@ -5,6 +5,7 @@ namespace TrappyKeepy.Domain.Models
     {
         Guid? Id { get; }
         T? Item { get; }
+        System.Security.Claims.ClaimsPrincipal? PrincipalUser { get; }
     }
 
     /// <summary>
@@ -19,6 +20,8 @@ namespace TrappyKeepy.Domain.Models
         /// The item contains the details needed to complete the request.
         /// </summary>
         public T? Item { get; set; }
+
+        public System.Security.Claims.ClaimsPrincipal? PrincipalUser { get; set; }
     }
 
     public interface IUserServiceRequest : IServiceRequest<IUserDto>
@@ -66,7 +69,6 @@ namespace TrappyKeepy.Domain.Models
     {
         IFormCollection? Metadata { get; }
         IFormFile? File { get; }
-        System.Security.Claims.ClaimsPrincipal? PrincipalUser { get; }
     }
 
     /// <summary>
@@ -76,9 +78,6 @@ namespace TrappyKeepy.Domain.Models
     {
         public IFormCollection? Metadata { get; set; }
         public IFormFile? File { get; set; }
-        public System.Security.Claims.ClaimsPrincipal? PrincipalUser { get; set; }
-
-        
 
         /// <summary>
         ///  If no keeper is provided, instantiate a new one.
