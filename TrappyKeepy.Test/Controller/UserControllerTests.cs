@@ -14,7 +14,62 @@ namespace TrappyKeepy.Test
     {
         # region CREATE
 
+        [Fact]
+        public async Task CreateUserWithServiceSuccessShouldReturnOkWithUser()
+        {
+            // ---------- ARRANGE ----------
+            // Prepare the service mocks.
+            var UserDtoTestObjects = new UserDtoTestObjects();
+            var user = UserDtoTestObjects.TestUserDto;
+            var membershipServiceMock = new Mock<IMembershipService>();
+            var permitServiceMock = new Mock<IPermitService>();
+            var userServiceMock = new Mock<IUserService>();
+            userServiceMock
+                .Setup(u => u.Create(It.IsAny<UserServiceRequest>()))
+                .ReturnsAsync(
+                    new UserServiceResponse()
+                    {
+                        Outcome = OutcomeType.Success,
+                        Item = user
+                    }
+                );
+            // Instantiate the production controller using the mock services.
+            var userController = new UserController(
+                membershipServiceMock.Object,
+                permitServiceMock.Object,
+                userServiceMock.Object
+            );
 
+            // ---------- ACT ----------
+            var actionResult = await userController.CreateUser(
+                new UserDto()
+                {
+                    Name = "foo",
+                    Password = "passwordfoo",
+                    Email = "foo@trappykeepy.com",
+                    Role = "basic"
+                }
+            );
+
+            // ---------- ASSERT ----------
+            // ActionResult: The controller returns an ActionResult.
+            Assert.NotNull(actionResult);
+            Assert.IsType<OkObjectResult>(actionResult);
+            // OkObjectResult: When the service outcome is success, the ActionResult should be OkObjectResult.
+            var okObjectResult = (OkObjectResult)actionResult;
+            Assert.NotNull(okObjectResult);
+            Assert.Equal(200, okObjectResult.StatusCode);
+            Assert.NotNull(okObjectResult.Value);
+            Assert.IsType<ControllerResponse>(okObjectResult.Value);
+            // ControllerResponse
+            var controllerResponse = (ControllerResponse)okObjectResult.Value;
+            Assert.NotNull(controllerResponse);
+            Assert.Equal("success", controllerResponse.Status);
+            Assert.NotNull(controllerResponse.Data);
+            // Assert.IsType<List<IUserDto>>(controllerResponse.Data);
+            var data = (IUserDto)controllerResponse.Data;
+            Assert.Equal(user, data);
+        }
 
         #endregion CREATE
 
@@ -26,7 +81,7 @@ namespace TrappyKeepy.Test
             // ---------- ARRANGE ----------
             // Prepare the service mocks.
             var UserDtoTestObjects = new UserDtoTestObjects();
-            var userList = UserDtoTestObjects.TestUserDtoReadAll;
+            var userList = UserDtoTestObjects.TestUserDtoList;
             var membershipServiceMock = new Mock<IMembershipService>();
             var permitServiceMock = new Mock<IPermitService>();
             var userServiceMock = new Mock<IUserService>();
