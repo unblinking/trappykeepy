@@ -12,42 +12,75 @@ namespace TrappyKeepy.Test
 {
     public class UserControllerTest
     {
+        # region CREATE
 
+
+
+        #endregion CREATE
+
+        #region READ
 
         [Fact]
-        public async Task ReadAllWithAnyRequestShouldReturnSuccessAllUsers()
+        public async Task ReadAllWithServiceSuccessShouldReturnOkWithUsersList()
         {
-            // ARRANGE
-            // Prepare the service response.
-            var userServiceResponse = new UserServiceResponse();
-            var UserDtoTestObjects = new UserDtoTestObjects();
-            userServiceResponse.List = UserDtoTestObjects.TestUserDtoReadAll;
-            userServiceResponse.Outcome = OutcomeType.Success;
+            // ---------- ARRANGE ----------
             // Prepare the service mocks.
+            var UserDtoTestObjects = new UserDtoTestObjects();
+            var userList = UserDtoTestObjects.TestUserDtoReadAll;
             var membershipServiceMock = new Mock<IMembershipService>();
             var permitServiceMock = new Mock<IPermitService>();
             var userServiceMock = new Mock<IUserService>();
             userServiceMock
                 .Setup(u => u.ReadAll(It.IsAny<UserServiceRequest>()))
-                .ReturnsAsync(userServiceResponse);
-
+                .ReturnsAsync(
+                    new UserServiceResponse()
+                    {
+                        Outcome = OutcomeType.Success,
+                        List = userList
+                    }
+                );
             // Instantiate the production controller using the mock services.
-            var userController = new UserController(membershipServiceMock.Object, permitServiceMock.Object, userServiceMock.Object);
+            var userController = new UserController(
+                membershipServiceMock.Object,
+                permitServiceMock.Object,
+                userServiceMock.Object
+            );
 
-            // ACT
+            // ---------- ACT ----------
             var actionResult = await userController.ReadAll();
 
-            // ASSERT
+            // ---------- ASSERT ----------
+            // ActionResult: The controller returns an ActionResult.
             Assert.NotNull(actionResult);
             Assert.IsType<OkObjectResult>(actionResult);
-            Assert.Equal(200, ((OkObjectResult)actionResult).StatusCode);
-            Assert.IsType<ControllerResponse>(((OkObjectResult)actionResult).Value);
-            Assert.NotNull(((OkObjectResult)actionResult).Value);
-            var controllerResponse = (ControllerResponse)((OkObjectResult)actionResult).Value;
-            var controllerResponseStatus = controllerResponse.Status;
-            Assert.Equal("success", controllerResponseStatus);
-            var controllerResponseData = (List<UserDto>)controllerResponse.Data;
-            Assert.Equal(userServiceResponse.List, controllerResponseData);
+            // OkObjectResult: When the service outcome is success, the ActionResult should be OkObjectResult.
+            var okObjectResult = (OkObjectResult)actionResult;
+            Assert.NotNull(okObjectResult);
+            Assert.Equal(200, okObjectResult.StatusCode);
+            Assert.NotNull(okObjectResult.Value);
+            Assert.IsType<ControllerResponse>(okObjectResult.Value);
+            // ControllerResponse
+            var controllerResponse = (ControllerResponse)okObjectResult.Value;
+            Assert.NotNull(controllerResponse);
+            Assert.Equal("success", controllerResponse.Status);
+            Assert.NotNull(controllerResponse.Data);
+            // Assert.IsType<List<IUserDto>>(controllerResponse.Data);
+            var data = (List<IUserDto>)controllerResponse.Data;
+            Assert.Equal(userList, data);
         }
+
+        #endregion READ
+
+        #region UPDATE
+
+
+
+        #endregion UPDATE
+
+        #region DELETE
+
+
+
+        #endregion DELETE
     }
 }
