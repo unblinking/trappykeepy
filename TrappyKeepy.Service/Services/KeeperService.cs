@@ -42,23 +42,66 @@ namespace TrappyKeepy.Service
             var response = new KeeperServiceResponse();
 
             // Verify required parameters.
-            if (request.Item?.UserPosted == Guid.Empty)
+            if (request.Metadata is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Request form-data filename field is required.";
+                return response;
+            }
+            if (request.File is null)
+            {
+                response.Outcome = OutcomeType.Fail;
+                response.ErrorMessage = "Request binary file upload is required.";
+                return response;
+            }
+            if (request.PrincipalUser is null)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to create a keeper.";
                 return response;
             }
-            if (request.Item?.Filename is null || request.Item.ContentType is null || request.BinaryData is null)
-            {
-                response.Outcome = OutcomeType.Fail;
-                response.ErrorMessage = "Filename (TEXT), ContentType (TEXT), and File (binary file data sent with the Http request) are required to create a keeper.";
-                return response;
-            }
 
             try
             {
-                // Map the controller's DTO to a domain object for the repository.
-                var keeper = _mapper.Map<Keeper>(request.Item);
+                var userPostedString = request.PrincipalUser.FindFirst("id")?.Value;
+                if (userPostedString is null)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Error reading authorized user id from bearer token.";
+                    return response;
+                }
+                var keeperDto = new KeeperDto()
+                {
+                    Filename = request.Metadata["filename"],
+                    ContentType = request.File.ContentType,
+                    Description = request.Metadata["description"],
+                    Category = request.Metadata["category"],
+                    UserPosted = new Guid(userPostedString)
+                };
+                if (keeperDto.Filename is null || keeperDto.ContentType is null)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Filename (TEXT) and ContentType (TEXT) are required to create a keeper.";
+                    return response;
+                }
+
+                // Read the binary file data.
+                byte[] binaryData;
+                using (var ms = new MemoryStream())
+                {
+                    await request.File.CopyToAsync(ms);
+                    binaryData = ms.ToArray();
+                }
+                if (binaryData is null || binaryData is not { Length: > 0 })
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "File (binary file data sent with the Http request) is required to create a keeper.";
+                    return response;
+                }
+
+
+                // Map the DTO to a domain object for the repository.
+                var keeper = _mapper.Map<Keeper>(keeperDto);
 
                 // Begin this transaction.
                 _uow.Begin();
@@ -84,11 +127,17 @@ namespace TrappyKeepy.Service
                 // Create the new keeper record now.
                 var newKeeper = await _uow.keepers.Create(keeper);
 
+                if (newKeeper.Id == Guid.Empty)
+                {
+                    response.Outcome = OutcomeType.Error;
+                    return response;
+                }
+
                 // Create the new filedata record now.
                 var filedata = new Filedata()
                 {
                     KeeperId = newKeeper.Id,
-                    BinaryData = request.BinaryData
+                    BinaryData = binaryData
                 };
                 await _uow.filedatas.Create(filedata);
 
@@ -119,7 +168,7 @@ namespace TrappyKeepy.Service
             var response = new KeeperServiceResponse();
 
             // Verify required parameters.
-            if (request.RequestingUserId is null || request.RequestingUserId == Guid.Empty)
+            if (request.PrincipalUser is null)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to read keepers.";
@@ -128,6 +177,24 @@ namespace TrappyKeepy.Service
 
             try
             {
+                var userIdString = request.PrincipalUser.FindFirst("id")?.Value;
+                if (userIdString is null)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Error reading authorized user id from bearer token.";
+                    return response;
+                }
+                var userId = new Guid(userIdString);
+
+                // Verify the principal user is really an admin.
+                var user = await _uow.users.ReadById(userId);
+                if (user.Role != "admin")
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Authorized user id from bearer token is not an admin.";
+                    return response;
+                }
+
                 // Read the keeper records now.
                 var keepers = await _uow.keepers.ReadAll();
 
@@ -157,7 +224,7 @@ namespace TrappyKeepy.Service
             var response = new KeeperServiceResponse();
 
             // Verify required parameters.
-            if (request.RequestingUserId is null || request.RequestingUserId == Guid.Empty)
+            if (request.PrincipalUser is null)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to read keepers.";
@@ -166,10 +233,22 @@ namespace TrappyKeepy.Service
 
             try
             {
-                // TODO: Only read the documents that the authorized user has a permit to read.
+                var userIdString = request.PrincipalUser.FindFirst("id")?.Value;
+                if (userIdString is null)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Error reading authorized user id from bearer token.";
+                    return response;
+                }
+                var userId = new Guid(userIdString);
+
+                // Pull the user from the database right now to get their current role.
+                var user = await _uow.users.ReadById(userId);
 
                 // Read the keeper records now.
-                var keepers = await _uow.keepers.ReadAllPermitted((Guid)request.RequestingUserId);
+                List<Keeper> keepers = new List<Keeper>();
+                if (user.Role == "admin") keepers = await _uow.keepers.ReadAll(); // Admin can read everything.
+                else keepers = await _uow.keepers.ReadAllPermitted(userId); // Other users require permits.
 
                 // Map the repository's domain objects to DTOs for the response to the controller.
                 var keeperDtos = new List<IKeeperDto>();
@@ -203,7 +282,7 @@ namespace TrappyKeepy.Service
                 response.ErrorMessage = "Id (UUID) is required to find a keeper by keeper id.";
                 return response;
             }
-            if (request.RequestingUserId is null || request.RequestingUserId == Guid.Empty)
+            if (request.PrincipalUser is null)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to read keepers.";
@@ -212,6 +291,24 @@ namespace TrappyKeepy.Service
 
             try
             {
+                var userIdString = request.PrincipalUser.FindFirst("id")?.Value;
+                if (userIdString is null)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Error reading authorized user id from bearer token.";
+                    return response;
+                }
+                var userId = new Guid(userIdString);
+
+                // Verify the principal user is really an admin.
+                var user = await _uow.users.ReadById(userId);
+                if (user.Role != "admin")
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Authorized user id from bearer token is not an admin.";
+                    return response;
+                }
+
                 // Read the keeper record now.
                 var keeper = await _uow.keepers.ReadById((Guid)request.Id);
 
@@ -249,7 +346,7 @@ namespace TrappyKeepy.Service
                 response.ErrorMessage = "Id (UUID) is required to find a keeper by keeper id.";
                 return response;
             }
-            if (request.RequestingUserId is null || request.RequestingUserId == Guid.Empty)
+            if (request.PrincipalUser is null)
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "An authorization bearer token issued to an authorized user is required to read keepers.";
@@ -258,10 +355,22 @@ namespace TrappyKeepy.Service
 
             try
             {
-                // TODO: Only read the documents that the authorized user has a permit to read.
+                var userIdString = request.PrincipalUser.FindFirst("id")?.Value;
+                if (userIdString is null)
+                {
+                    response.Outcome = OutcomeType.Fail;
+                    response.ErrorMessage = "Error reading authorized user id from bearer token.";
+                    return response;
+                }
+                var userId = new Guid(userIdString);
+
+                // Pull the user from the database right now to get their current role.
+                var user = await _uow.users.ReadById(userId);
 
                 // Read the keeper record now.
-                var keeper = await _uow.keepers.ReadByIdPermitted((Guid)request.Id, (Guid)request.RequestingUserId);
+                Keeper keeper = new Keeper();
+                if (user.Role == "admin") keeper = await _uow.keepers.ReadById((Guid)request.Id); // Admin can read everything.
+                else keeper = await _uow.keepers.ReadByIdPermitted((Guid)request.Id, userId); // Other users require permits.
 
                 // Read the filedata record now.
                 var filedata = await _uow.filedatas.ReadByKeeperId((Guid)request.Id);

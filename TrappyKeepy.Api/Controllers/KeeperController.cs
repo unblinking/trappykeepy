@@ -46,56 +46,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Determine the id of the user from their authorization token.
-                string? userPostedString = User?.FindFirst("id")?.Value;
-                if (userPostedString is null)
-                {
-                    response.Fail("Error reading authorized user id from bearer token.");
-                    return StatusCode(400, response);
-                }
-                var userPosted = new Guid(userPostedString);
-
-                // Read the binary file data.
-                byte[] binaryData;
-                using (var ms = new MemoryStream())
-                {
-                    await file.CopyToAsync(ms);
-                    binaryData = ms.ToArray();
-                }
-                // Verify the binary file data was successfully received.
-                if (binaryData is not { Length: > 0 })
-                {
-                    response.Fail("No file data was received.");
-                    return StatusCode(400, response);
-                }
-
-                var filename = (string)metadata["filename"];
-                if (filename is null)
-                {
-                    response.Fail("Filename is required to create a keeper.");
-                    return StatusCode(400, response);
-                }
-
-                // Prepare the service request.
-                var serviceRequest = new KeeperServiceRequest()
-                {
-                    BinaryData = binaryData,
-                    Item = new KeeperDto()
-                    {
-                        Filename = filename,
-                        ContentType = file.ContentType,
-                        Description = metadata["description"],
-                        Category = metadata["category"],
-                        UserPosted = userPosted
-                    }
-                };
-
-                // Wait for the service response.
+                var serviceRequest = new KeeperServiceRequest(metadata, file, User);
                 var serviceResponse = await _keeperService.Create(serviceRequest);
-
-                // Send the controller response back to the client.
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -105,7 +58,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // KeeperDto with new id from db insert.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -113,8 +66,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -138,38 +89,11 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                if (User is null)
-                {
-                    response.Fail("Error reading authorized user from bearer token.");
-                    return StatusCode(400, response);
-                }
-
-                // Determine the id of the user from their authorization token.
-                string? userIdString = User.FindFirst("id")?.Value;
-                if (userIdString is null)
-                {
-                    response.Fail("Error reading authorized user id from bearer token.");
-                    return StatusCode(400, response);
-                }
-                var userId = new Guid(userIdString);
-
-                var isAdmin = false;
-                isAdmin = User.IsInRole("admin");
-
-                var serviceRequest = new KeeperServiceRequest() { RequestingUserId = userId };
-
+                var serviceRequest = new KeeperServiceRequest() { PrincipalUser = User };
                 IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
-                if (isAdmin)
-                {
-                    serviceResponse = await _keeperService.ReadAll(serviceRequest);
-                }
-                else
-                {
-                    serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
-                }
-
+                if (User.IsInRole("admin")) serviceResponse = await _keeperService.ReadAll(serviceRequest);
+                else serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -207,42 +131,11 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                if (User is null)
-                {
-                    response.Fail("Error reading authorized user from bearer token.");
-                    return StatusCode(400, response);
-                }
-
-                // Determine the id of the user from their authorization token.
-                string? userIdString = User.FindFirst("id")?.Value;
-                if (userIdString is null)
-                {
-                    response.Fail("Error reading authorized user id from bearer token.");
-                    return StatusCode(400, response);
-                }
-                var userId = new Guid(userIdString);
-
-                var isAdmin = false;
-                isAdmin = User.IsInRole("admin");
-
-                var serviceRequest = new KeeperServiceRequest()
-                {
-                    Id = id,
-                    RequestingUserId = userId
-                };
-
+                var serviceRequest = new KeeperServiceRequest() { Id = id, PrincipalUser = User };
                 IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
-                if (isAdmin)
-                {
-                    serviceResponse = await _keeperService.ReadById(serviceRequest);
-                }
-                else
-                {
-                    serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
-                }
-
+                if (User.IsInRole("admin")) serviceResponse = await _keeperService.ReadById(serviceRequest);
+                else serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
