@@ -38,7 +38,7 @@ namespace TrappyKeepy.Api.Controllers
         /// --data-raw '{
         ///     "Name": "foo",
         ///     "Password": "passwordfoo",
-        ///     "Email": "foo@example.com",
+        ///     "Email": "foo@trappykeepy.com",
         ///     "Role": "basic"
         /// }'
         /// </code>
@@ -350,7 +350,7 @@ namespace TrappyKeepy.Api.Controllers
         /// --data-raw '{
         ///     "Id": "00000000-0000-0000-0000-000000000000",
         ///     "Name": "bar",
-        ///     "Email": "bar@example.com",
+        ///     "Email": "bar@trappykeepy.com",
         ///     "Role": "manager"
         /// }'
         /// </code>

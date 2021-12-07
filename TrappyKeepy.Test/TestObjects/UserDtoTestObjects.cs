@@ -6,7 +6,7 @@ namespace TrappyKeepy.Test.TestObjects
 {
     public class UserDtoTestObjects
     {
-        public IUserDto TestUserDtoReadOne
+        public IUserDto TestUserDto
         {
             get
             {
@@ -14,7 +14,7 @@ namespace TrappyKeepy.Test.TestObjects
                 {
                     Id = Guid.NewGuid(),
                     Name = "foo",
-                    Email = "foo@example.com",
+                    Email = "foo@trappykeepy.com",
                     DateCreated = DateTime.Now.AddDays(-7),
                     DateActivated = DateTime.Now.AddDays(-6),
                     DateLastLogin = DateTime.Now.AddDays(-1)
@@ -22,14 +22,14 @@ namespace TrappyKeepy.Test.TestObjects
             }
         }
 
-        public List<IUserDto> TestUserDtoReadAll
+        public List<IUserDto> TestUserDtoList
         {
             get
             {
                 return new List<IUserDto>()
                 {
-                    TestUserDtoReadOne,
-                    TestUserDtoReadOne
+                    TestUserDto,
+                    TestUserDto
                 };
             }
         }

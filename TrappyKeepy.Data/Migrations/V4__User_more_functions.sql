@@ -16,7 +16,7 @@
  * Description: Function to authenticate a user by email and password.
  * Parameters:  email TEXT - 
  *              password TEXT -
- * Usage:       SELECT * FROM tk.users_authenticate('foo@example.com', 'passwordfoo');
+ * Usage:       SELECT * FROM tk.users_authenticate('foo@trappykeepy.com', 'passwordfoo');
  * Returns:     The user record if found.
  */
 CREATE OR REPLACE FUNCTION tk.users_authenticate (

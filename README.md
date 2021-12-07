@@ -76,5 +76,5 @@ dotnet user-secrets list --project TrappyKeepy.Api
 To create the first administrator app user, connect to the database as `dbowner` and insert the user by running the tk.users_create function. Here is an example using development values:  
 
 ```sql
-SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', 'admin');
+SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@trappykeepy.com', 'admin');
 ```

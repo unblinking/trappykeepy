@@ -33,7 +33,7 @@ namespace TrappyKeepy.Test.Controller
 
             // ---------- ACT ----------
             var actionResult = await sessionController.Create(
-                new UserSessionDto("foo@example.com", "passwordfoo")
+                new UserSessionDto("foo@trappykeepy.com", "passwordfoo")
             );
 
             // ---------- ASSERT ----------
@@ -73,7 +73,7 @@ namespace TrappyKeepy.Test.Controller
 
             // ---------- ACT ----------
             var actionResult = await sessionController.Create(
-                new UserSessionDto("foo@example.com", "passwordfoo")
+                new UserSessionDto("foo@trappykeepy.com", "passwordfoo")
             );
 
             // ---------- ASSERT ----------
@@ -112,7 +112,7 @@ namespace TrappyKeepy.Test.Controller
 
             // ---------- ACT ----------
             var actionResult = await sessionController.Create(
-                new UserSessionDto("foo@example.com", "passwordfoo")
+                new UserSessionDto("foo@trappykeepy.com", "passwordfoo")
             );
 
             // ---------- ASSERT ----------

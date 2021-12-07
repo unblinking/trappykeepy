@@ -30,7 +30,7 @@ namespace TrappyKeepy.Api.Controllers
         /// curl --location --request POST 'https://api.trappykeepy.com/v1/sessions' \
         /// --header 'Content-Type: application/json' \
         /// --data-raw '{
-        ///     "email": "foo@example.com",
+        ///     "email": "foo@trappykeepy.com",
         ///     "password": "passwordfoo"
         /// }'
         /// </code>
