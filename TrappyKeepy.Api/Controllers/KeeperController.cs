@@ -90,8 +90,7 @@ namespace TrappyKeepy.Api.Controllers
             try
             {
                 var serviceRequest = new KeeperServiceRequest() { PrincipalUser = User };
-                IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
-                serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
+                var serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
                 var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
@@ -131,8 +130,7 @@ namespace TrappyKeepy.Api.Controllers
             try
             {
                 var serviceRequest = new KeeperServiceRequest() { Id = id, PrincipalUser = User };
-                IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
-                serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
+                var serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
                 var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
@@ -143,20 +141,8 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        // Verify we really have the filename and binary data if we think we have achieved success.
-                        if (
-                            serviceResponse.Item?.Filename is null || serviceResponse.Item.ContentType is null ||
-                            serviceResponse.BinaryData is not { Length: > 0 }
-                        )
-                        {
-                            throw new Exception("Keeper service replied with succcess but filename or binary data not returned.");
-                        }
-                        // Set and return the file content result.
-                        var fileContentResult = new FileContentResult(serviceResponse.BinaryData, serviceResponse.Item.ContentType)
-                        {
-                            FileDownloadName = serviceResponse.Item.Filename
-                        };
-                        return fileContentResult;
+                        if (serviceResponse.FileContentResult is not null) return serviceResponse.FileContentResult;
+                        else return StatusCode(500, response);
                 }
             }
             catch (Exception)

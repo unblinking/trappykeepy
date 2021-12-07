@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
@@ -255,9 +256,12 @@ namespace TrappyKeepy.Service
                 // Read the filedata record now.
                 var filedata = await _uow.filedatas.ReadByKeeperId((Guid)request.Id);
 
-                // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<KeeperDto>(keeper);
-                response.BinaryData = filedata.BinaryData;
+                // Prepare the FileContentResult for the controller to return to the client.
+                var fileContentResult = new FileContentResult(filedata.BinaryData, keeper.ContentType)
+                {
+                    FileDownloadName = keeper.Filename
+                };
+                response.FileContentResult = fileContentResult;
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;

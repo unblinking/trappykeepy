@@ -1,4 +1,6 @@
-﻿namespace TrappyKeepy.Domain.Models
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace TrappyKeepy.Domain.Models
 {
     /// <summary>
     /// Possible outcomes after the service attempts to process the request.
@@ -76,6 +78,8 @@
     public interface IKeeperServiceResponse : IServiceResponse<IKeeperDto>
     {
         byte[]? BinaryData { get; }
+
+        FileContentResult? FileContentResult { get; }
     }
 
     /// <summary>
@@ -87,6 +91,8 @@
         /// The associated Filedata.BinaryData value.
         /// </summary>
         public byte[]? BinaryData { get; set; }
+
+        public FileContentResult? FileContentResult { get; set; }
 
         /// <summary>
         /// If no keeper is provided, instantiate a new one in the Item.
