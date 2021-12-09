@@ -38,7 +38,7 @@ namespace TrappyKeepy.Domain.Models
 
     public interface IUserServiceResponse : IServiceResponse<IUserDto>
     {
-
+        IUserComplexDto? ComplexDto { get; }
     }
 
     /// <summary>
@@ -46,6 +46,8 @@ namespace TrappyKeepy.Domain.Models
     /// </summary>
     public class UserServiceResponse : ServiceResponse<IUserDto>, IUserServiceResponse
     {
+        public IUserComplexDto? ComplexDto { get; set; }
+
         /// <summary>
         /// If no user is provided, instantiate a new one in the Item.
         /// </summary>
@@ -125,7 +127,7 @@ namespace TrappyKeepy.Domain.Models
 
     public interface IGroupServiceResponse : IServiceResponse<IGroupDto>
     {
-
+        IGroupComplexDto? ComplexDto { get; }
     }
 
     /// <summary>
@@ -133,6 +135,8 @@ namespace TrappyKeepy.Domain.Models
     /// </summary>
     public class GroupServiceResponse : ServiceResponse<IGroupDto>, IGroupServiceResponse
     {
+        public IGroupComplexDto? ComplexDto { get; set; }
+
         /// <summary>
         /// If no group is provided, instantiate a new one in the Item.
         /// </summary>

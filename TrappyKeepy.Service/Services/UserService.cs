@@ -159,8 +159,22 @@ namespace TrappyKeepy.Service
                     return response;
                 }
 
+                // Read the user's memberships.
+                var memberships = await _uow.memberships.ReadByUserId(user.Id);
+                if (memberships.Count() > 0)
+                {
+                    user.Memberships = memberships;
+                }
+
+                // Read the user's permits.
+                 var permits = await _uow.permits.ReadByUserId(user.Id);
+                 if (permits.Count() > 0)
+                 {
+                     user.Permits = permits;
+                 }
+
                 // Map the repository's domain object to a DTO for the response to the controller.
-                response.Item = _mapper.Map<UserDto>(user);
+                response.ComplexDto = _mapper.Map<UserComplexDto>(user);
 
                 // Success if we made it this far.
                 response.Outcome = OutcomeType.Success;

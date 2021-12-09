@@ -167,6 +167,7 @@ namespace TrappyKeepy.Api.Controllers
 
         /// <summary>
         /// Read one existing group.
+        /// This will return a complex group DTO with the usual group properties plus members and permits.
         /// </summary>
         /// <param name="id"></param>
         /// <example>
@@ -194,7 +195,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item);
+                        response.Success(serviceResponse.ComplexDto);
                         return Ok(response);
                 }
             }
