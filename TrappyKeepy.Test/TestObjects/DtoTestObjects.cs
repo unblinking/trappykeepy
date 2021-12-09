@@ -35,6 +35,14 @@ namespace TrappyKeepy.Test.TestObjects
             }
         }
 
+        public IUserSessionDto TestUserSessionDto
+        {
+            get
+            {
+                return new UserSessionDto("foo@trappykeepy.com", "passwordfoo");
+            }
+        }
+
         public IMembershipDto TestMembershipDto
         {
             get
