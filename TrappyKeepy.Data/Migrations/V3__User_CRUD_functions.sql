@@ -20,7 +20,7 @@
  *              password TEXT - Plain text user password that will be salted/hashed.
  *              email TEXT - 
  *              role TEXT - 
- * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', 'basic');
+ * Usage:       SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@trappykeepy.com', 'basic');
  * Returns:     The record that was created.
  */
 CREATE OR REPLACE FUNCTION tk.users_create (
@@ -105,7 +105,7 @@ COMMENT ON FUNCTION tk.users_read_by_id IS 'Function to return a record from the
  *              email TEXT
  *              date_activated TIMESTAMPTZ
  *              date_last_login TIMESTAMPTZ
- * Usage:       SELECT * FROM tk.users_update('00000000-0000-0000-0000-000000000000', 'foo', 'foo@example.com', '0', '2021-10-10T13:10:10', '2021-10-10T13:10:10');
+ * Usage:       SELECT * FROM tk.users_update('00000000-0000-0000-0000-000000000000', 'foo', 'foo@trappykeepy.com', '0', '2021-10-10T13:10:10', '2021-10-10T13:10:10');
  * Returns:     True if the user was updated, and false if not.
  */
 CREATE OR REPLACE FUNCTION tk.users_update (

@@ -1,9 +1,11 @@
-﻿namespace TrappyKeepy.Domain.Models
+﻿using Microsoft.AspNetCore.Http;
+namespace TrappyKeepy.Domain.Models
 {
     public interface IServiceRequest<T>
     {
         Guid? Id { get; }
         T? Item { get; }
+        System.Security.Claims.ClaimsPrincipal? PrincipalUser { get; }
     }
 
     /// <summary>
@@ -18,6 +20,8 @@
         /// The item contains the details needed to complete the request.
         /// </summary>
         public T? Item { get; set; }
+
+        public System.Security.Claims.ClaimsPrincipal? PrincipalUser { get; set; }
     }
 
     public interface IUserServiceRequest : IServiceRequest<IUserDto>
@@ -63,8 +67,8 @@
 
     public interface IKeeperServiceRequest : IServiceRequest<IKeeperDto>
     {
-        byte[]? BinaryData { get; }
-        Guid? RequestingUserId { get; }
+        IFormCollection? Metadata { get; }
+        IFormFile? File { get; }
     }
 
     /// <summary>
@@ -72,12 +76,8 @@
     /// </summary>
     public class KeeperServiceRequest : ServiceRequest<IKeeperDto>, IKeeperServiceRequest
     {
-        /// <summary>
-        /// The associated Filedata.BinaryData value.
-        /// </summary>
-        public byte[]? BinaryData { get; set; }
-
-        public Guid? RequestingUserId { get; set; }
+        public IFormCollection? Metadata { get; set; }
+        public IFormFile? File { get; set; }
 
         /// <summary>
         ///  If no keeper is provided, instantiate a new one.
@@ -100,6 +100,13 @@
         public KeeperServiceRequest(Guid id)
         {
             Id = id;
+        }
+
+        public KeeperServiceRequest(IFormCollection metadata, IFormFile file, System.Security.Claims.ClaimsPrincipal principalUser)
+        {
+            Metadata = metadata;
+            File = file;
+            PrincipalUser = principalUser;
         }
     }
 

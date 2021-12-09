@@ -1,4 +1,6 @@
-﻿namespace TrappyKeepy.Domain.Models
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace TrappyKeepy.Domain.Models
 {
     /// <summary>
     /// Possible outcomes after the service attempts to process the request.
@@ -24,7 +26,7 @@
     /// Base service response class.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ServiceResponse<T> : IServiceRequest<T>
+    public class ServiceResponse<T> : IServiceResponse<T>
     {
         public OutcomeType Outcome { get; set; } = OutcomeType.Error;
         public string? ErrorMessage { get; set; }
@@ -36,7 +38,7 @@
 
     public interface IUserServiceResponse : IServiceResponse<IUserDto>
     {
-
+        IUserComplexDto? ComplexDto { get; }
     }
 
     /// <summary>
@@ -44,6 +46,8 @@
     /// </summary>
     public class UserServiceResponse : ServiceResponse<IUserDto>, IUserServiceResponse
     {
+        public IUserComplexDto? ComplexDto { get; set; }
+
         /// <summary>
         /// If no user is provided, instantiate a new one in the Item.
         /// </summary>
@@ -76,6 +80,8 @@
     public interface IKeeperServiceResponse : IServiceResponse<IKeeperDto>
     {
         byte[]? BinaryData { get; }
+
+        FileContentResult? FileContentResult { get; }
     }
 
     /// <summary>
@@ -87,6 +93,8 @@
         /// The associated Filedata.BinaryData value.
         /// </summary>
         public byte[]? BinaryData { get; set; }
+
+        public FileContentResult? FileContentResult { get; set; }
 
         /// <summary>
         /// If no keeper is provided, instantiate a new one in the Item.
@@ -119,7 +127,7 @@
 
     public interface IGroupServiceResponse : IServiceResponse<IGroupDto>
     {
-
+        IGroupComplexDto? ComplexDto { get; }
     }
 
     /// <summary>
@@ -127,6 +135,8 @@
     /// </summary>
     public class GroupServiceResponse : ServiceResponse<IGroupDto>, IGroupServiceResponse
     {
+        public IGroupComplexDto? ComplexDto { get; set; }
+
         /// <summary>
         /// If no group is provided, instantiate a new one in the Item.
         /// </summary>

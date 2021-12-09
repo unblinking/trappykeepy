@@ -1,33 +1,21 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Api.Controllers
 {
     /// <summary>
-    /// The keeper controller.
+    /// The keepers controller.
     /// </summary>
     [Route("v1/keepers")]
     [ApiController]
     [Authorize]
     public class KeeperController : ControllerBase
     {
-        /// <summary>
-        /// The keeper service.
-        /// </summary>
         private readonly IKeeperService _keeperService;
-
-        /// <summary>
-        /// The permit service.
-        /// </summary>
         private readonly IPermitService _permitService;
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="keeperService"></param>
         public KeeperController(IKeeperService keeperService, IPermitService permitService)
         {
             _keeperService = keeperService;
@@ -58,56 +46,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
-                var response = new ControllerResponse();
-
-                // Determine the id of the user from their authorization token.
-                string? userPostedString = User?.FindFirst("id")?.Value;
-                if (userPostedString is null)
-                {
-                    response.Fail("Error reading authorized user id from bearer token.");
-                    return StatusCode(400, response);
-                }
-                var userPosted = new Guid(userPostedString);
-
-                // Read the binary file data.
-                byte[] binaryData;
-                using (var ms = new MemoryStream())
-                {
-                    await file.CopyToAsync(ms);
-                    binaryData = ms.ToArray();
-                }
-                // Verify the binary file data was successfully received.
-                if (binaryData is not { Length: > 0 })
-                {
-                    response.Fail("No file data was received.");
-                    return StatusCode(400, response);
-                }
-
-                var filename = (string)metadata["filename"];
-                if (filename is null)
-                {
-                    response.Fail("Filename is required to create a keeper.");
-                    return StatusCode(400, response);
-                }
-
-                // Prepare the service request.
-                var serviceRequest = new KeeperServiceRequest()
-                {
-                    BinaryData = binaryData,
-                    Item = new KeeperDto()
-                    {
-                        Filename = filename,
-                        ContentType = file.ContentType,
-                        Description = metadata["description"],
-                        Category = metadata["category"],
-                        UserPosted = userPosted
-                    }
-                };
-
-                // Wait for the service response.
+                var serviceRequest = new KeeperServiceRequest(metadata, file, User);
                 var serviceResponse = await _keeperService.Create(serviceRequest);
-
-                // Send the controller response back to the client.
+                var response = new ControllerResponse();
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -117,7 +58,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item); // KeeperDto with new id from db insert.
+                        response.Success(serviceResponse.Item);
                         return Ok(response);
                 }
             }
@@ -125,8 +66,6 @@ namespace TrappyKeepy.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-            // Default to error if unknown outcome from the service.
             return StatusCode(500);
         }
 
@@ -150,38 +89,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
+                var serviceRequest = new KeeperServiceRequest() { PrincipalUser = User };
+                var serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (User is null)
-                {
-                    response.Fail("Error reading authorized user from bearer token.");
-                    return StatusCode(400, response);
-                }
-
-                // Determine the id of the user from their authorization token.
-                string? userIdString = User.FindFirst("id")?.Value;
-                if (userIdString is null)
-                {
-                    response.Fail("Error reading authorized user id from bearer token.");
-                    return StatusCode(400, response);
-                }
-                var userId = new Guid(userIdString);
-
-                var isAdmin = false;
-                isAdmin = User.IsInRole("admin");
-
-                var serviceRequest = new KeeperServiceRequest() { RequestingUserId = userId };
-
-                IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
-                if (isAdmin)
-                {
-                    serviceResponse = await _keeperService.ReadAll(serviceRequest);
-                }
-                else
-                {
-                    serviceResponse = await _keeperService.ReadAllPermitted(serviceRequest);
-                }
-
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -219,42 +129,9 @@ namespace TrappyKeepy.Api.Controllers
         {
             try
             {
+                var serviceRequest = new KeeperServiceRequest() { Id = id, PrincipalUser = User };
+                var serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
                 var response = new ControllerResponse();
-
-                if (User is null)
-                {
-                    response.Fail("Error reading authorized user from bearer token.");
-                    return StatusCode(400, response);
-                }
-
-                // Determine the id of the user from their authorization token.
-                string? userIdString = User.FindFirst("id")?.Value;
-                if (userIdString is null)
-                {
-                    response.Fail("Error reading authorized user id from bearer token.");
-                    return StatusCode(400, response);
-                }
-                var userId = new Guid(userIdString);
-
-                var isAdmin = false;
-                isAdmin = User.IsInRole("admin");
-
-                var serviceRequest = new KeeperServiceRequest()
-                {
-                    Id = id,
-                    RequestingUserId = userId
-                };
-
-                IKeeperServiceResponse serviceResponse = new KeeperServiceResponse();
-                if (isAdmin)
-                {
-                    serviceResponse = await _keeperService.ReadById(serviceRequest);
-                }
-                else
-                {
-                    serviceResponse = await _keeperService.ReadByIdPermitted(serviceRequest);
-                }
-
                 switch (serviceResponse.Outcome)
                 {
                     case OutcomeType.Error:
@@ -264,20 +141,8 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        // Verify we really have the filename and binary data if we think we have achieved success.
-                        if (
-                            serviceResponse.Item?.Filename is null || serviceResponse.Item.ContentType is null ||
-                            serviceResponse.BinaryData is not { Length: > 0 }
-                        )
-                        {
-                            throw new Exception("Keeper service replied with succcess but filename or binary data not returned.");
-                        }
-                        // Set and return the file content result.
-                        var fileContentResult = new FileContentResult(serviceResponse.BinaryData, serviceResponse.Item.ContentType)
-                        {
-                            FileDownloadName = serviceResponse.Item.Filename
-                        };
-                        return fileContentResult;
+                        if (serviceResponse.FileContentResult is not null) return serviceResponse.FileContentResult;
+                        else return StatusCode(500, response);
                 }
             }
             catch (Exception)

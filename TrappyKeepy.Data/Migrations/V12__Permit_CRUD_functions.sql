@@ -122,7 +122,7 @@ COMMENT ON FUNCTION tk.permits_read_by_keeper_id IS 'Function to return all reco
  * Function:    tk.permits_read_by_user_id
  * Created:     2021-12-01
  * Author:      Joshua Gray
- * Description: Function to return all record from the permits table by user_id.
+ * Description: Function to return all permits for a user. Both direct permits and group membership permits.
  * Parameters:  id_value UUID - The id of the user record for the permits.
  * Usage:       SELECT * FROM tk.permits_read_by_user_id('00000000-0000-0000-0000-000000000000');
  * Returns:     All columns for all records from the tk.permits table for the specified user_id.
@@ -138,7 +138,12 @@ BEGIN
     RETURN QUERY
     SELECT *
     FROM tk.permits
-    WHERE tk.permits.user_id = $1;
+    WHERE tk.permits.user_id = $1
+    OR tk.permits.group_id IN (
+        SELECT group_id
+        FROM tk.memberships
+        WHERE user_id = $1
+    );
 END;
 $$;
 COMMENT ON FUNCTION tk.permits_read_by_user_id IS 'Function to return all record from the permits table by user_id.';

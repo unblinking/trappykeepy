@@ -68,7 +68,7 @@ test:
 	@# This will execute unit tests.
 	# ----------
 	# Running unit tests.
-	dotnet test TrappyKeepy.Test
+	dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
 .PHONY: run
 run:

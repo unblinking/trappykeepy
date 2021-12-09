@@ -1,5 +1,7 @@
 # TrappyKeepy  
 
+[![codecov](https://codecov.io/gh/jmg1138/trappykeepy/branch/main/graph/badge.svg?token=ARrGqDcKhD)](https://codecov.io/gh/jmg1138/trappykeepy)  
+
 A Simple Document Storage [Web API](https://dotnet.microsoft.com/apps/aspnet/apis)  
 
 Users, user roles, user groups, and documents (aka keepers).  
@@ -10,17 +12,17 @@ Written using [.NET6](https://dotnet.microsoft.com/download/dotnet/6.0) with the
 
 For common actions like clean, restore, migrate, build, and run, a `Makefile` exists in the source code root directory so these could be easily organized as `Makefile` recipes. You can run any of the following commands from the root directory of the project's source code.  
 
-Command|Description
+&nbsp;&nbsp;&nbsp;&nbsp;Makefile&nbsp;Recipe&nbsp;&nbsp;&nbsp;&nbsp;|Explanation
 --|--
-`make all` | Run a combination of a clean, restore, migrate, build, and run.
+`make all`| Run a combination of a clean, restore, migrate, build, and run.
 `make flyway` | Download and extract the [Flyway](https://flywaydb.org) application. This is used for the database migrations, so this command must be run prior to running the `make migrate` command for the first time.
-`make clean` | Clean the outputs (both the intermediate (obj) and final output (bin) folders) bu running the `dotnet clean` command for the TrappyKeepy.Api project.
+`make clean` | Clean the outputs (both the intermediate (obj) and final output (bin) folders) bu running the `dotnet clean` command for all projects.
 `make restore` | Restore the dependencies and tools by running the `dotnet restore` command for all projects.
 `make migrate` | Migrate the database using the SQL migration scripts located in the `TrappyKeepy.Data/Migrations` directory, using the Flyway application to apply and track the migrations. For more information such as the file naming patterns used by Flyway, see their [SQL-based migrations](https://flywaydb.org/documentation/concepts/migrations#sql-based-migrations) documentation page.
-`make dbscaffold` | Reverse-engineer the database context and model classes from the PostgreSQL database into .NET, overwriting existing classes with the current database structure, by running the `dotnet ef dbcontext scaffold` command with proper arguments. This command reads the database connection string from the Microsoft Secrets Manager (see the Secrets section above).
+`make dbscaffold` | Reverse-engineer the database context and model classes from the PostgreSQL database into .NET, overwriting existing classes with the current database structure, by running the `dotnet ef dbcontext scaffold` command with proper arguments. This command reads the database connection string from the Microsoft Secrets Manager (see the Secrets Manager section below).
 `make format` | Format the source code of  all projects to match the `.editorconfig` file settings by running the `dotnet format` command.
 `make build` | Build the project by running `dotnet build` command for the TrappyKeepy.Api project.
-`make test` | Execute the unit tests, but running the `dotnet test` command for the TrappyKeepy.Test project.
+`make test` | Execute the unit tests, but running the `dotnet test` command for the TrappyKeepy.Test project. Generates a test coverage report. When run during the GitHub Action CI workflow the test coverage report is uploaded to Codecov.
 `make run` | Start the TrappyKeepy application by running the `dotnet run --project TrappyKeepy.Api` command.
 
 ## Env vars  
@@ -76,5 +78,5 @@ dotnet user-secrets list --project TrappyKeepy.Api
 To create the first administrator app user, connect to the database as `dbowner` and insert the user by running the tk.users_create function. Here is an example using development values:  
 
 ```sql
-SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@example.com', 'admin');
+SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@trappykeepy.com', 'admin');
 ```

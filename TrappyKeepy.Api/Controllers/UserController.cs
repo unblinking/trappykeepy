@@ -38,7 +38,7 @@ namespace TrappyKeepy.Api.Controllers
         /// --data-raw '{
         ///     "Name": "foo",
         ///     "Password": "passwordfoo",
-        ///     "Email": "foo@example.com",
+        ///     "Email": "foo@trappykeepy.com",
         ///     "Role": "basic"
         /// }'
         /// </code>
@@ -176,6 +176,7 @@ namespace TrappyKeepy.Api.Controllers
 
         /// <summary>
         /// Read all existing users.
+        /// This will get only the basic user data for every user.
         /// </summary>
         /// <example>
         /// <code>
@@ -215,6 +216,7 @@ namespace TrappyKeepy.Api.Controllers
 
         /// <summary>
         /// Read one existing user.
+        /// This will return a complex user DTO with the usual user properties plus memberships and the permits.
         /// </summary>
         /// <param name="id"></param>
         /// <example>
@@ -242,7 +244,7 @@ namespace TrappyKeepy.Api.Controllers
                         response.Fail(serviceResponse.ErrorMessage);
                         return BadRequest(response);
                     case OutcomeType.Success:
-                        response.Success(serviceResponse.Item);
+                        response.Success(serviceResponse.ComplexDto);
                         return Ok(response);
                 }
             }
@@ -350,7 +352,7 @@ namespace TrappyKeepy.Api.Controllers
         /// --data-raw '{
         ///     "Id": "00000000-0000-0000-0000-000000000000",
         ///     "Name": "bar",
-        ///     "Email": "bar@example.com",
+        ///     "Email": "bar@trappykeepy.com",
         ///     "Role": "manager"
         /// }'
         /// </code>
@@ -641,6 +643,5 @@ namespace TrappyKeepy.Api.Controllers
         }
 
         #endregion DELETE
-
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
@@ -30,7 +30,7 @@ namespace TrappyKeepy.Api.Controllers
         /// curl --location --request POST 'https://api.trappykeepy.com/v1/sessions' \
         /// --header 'Content-Type: application/json' \
         /// --data-raw '{
-        ///     "email": "foo@example.com",
+        ///     "email": "foo@trappykeepy.com",
         ///     "password": "passwordfoo"
         /// }'
         /// </code>
