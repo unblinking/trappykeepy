@@ -4,11 +4,23 @@
 
 A Simple Document Storage [Web API](https://dotnet.microsoft.com/apps/aspnet/apis)  
 
-Users, user roles, user groups, and documents (aka keepers).  
+Users, user roles, user groups, and document storage (aka keepers).  
+
+## Production  
+
+### First Admin  
+
+To create the first administrator app user, connect to the database as `dbowner` and insert the user by running the tk.users_create function. Here is an example using development values:  
+
+```sql
+SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@trappykeepy.com', 'admin');
+```
+
+## Development  
 
 Written using [.NET6](https://dotnet.microsoft.com/download/dotnet/6.0) with the [.NET CLI](https://docs.microsoft.com/en-us/dotnet/core/tools/), [C# 10](https://devblogs.microsoft.com/dotnet/welcome-to-csharp-10/), and [PostgreSQL](https://www.postgresql.org/).  
 
-## Using the `Makefile`  
+### Using the `Makefile`  
 
 For common actions like clean, restore, migrate, build, and run, a `Makefile` exists in the source code root directory so these could be easily organized as `Makefile` recipes. You can run any of the following commands from the root directory of the project's source code.  
 
@@ -25,7 +37,7 @@ For common actions like clean, restore, migrate, build, and run, a `Makefile` ex
 `make test` | Execute the unit tests, but running the `dotnet test` command for the TrappyKeepy.Test project. Generates a test coverage report. When run during the GitHub Action CI workflow the test coverage report is uploaded to Codecov.
 `make run` | Start the TrappyKeepy application by running the `dotnet run --project TrappyKeepy.Api` command.
 
-## Env vars  
+### Env vars  
 
 The following development environment variables with development values provide an example of the environment variables required in production. Environment variable values can be set in the `/etc/environment` file on a Linux host system:  
 
@@ -39,7 +51,7 @@ export TKDB_CONN_STRING="Host=localhost;Database=keepydb;Port=15432;Username=dbu
 export TK_CRYPTO_KEY="MqSm0P5dMgFSZhEBKpCv4dVKgDrsgrmT"
 ```
 
-## Database  
+### Database  
 
 The database is PostgreSQL.  
 
@@ -47,7 +59,7 @@ There are a few environment variables that must be set related to the database (
 
 For development, a Vagrant box is setup to create a fresh PostgreSQL database instance that is ready to go. Read about [installing Vagrant](https://www.vagrantup.com/docs/installation) if needed. Once installed, run `vagrant up` from the root directory of this code repository where the `Vagrantfile` is located, which will create and configure the guest machine using the `Vagrant-setup/bootstrap.sh` shell script. Some helpful details for accessing this database are available in `Vagrant-setup/access.md`.  
 
-## Secret Manager  
+### Secret Manager  
 
 This only applies to the Database-first reverse-engineering / scaffolding to turn the PostgreSQL table types into .NET model types. This is only done in a development environment after making changes to the database.  
 
@@ -73,10 +85,4 @@ To view all currently stored development secrets, run the following command:
 dotnet user-secrets list --project TrappyKeepy.Api
 ```
 
-## First Admin  
 
-To create the first administrator app user, connect to the database as `dbowner` and insert the user by running the tk.users_create function. Here is an example using development values:  
-
-```sql
-SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@trappykeepy.com', 'admin');
-```

@@ -14,6 +14,24 @@ namespace TrappyKeepy.Test.TestObjects
                 {
                     Id = Guid.NewGuid(),
                     Name = "foo",
+                    Password = "passwordfoo",
+                    Email = "foo@trappykeepy.com",
+                    DateCreated = DateTime.Now.AddDays(-7),
+                    DateActivated = DateTime.Now.AddDays(-6),
+                    DateLastLogin = DateTime.Now.AddDays(-1)
+                };
+            }
+        }
+
+        public UserDto TestUserDtoConcrete
+        {
+            get
+            {
+                return new UserDto()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "foo",
+                    Password = "passwordfoo",
                     Email = "foo@trappykeepy.com",
                     DateCreated = DateTime.Now.AddDays(-7),
                     DateActivated = DateTime.Now.AddDays(-6),
