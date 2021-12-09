@@ -4,7 +4,7 @@ using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Test.TestObjects
 {
-    public class UserDtoTestObjects
+    public class DtoTestObjects
     {
         public IUserDto TestUserDto
         {
@@ -30,6 +30,32 @@ namespace TrappyKeepy.Test.TestObjects
                 {
                     TestUserDto,
                     TestUserDto
+                };
+            }
+        }
+
+        public IMembershipDto TestMembershipDto
+        {
+            get
+            {
+                return new MembershipDto()
+                {
+                    Id = Guid.NewGuid(),
+                    GroupId = Guid.NewGuid(),
+                    UserId = Guid.NewGuid()
+                };
+            }
+        }
+
+        public IPermitDto TestPermitDto
+        {
+            get
+            {
+                return new PermitDto()
+                {
+                    KeeperId = Guid.NewGuid(),
+                    UserId = Guid.NewGuid(),
+                    GroupId = Guid.NewGuid()
                 };
             }
         }
