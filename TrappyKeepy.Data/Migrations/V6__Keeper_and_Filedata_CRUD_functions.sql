@@ -123,7 +123,7 @@ BEGIN
     OR tk.permits.group_id IN (
         SELECT group_id
         FROM tk.memberships
-        WHERE user_id = $1;
+        WHERE user_id = $1
     );
 END;
 $$;
@@ -182,7 +182,7 @@ BEGIN
         OR tk.permits.group_id IN (
             SELECT group_id
             FROM tk.memberships
-            WHERE user_id = $2;
+            WHERE user_id = $2
         )
     );
 END;
