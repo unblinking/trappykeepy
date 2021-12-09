@@ -13,44 +13,40 @@ namespace TrappyKeepy.Test
 {
     public class UserControllerTest
     {
+        private DtoTestObjects _dto;
+        private Mock<IMembershipService> _membershipService;
+        private Mock<IPermitService> _permitService;
+        private Mock<IUserService> _userService;
+
+        public UserControllerTest()
+        {
+            _dto = new DtoTestObjects();
+            _membershipService = new Mock<IMembershipService>();
+            _permitService = new Mock<IPermitService>();
+            _userService = new Mock<IUserService>();
+        }
+
+        public void RefreshMocks()
+        {
+            _membershipService = new Mock<IMembershipService>();
+            _permitService = new Mock<IPermitService>();
+            _userService = new Mock<IUserService>();
+        }
+
         # region CREATE
 
         [Fact]
         public async Task CreateUserWithServiceSuccessShouldReturnOkWithUser()
         {
             // ---------- ARRANGE ----------
-            // Prepare the service mocks.
-            var dtoTestObjects = new DtoTestObjects();
-            var user = dtoTestObjects.TestUserDto;
-            var membershipServiceMock = new Mock<IMembershipService>();
-            var permitServiceMock = new Mock<IPermitService>();
-            var userServiceMock = new Mock<IUserService>();
-            userServiceMock
-                .Setup(u => u.Create(It.IsAny<UserServiceRequest>()))
-                .ReturnsAsync(
-                    new UserServiceResponse()
-                    {
-                        Outcome = OutcomeType.Success,
-                        Item = user
-                    }
-                );
-            // Instantiate the production controller using the mock services.
-            var userController = new UserController(
-                membershipServiceMock.Object,
-                permitServiceMock.Object,
-                userServiceMock.Object
-            );
+            RefreshMocks();
+            var user = _dto.TestUserDto;
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Success, Item = user };
+            _userService.Setup(u => u.Create(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await userController.CreateUser(
-                new UserDto()
-                {
-                    Name = "foo",
-                    Password = "passwordfoo",
-                    Email = "foo@trappykeepy.com",
-                    Role = "basic"
-                }
-            );
+            var actionResult = await userController.CreateUser((UserDto)user);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -76,36 +72,14 @@ namespace TrappyKeepy.Test
         public async Task CreateUserWithServiceFailShouldReturnBadRequestWithErrorMessage()
         {
             // ---------- ARRANGE ----------
-            // Prepare the service mocks.
-            var membershipServiceMock = new Mock<IMembershipService>();
-            var permitServiceMock = new Mock<IPermitService>();
-            var userServiceMock = new Mock<IUserService>();
-            userServiceMock
-                .Setup(u => u.Create(It.IsAny<UserServiceRequest>()))
-                .ReturnsAsync(
-                    new UserServiceResponse()
-                    {
-                        Outcome = OutcomeType.Fail,
-                        ErrorMessage = "Requested user name is already in use."
-                    }
-                );
-            // Instantiate the production controller using the mock services.
-            var userController = new UserController(
-                membershipServiceMock.Object,
-                permitServiceMock.Object,
-                userServiceMock.Object
-            );
+            RefreshMocks();
+            var user = _dto.TestUserDto;
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Fail, ErrorMessage = "Requested user name is already in use." };
+            _userService.Setup(u => u.Create(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await userController.CreateUser(
-                new UserDto()
-                {
-                    Name = "foo",
-                    Password = "passwordfoo",
-                    Email = "foo@trappykeepy.com",
-                    Role = "basic"
-                }
-            );
+            var actionResult = await userController.CreateUser((UserDto)user);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -128,35 +102,14 @@ namespace TrappyKeepy.Test
         public async Task CreateUserWithServiceErrorShouldReturnObjectResult()
         {
             // ---------- ARRANGE ----------
-            // Prepare the service mocks.
-            var membershipServiceMock = new Mock<IMembershipService>();
-            var permitServiceMock = new Mock<IPermitService>();
-            var userServiceMock = new Mock<IUserService>();
-            userServiceMock
-                .Setup(u => u.Create(It.IsAny<UserServiceRequest>()))
-                .ReturnsAsync(
-                    new UserServiceResponse()
-                    {
-                        Outcome = OutcomeType.Error
-                    }
-                );
-            // Instantiate the production controller using the mock services.
-            var userController = new UserController(
-                membershipServiceMock.Object,
-                permitServiceMock.Object,
-                userServiceMock.Object
-            );
+            RefreshMocks();
+            var user = _dto.TestUserDto;
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Error };
+            _userService.Setup(u => u.Create(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await userController.CreateUser(
-                new UserDto()
-                {
-                    Name = "foo",
-                    Password = "passwordfoo",
-                    Email = "foo@trappykeepy.com",
-                    Role = "basic"
-                }
-            );
+            var actionResult = await userController.CreateUser((UserDto)user);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -178,39 +131,15 @@ namespace TrappyKeepy.Test
         public async Task CreateUserMembershipWithServiceSuccessShouldReturnOkWithMembership()
         {
             // ---------- ARRANGE ----------
-            // Prepare some local variables.
-            var dtoTestObjects = new DtoTestObjects();
-            var membership = dtoTestObjects.TestMembershipDto;
+            RefreshMocks();
+            var membership = _dto.TestMembershipDto;
             var userId = Guid.NewGuid();
-            // Prepare the service mocks.
-            var membershipServiceMock = new Mock<IMembershipService>();
-            var permitServiceMock = new Mock<IPermitService>();
-            var userServiceMock = new Mock<IUserService>();
-            membershipServiceMock
-                .Setup(u => u.Create(It.IsAny<MembershipServiceRequest>()))
-                .ReturnsAsync(
-                    new MembershipServiceResponse()
-                    {
-                        Outcome = OutcomeType.Success,
-                        Item = membership
-                    }
-                );
-            // Instantiate the production controller using the mock services.
-            var userController = new UserController(
-                membershipServiceMock.Object,
-                permitServiceMock.Object,
-                userServiceMock.Object
-            );
+            var response = new MembershipServiceResponse() { Outcome = OutcomeType.Success, Item = membership };
+            _membershipService.Setup(u => u.Create(It.IsAny<MembershipServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await userController.CreateUserMembership(
-                userId,
-                new MembershipDto()
-                {
-                    GroupId = Guid.NewGuid(),
-                    UserId = userId
-                }
-            );
+            var actionResult = await userController.CreateUserMembership(userId, (MembershipDto)membership);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -235,39 +164,15 @@ namespace TrappyKeepy.Test
         public async Task CreateUserMembershipWithServiceFailShouldReturnBadRequestWithErrorMessage()
         {
             // ---------- ARRANGE ----------
-            // Prepare some local variables.
-            var dtoTestObjects = new DtoTestObjects();
-            var membership = dtoTestObjects.TestMembershipDto;
+            RefreshMocks();
+            var membership = _dto.TestMembershipDto;
             var userId = Guid.NewGuid();
-            // Prepare the service mocks.
-            var membershipServiceMock = new Mock<IMembershipService>();
-            var permitServiceMock = new Mock<IPermitService>();
-            var userServiceMock = new Mock<IUserService>();
-            membershipServiceMock
-                .Setup(u => u.Create(It.IsAny<MembershipServiceRequest>()))
-                .ReturnsAsync(
-                    new MembershipServiceResponse()
-                    {
-                        Outcome = OutcomeType.Fail,
-                        ErrorMessage = "Requested membership already exists."
-                    }
-                );
-            // Instantiate the production controller using the mock services.
-            var userController = new UserController(
-                membershipServiceMock.Object,
-                permitServiceMock.Object,
-                userServiceMock.Object
-            );
+            var response = new MembershipServiceResponse() { Outcome = OutcomeType.Fail, ErrorMessage = "Requested membership already exists." };
+            _membershipService.Setup(u => u.Create(It.IsAny<MembershipServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await userController.CreateUserMembership(
-                userId,
-                new MembershipDto()
-                {
-                    GroupId = Guid.NewGuid(),
-                    UserId = userId
-                }
-            );
+            var actionResult = await userController.CreateUserMembership(userId, (MembershipDto)membership);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -289,38 +194,15 @@ namespace TrappyKeepy.Test
         public async Task CreateUserMembershipWithServiceErrorShouldReturnObjectResult()
         {
             // ---------- ARRANGE ----------
-            // Prepare some local variables.
-            var dtoTestObjects = new DtoTestObjects();
-            var membership = dtoTestObjects.TestMembershipDto;
+            RefreshMocks();
+            var membership = _dto.TestMembershipDto;
             var userId = Guid.NewGuid();
-            // Prepare the service mocks.
-            var membershipServiceMock = new Mock<IMembershipService>();
-            var permitServiceMock = new Mock<IPermitService>();
-            var userServiceMock = new Mock<IUserService>();
-            membershipServiceMock
-                .Setup(u => u.Create(It.IsAny<MembershipServiceRequest>()))
-                .ReturnsAsync(
-                    new MembershipServiceResponse()
-                    {
-                        Outcome = OutcomeType.Error
-                    }
-                );
-            // Instantiate the production controller using the mock services.
-            var userController = new UserController(
-                membershipServiceMock.Object,
-                permitServiceMock.Object,
-                userServiceMock.Object
-            );
+            var response = new MembershipServiceResponse() { Outcome = OutcomeType.Error };
+            _membershipService.Setup(u => u.Create(It.IsAny<MembershipServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await userController.CreateUserMembership(
-                userId,
-                new MembershipDto()
-                {
-                    GroupId = Guid.NewGuid(),
-                    UserId = userId
-                }
-            );
+            var actionResult = await userController.CreateUserMembership(userId, (MembershipDto)membership);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -342,40 +224,15 @@ namespace TrappyKeepy.Test
         public async Task CreateUserPermitWithServiceSuccessShouldReturnOkWithPermit()
         {
             // ---------- ARRANGE ----------
-            // Prepare some local variables.
-            var dtoTestObjects = new DtoTestObjects();
-            var permit = dtoTestObjects.TestPermitDto;
+            RefreshMocks();
+            var permit = _dto.TestPermitDto;
             var userId = Guid.NewGuid();
-            // Prepare the service mocks.
-            var membershipServiceMock = new Mock<IMembershipService>();
-            var permitServiceMock = new Mock<IPermitService>();
-            var userServiceMock = new Mock<IUserService>();
-            permitServiceMock
-                .Setup(u => u.Create(It.IsAny<PermitServiceRequest>()))
-                .ReturnsAsync(
-                    new PermitServiceResponse()
-                    {
-                        Outcome = OutcomeType.Success,
-                        Item = permit
-                    }
-                );
-            // Instantiate the production controller using the mock services.
-            var userController = new UserController(
-                membershipServiceMock.Object,
-                permitServiceMock.Object,
-                userServiceMock.Object
-            );
+            var response = new PermitServiceResponse() { Outcome = OutcomeType.Success, Item = permit };
+            _permitService.Setup(u => u.Create(It.IsAny<PermitServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await userController.CreateUserPermit(
-                userId,
-                new PermitDto()
-                {
-                    KeeperId = Guid.NewGuid(),
-                    UserId = userId,
-                    GroupId = Guid.NewGuid()
-                }
-            );
+            var actionResult = await userController.CreateUserPermit(userId, (PermitDto)permit);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -397,6 +254,7 @@ namespace TrappyKeepy.Test
             Assert.Equal(permit, data);
         }
 
+        // TODO: Finish the fail and error CreateUserPermit tests.
 
         #endregion CREATE
 
@@ -406,27 +264,11 @@ namespace TrappyKeepy.Test
         public async Task ReadAllWithServiceSuccessShouldReturnOkWithUsersList()
         {
             // ---------- ARRANGE ----------
-            // Prepare the service mocks.
-            var dtoTestObjects = new DtoTestObjects();
-            var userList = dtoTestObjects.TestUserDtoList;
-            var membershipServiceMock = new Mock<IMembershipService>();
-            var permitServiceMock = new Mock<IPermitService>();
-            var userServiceMock = new Mock<IUserService>();
-            userServiceMock
-                .Setup(u => u.ReadAll(It.IsAny<UserServiceRequest>()))
-                .ReturnsAsync(
-                    new UserServiceResponse()
-                    {
-                        Outcome = OutcomeType.Success,
-                        List = userList
-                    }
-                );
-            // Instantiate the production controller using the mock services.
-            var userController = new UserController(
-                membershipServiceMock.Object,
-                permitServiceMock.Object,
-                userServiceMock.Object
-            );
+            RefreshMocks();
+            var userList = _dto.TestUserDtoList;
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Success, List = userList };
+            _userService.Setup(u => u.ReadAll(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
 
             // ---------- ACT ----------
             var actionResult = await userController.ReadAll();
@@ -450,6 +292,8 @@ namespace TrappyKeepy.Test
             var data = (List<IUserDto>)controllerResponse.Data;
             Assert.Equal(userList, data);
         }
+
+        // TODO: Finish the fail and error ReadAll tests.
 
         #endregion READ
 
