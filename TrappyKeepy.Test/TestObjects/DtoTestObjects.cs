@@ -23,6 +23,17 @@ namespace TrappyKeepy.Test.TestObjects
             }
         }
 
+        public IUserDto TestUserDtoIncomplete
+        {
+            get
+            {
+                return new UserDto()
+                {
+                    Name = "foo",
+                };
+            }
+        }
+
         public List<IUserDto> TestUserDtoList
         {
             get

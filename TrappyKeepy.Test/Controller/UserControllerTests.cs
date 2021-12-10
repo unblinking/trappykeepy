@@ -26,7 +26,7 @@ namespace TrappyKeepy.Test
             _userService = new Mock<IUserService>();
         }
 
-        public void RefreshMocks()
+        private void RefreshMocks()
         {
             _membershipService = new Mock<IMembershipService>();
             _permitService = new Mock<IPermitService>();
@@ -254,7 +254,65 @@ namespace TrappyKeepy.Test
             Assert.Equal(permit, data);
         }
 
-        // TODO: Finish the fail and error CreateUserPermit tests.
+        public async Task CreateUserPermitWithServiceFailShouldReturnBadRequestWithErrorMessage()
+        {
+            // ---------- ARRANGE ----------
+            RefreshMocks();
+            var permit = _dto.TestPermitDto;
+            var userId = Guid.NewGuid();
+            var response = new PermitServiceResponse() { Outcome = OutcomeType.Fail, ErrorMessage = "Requested permit already exists." };
+            _permitService.Setup(u => u.Create(It.IsAny<PermitServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
+
+            // ---------- ACT ----------
+            var actionResult = await userController.CreateUserPermit(userId, (PermitDto)permit);
+
+            // ---------- ASSERT ----------
+            // ActionResult: The controller returns an ActionResult.
+            Assert.NotNull(actionResult);
+            Assert.IsType<BadRequestObjectResult>(actionResult);
+            // BadRequestObjectResult: When the service outcome is fail, the ActionResult should be BadRequestObjectResult.
+            var badRequestObjectResult = (BadRequestObjectResult)actionResult;
+            Assert.NotNull(badRequestObjectResult);
+            Assert.Equal(400, badRequestObjectResult.StatusCode);
+            Assert.NotNull(badRequestObjectResult.Value);
+            Assert.IsType<ControllerResponse>(badRequestObjectResult.Value);
+            // ControllerResponse
+            var controllerResponse = (ControllerResponse)badRequestObjectResult.Value;
+            Assert.NotNull(controllerResponse);
+            Assert.Equal("fail", controllerResponse.Status);
+            Assert.Equal("Requested permit already exists.", controllerResponse.Message);
+        }
+
+        public async Task CreateUserPermitWithServiceErrorShouldReturnObjectResult()
+        {
+            // ---------- ARRANGE ----------
+            RefreshMocks();
+            var permit = _dto.TestPermitDto;
+            var userId = Guid.NewGuid();
+            var response = new PermitServiceResponse() { Outcome = OutcomeType.Error };
+            _permitService.Setup(u => u.Create(It.IsAny<PermitServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
+
+            // ---------- ACT ----------
+            var actionResult = await userController.CreateUserPermit(userId, (PermitDto)permit);
+
+            // ---------- ASSERT ----------
+            // ActionResult: The controller returns an ActionResult.
+            Assert.NotNull(actionResult);
+            Assert.IsType<ObjectResult>(actionResult);
+            // ObjectResult: When the service outcome is error, the ActionResult should be ObjectResult.
+            var objectResult = (ObjectResult)actionResult;
+            Assert.NotNull(objectResult);
+            Assert.Equal(500, objectResult.StatusCode);
+            Assert.NotNull(objectResult.Value);
+            Assert.IsType<ControllerResponse>(objectResult.Value);
+            // ControllerResponse
+            var controllerResponse = (ControllerResponse)objectResult.Value;
+            Assert.NotNull(controllerResponse);
+            Assert.Equal("error", controllerResponse.Status);
+            Assert.Equal("An error occurred while processing your request.", controllerResponse.Message);
+        }
 
         #endregion CREATE
 
@@ -293,7 +351,61 @@ namespace TrappyKeepy.Test
             Assert.Equal(userList, data);
         }
 
-        // TODO: Finish the fail and error ReadAll tests.
+        public async Task ReadAllWithServiceFailShouldReturnBadRequestWithErrorMessage()
+        {
+            // ---------- ARRANGE ----------
+            RefreshMocks();
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Fail, ErrorMessage = "There was a failure." };
+            _userService.Setup(u => u.ReadAll(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
+
+            // ---------- ACT ----------
+            var actionResult = await userController.ReadAll();
+
+            // ---------- ASSERT ----------
+            // ActionResult: The controller returns an ActionResult.
+            Assert.NotNull(actionResult);
+            Assert.IsType<BadRequestObjectResult>(actionResult);
+            // BadRequestObjectResult: When the service outcome is fail, the ActionResult should be BadRequestObjectResult.
+            var badRequestObjectResult = (BadRequestObjectResult)actionResult;
+            Assert.NotNull(badRequestObjectResult);
+            Assert.Equal(400, badRequestObjectResult.StatusCode);
+            Assert.NotNull(badRequestObjectResult.Value);
+            Assert.IsType<ControllerResponse>(badRequestObjectResult.Value);
+            // ControllerResponse
+            var controllerResponse = (ControllerResponse)badRequestObjectResult.Value;
+            Assert.NotNull(controllerResponse);
+            Assert.Equal("fail", controllerResponse.Status);
+            Assert.Equal("There was a failure.", controllerResponse.Message);
+        }
+
+        public async Task ReadAllWithServiceErrorShouldReturnObjectResult()
+        {
+            // ---------- ARRANGE ----------
+            RefreshMocks();
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Error };
+            _userService.Setup(u => u.ReadAll(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
+
+            // ---------- ACT ----------
+            var actionResult = await userController.ReadAll();
+
+            // ---------- ASSERT ----------
+            // ActionResult: The controller returns an ActionResult.
+            Assert.NotNull(actionResult);
+            Assert.IsType<ObjectResult>(actionResult);
+            // ObjectResult: When the service outcome is error, the ActionResult should be ObjectResult.
+            var objectResult = (ObjectResult)actionResult;
+            Assert.NotNull(objectResult);
+            Assert.Equal(500, objectResult.StatusCode);
+            Assert.NotNull(objectResult.Value);
+            Assert.IsType<ControllerResponse>(objectResult.Value);
+            // ControllerResponse
+            var controllerResponse = (ControllerResponse)objectResult.Value;
+            Assert.NotNull(controllerResponse);
+            Assert.Equal("error", controllerResponse.Status);
+            Assert.Equal("An error occurred while processing your request.", controllerResponse.Message);
+        }
 
         #endregion READ
 

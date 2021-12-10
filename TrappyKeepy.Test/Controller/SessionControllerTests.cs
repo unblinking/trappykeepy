@@ -20,7 +20,7 @@ namespace TrappyKeepy.Test.Controller
             _userService = new Mock<IUserService>();
         }
 
-        public void RefreshMocks()
+        private void RefreshMocks()
         {
             _userService = new Mock<IUserService>();
         }

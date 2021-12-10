@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Test.TestObjects

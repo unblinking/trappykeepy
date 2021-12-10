@@ -167,11 +167,11 @@ namespace TrappyKeepy.Service
                 }
 
                 // Read the user's permits.
-                 var permits = await _uow.permits.ReadByUserId(user.Id);
-                 if (permits.Count() > 0)
-                 {
-                     user.Permits = permits;
-                 }
+                var permits = await _uow.permits.ReadByUserId(user.Id);
+                if (permits.Count() > 0)
+                {
+                    user.Permits = permits;
+                }
 
                 // Map the repository's domain object to a DTO for the response to the controller.
                 response.ComplexDto = _mapper.Map<UserComplexDto>(user);
