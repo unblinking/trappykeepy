@@ -21,6 +21,5 @@ jobs:
     - name: Build
       run: dotnet build --no-restore /p:ContinuousIntegrationBuild=true
     - name: Test
-      run: dotnet test --filter TestType!=End2End --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-    - name: Codecov
-      uses: codecov/codecov-action@v1
+      run: dotnet test --filter TestType!=End2End --no-build --verbosity quiet
+

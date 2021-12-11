@@ -154,9 +154,9 @@ For development, a Vagrant box is setup to create a fresh PostgreSQL database in
 
 Tests are written using xUnit.  
 
-When running `make test` it will run the command `dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover`. This includes the end-to-end tests which require a live database to be present, and generates a code coverage report.  
+When running `make test` it will run the command `dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover`. This includes the end-to-end tests which require a live database to be present, and generates a code coverage report. Code coverage is uploaded to Codecov.io using their Uploader application.  
 
-When tests run during the GitHub Action CI workflow the end-to-end tests are skipped, and the generated test coverage report is uploaded to [Codecov](https://app.codecov.io/gh/jmg1138/trappykeepy).  
+When tests run during the GitHub Action CI workflow the end-to-end tests are skipped because there is no PostgreSQL database present.  
 
 ### Secret Manager  
 

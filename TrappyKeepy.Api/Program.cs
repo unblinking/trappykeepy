@@ -100,3 +100,11 @@ app.UseAuthorization();
 app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();
+
+// This is here for the end-to-end tests.
+// So that I can use IClassFixture<WebApplicationFactory<Program>>
+#pragma warning disable CA1050 // Declare types in namespaces
+public partial class Program
+{
+}
+#pragma warning restore CA1050 // Declare types in namespaces
