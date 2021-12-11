@@ -14,10 +14,22 @@ namespace TrappyKeepy.Test.TestObjects
                 {
                     Id = Guid.NewGuid(),
                     Name = "foo",
+                    Password = "passwordfoo",
                     Email = "foo@trappykeepy.com",
                     DateCreated = DateTime.Now.AddDays(-7),
                     DateActivated = DateTime.Now.AddDays(-6),
                     DateLastLogin = DateTime.Now.AddDays(-1)
+                };
+            }
+        }
+
+        public IUserDto TestUserDtoIncomplete
+        {
+            get
+            {
+                return new UserDto()
+                {
+                    Name = "foo",
                 };
             }
         }
@@ -31,6 +43,14 @@ namespace TrappyKeepy.Test.TestObjects
                     TestUserDto,
                     TestUserDto
                 };
+            }
+        }
+
+        public IUserSessionDto TestUserSessionDto
+        {
+            get
+            {
+                return new UserSessionDto("foo@trappykeepy.com", "passwordfoo");
             }
         }
 

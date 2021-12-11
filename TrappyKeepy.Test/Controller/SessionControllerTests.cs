@@ -4,37 +4,42 @@ using System.Threading.Tasks;
 using TrappyKeepy.Api.Controllers;
 using TrappyKeepy.Domain.Interfaces;
 using TrappyKeepy.Domain.Models;
+using TrappyKeepy.Test.TestObjects;
 using Xunit;
 
 namespace TrappyKeepy.Test.Controller
 {
     public class SessionControllerTests
     {
+        private DtoTestObjects _dto;
+        private Mock<IUserService> _userService;
+
+        public SessionControllerTests()
+        {
+            _dto = new DtoTestObjects();
+            _userService = new Mock<IUserService>();
+        }
+
+        private void RefreshMocks()
+        {
+            _userService = new Mock<IUserService>();
+        }
+
         #region CREATE
 
         [Fact]
         public async Task CreateSessionWithServiceSuccessShouldReturnOkWithToken()
         {
             // ---------- ARRANGE ----------
-            // Prepare the service mock.
+            RefreshMocks();
+            var userSessionDto = _dto.TestUserSessionDto;
             var token = "faketokenstring";
-            var userServiceMock = new Mock<IUserService>();
-            userServiceMock
-                .Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>()))
-                .ReturnsAsync(
-                    new UserServiceResponse()
-                    {
-                        Outcome = OutcomeType.Success,
-                        Token = token
-                    }
-                );
-            // Instantiate the production controller using the mock service.
-            var sessionController = new SessionController(userServiceMock.Object);
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Success, Token = token };
+            _userService.Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var sessionController = new SessionController(_userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await sessionController.Create(
-                new UserSessionDto("foo@trappykeepy.com", "passwordfoo")
-            );
+            var actionResult = await sessionController.Create((UserSessionDto)userSessionDto);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -57,24 +62,14 @@ namespace TrappyKeepy.Test.Controller
         public async Task CreateSessionWithServiceFailShouldReturnBadRequestWithErrorMessage()
         {
             // ---------- ARRANGE ----------
-            // Prepare the service mock.
-            var userServiceMock = new Mock<IUserService>();
-            userServiceMock
-                .Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>()))
-                .ReturnsAsync(
-                    new UserServiceResponse()
-                    {
-                        Outcome = OutcomeType.Fail,
-                        ErrorMessage = "No match found for Email and Password."
-                    }
-                );
-            // Instantiate the production controller using the mock service.
-            var sessionController = new SessionController(userServiceMock.Object);
+            RefreshMocks();
+            var userSessionDto = _dto.TestUserSessionDto;
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Fail, ErrorMessage = "No match found for Email and Password." };
+            _userService.Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var sessionController = new SessionController(_userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await sessionController.Create(
-                new UserSessionDto("foo@trappykeepy.com", "passwordfoo")
-            );
+            var actionResult = await sessionController.Create((UserSessionDto)userSessionDto);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.
@@ -97,23 +92,14 @@ namespace TrappyKeepy.Test.Controller
         public async Task CreateSessionWithServiceErrorShouldReturnObjectResult()
         {
             // ---------- ARRANGE ----------
-            // Prepare the service mock.
-            var userServiceMock = new Mock<IUserService>();
-            userServiceMock
-                .Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>()))
-                .ReturnsAsync(
-                    new UserServiceResponse()
-                    {
-                        Outcome = OutcomeType.Error
-                    }
-                );
-            // Instantiate the production controller using the mock service.
-            var sessionController = new SessionController(userServiceMock.Object);
+            RefreshMocks();
+            var userSessionDto = _dto.TestUserSessionDto;
+            var response = new UserServiceResponse() { Outcome = OutcomeType.Error };
+            _userService.Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
+            var sessionController = new SessionController(_userService.Object);
 
             // ---------- ACT ----------
-            var actionResult = await sessionController.Create(
-                new UserSessionDto("foo@trappykeepy.com", "passwordfoo")
-            );
+            var actionResult = await sessionController.Create((UserSessionDto)userSessionDto);
 
             // ---------- ASSERT ----------
             // ActionResult: The controller returns an ActionResult.

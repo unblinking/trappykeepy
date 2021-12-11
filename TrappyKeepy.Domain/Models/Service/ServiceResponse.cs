@@ -49,11 +49,11 @@ namespace TrappyKeepy.Domain.Models
         public IUserComplexDto? ComplexDto { get; set; }
 
         /// <summary>
-        /// If no user is provided, instantiate a new one in the Item.
+        /// If no user is provided, leave things null.
         /// </summary>
         public UserServiceResponse()
         {
-            Item = new UserDto();
+
         }
 
         /// <summary>
@@ -97,11 +97,11 @@ namespace TrappyKeepy.Domain.Models
         public FileContentResult? FileContentResult { get; set; }
 
         /// <summary>
-        /// If no keeper is provided, instantiate a new one in the Item.
+        /// If no keeper is provided, leave things null.
         /// </summary>
         public KeeperServiceResponse()
         {
-            Item = new KeeperDto();
+
         }
 
         /// <summary>
@@ -138,11 +138,11 @@ namespace TrappyKeepy.Domain.Models
         public IGroupComplexDto? ComplexDto { get; set; }
 
         /// <summary>
-        /// If no group is provided, instantiate a new one in the Item.
+        /// If no group is provided, leave things null.
         /// </summary>
         public GroupServiceResponse()
         {
-            Item = new GroupDto();
+
         }
 
         /// <summary>
@@ -177,11 +177,11 @@ namespace TrappyKeepy.Domain.Models
     public class MembershipServiceResponse : ServiceResponse<IMembershipDto>, IMembershipServiceResponse
     {
         /// <summary>
-        /// If no membership is provided, instantiate a new one in the Item.
+        /// If no membership is provided, leave things null.
         /// </summary>
         public MembershipServiceResponse()
         {
-            Item = new MembershipDto();
+
         }
 
         /// <summary>
@@ -216,11 +216,11 @@ namespace TrappyKeepy.Domain.Models
     public class PermitServiceResponse : ServiceResponse<IPermitDto>, IPermitServiceResponse
     {
         /// <summary>
-        /// If no permit is provided, instantiate a new one in the Item.
+        /// If no permit is provided, leave things null.
         /// </summary>
         public PermitServiceResponse()
         {
-            Item = new PermitDto();
+
         }
 
         /// <summary>
