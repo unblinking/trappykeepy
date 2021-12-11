@@ -68,7 +68,7 @@ test:
 	@# This will execute unit tests.
 	# ----------
 	# Running unit tests.
-	dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+	dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
 .PHONY: run
 run:
