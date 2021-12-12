@@ -1,6 +1,6 @@
 # TrappyKeepy  
 
-[![codecov](https://codecov.io/gh/jmg1138/trappykeepy/branch/main/graph/badge.svg?token=ARrGqDcKhD)](https://codecov.io/gh/jmg1138/trappykeepy)  
+[![Build & Test](https://github.com/jmg1138/TrappyKeepy/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/jmg1138/TrappyKeepy/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/jmg1138/trappykeepy/branch/main/graph/badge.svg?token=ARrGqDcKhD)](https://codecov.io/gh/jmg1138/trappykeepy)  
 
 A Simple Document Storage Web API  
 
@@ -19,7 +19,7 @@ Endpoints are organized into CRUD operations by HTTP methods of `GET`, `POST`, `
 
 Relationships are represented through nested endpoints. To `GET` all memberships of a specific group `id`, the format is `GET /v1/groups/{id}/memberships`.  
 
-Endpoints that retrieve many records will return simple objects. So, `GET /v1/users` will return an array of user objects with basic information for each user record, but no nested objects. Endpoints that retrieve a specific record may return complex objects. So, `GET /v1/users/{id}` will return a single user object including nested objects that may contain arrays of relational data such as the user's posted documents, group memberships, and document access permits.  
+Endpoints that retrieve many records will return simple objects. So, `GET /v1/users` will return an array of simple user objects with basic information for each user record, but no nested objects. Endpoints that retrieve a specific record may return complex objects. So, `GET /v1/users/{id}` will return a single complex user object including nested objects that may contain arrays of relational data such as the user's posted documents, group memberships, and document access permits.  
 
 You can [review the Swagger/OpenApi style documentation on SwaggerHub](https://app.swaggerhub.com/apis/nothingworksright/trappykeepy/v0.1.0).  
 
@@ -97,7 +97,7 @@ curl --location --request POST 'https://api.trappykeepy.com/v1/groups' \
 
 Standard Http response status codes are used in responses, such as 200 OK, 400 Bad Reqeust, 401 Unauthorized, and 500 Internal Server Error. When responding with a status 400 there will be helpful information included so that the client may make corrections and try again.  
 
-Responses are formatted as [JSend](https://github.com/omniti-labs/jsend). The JSON response will include a `status` key that will hold a value of success, fail, or error. Responses may also include key/values of `data` (the requested data), `message` (user-readable message), or `code` (a application code corresponding to the error, distinct from the Http status code).  
+Responses are formatted as [JSend](https://github.com/omniti-labs/jsend). The JSON response will include a `status` key that will hold a value of success, fail, or error. Responses may also include key/values of `data` (the requested data), `message` (user-readable message), or `code` (an application code corresponding to the error, distinct from the Http status code).  
 
 ## Production  
 
@@ -154,7 +154,7 @@ For development, a Vagrant box is setup to create a fresh PostgreSQL database in
 
 Tests are written using xUnit.  
 
-When running `make test` it will run the command `dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover`. This includes the end-to-end tests which require a live database to be present, and generates a code coverage report. Code coverage is uploaded to Codecov.io using their Uploader application.  
+When running `make test` it will run the command `dotnet test --verbosity quiet /p:CollectCoverage=true /p:CoverletOutputFormat=opencover`. This includes the end-to-end tests which require a live development database to be present, and generates a code coverage report. Code coverage is uploaded to Codecov.io manually using their Uploader application.  
 
 When tests run during the GitHub Action CI workflow the end-to-end tests are skipped because there is no PostgreSQL database present.  
 

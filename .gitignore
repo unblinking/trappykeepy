@@ -458,3 +458,6 @@ $RECYCLE.BIN/
 
 # Flyway
 flyway*/
+
+# Codecov.io
+codecov
