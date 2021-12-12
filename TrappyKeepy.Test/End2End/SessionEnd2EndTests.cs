@@ -9,6 +9,7 @@ using Xunit;
 
 namespace TrappyKeepy.Test.End2End
 {
+    [Collection("Sequential")]
     public class SessionsEnd2EndTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private SpawnyDb _db;
@@ -30,7 +31,7 @@ namespace TrappyKeepy.Test.End2End
         {
             // ---------- ARRANGE ----------
             await _db.RecycleDb();
-            var user = _dto.TestUserSessionDto;
+            var user = _dto.TestUserSessionAdminDto;
             var json = JsonSerializer.Serialize(user);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             HttpResponseMessage? response;

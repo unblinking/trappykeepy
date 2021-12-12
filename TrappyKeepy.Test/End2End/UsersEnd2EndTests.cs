@@ -10,6 +10,7 @@ using Xunit;
 
 namespace TrappyKeepy.Test.End2End
 {
+    [Collection("Sequential")]
     public class UsersEnd2EndTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private SpawnyDb _db;

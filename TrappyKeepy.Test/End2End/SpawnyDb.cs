@@ -29,7 +29,7 @@ namespace TrappyKeepy.Test.End2End
             _connectionCreateTestDb = new NpgsqlConnection("Host=localhost;Database=postgres;Port=15432;Username=dbowner;Password=dbpass;Pooling=false");
 
             // Connect to the temporary testing database when we're ready to run queries like seeding test data.
-            _connectionUseTestDb = new NpgsqlConnection($"Host=localhost;Database={_testDbName};Port=15432;Username=dbowner;Password=dbpass;Pooling=false");
+            _connectionUseTestDb = new NpgsqlConnection($"Host=localhost;Database={_testDbName};Port=15432;Username=dbuser;Password=dbpass;Pooling=false");
 
             // Set the TKDB_CONN_STRING env var that the UnitOfWork class will use to connect to the database.
             // This way when the WebApplicationFactory creates the API in memory for the e2e tests, the UnitOfWork
