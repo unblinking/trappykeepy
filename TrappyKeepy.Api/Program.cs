@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using TrappyKeepy.Data;
 using TrappyKeepy.Domain.Interfaces;
-using TrappyKeepy.Domain.Maps;
 using TrappyKeepy.Service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,7 +61,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.",
+        Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer <token>'.",
     });
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
