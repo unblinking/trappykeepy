@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,14 +10,15 @@ using Xunit;
 
 namespace TrappyKeepy.Test.End2End
 {
-    public class SessionsEnd2EndTests : IClassFixture<WebApplicationFactory<Program>>
+    public class UsersEnd2EndTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private SpawnyDb _db;
         private readonly WebApplicationFactory<Program> _webApplicationFactory;
         private DtoTestObjects _dto;
         private JsonSerializerOptions _jsonOpts;
 
-        public SessionsEnd2EndTests(WebApplicationFactory<Program> webApplicationFactory)
+
+        public UsersEnd2EndTests(WebApplicationFactory<Program> webApplicationFactory)
         {
             _db = new SpawnyDb();
             _webApplicationFactory = webApplicationFactory;
@@ -26,11 +28,11 @@ namespace TrappyKeepy.Test.End2End
 
         [Fact]
         [Trait("TestType", "End2End")]
-        public async Task PostSessionsWithValidCredentialsShouldCreateNewToken()
+        public async Task EndpointPostUsersAsAdminWithNewBasicUserDtoShouldCreateNewUser()
         {
             // ---------- ARRANGE ----------
             await _db.RecycleDb();
-            var user = _dto.TestUserSessionDto;
+            var user = _dto.TestUserNewBasic;
             var json = JsonSerializer.Serialize(user);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             HttpResponseMessage? response;
@@ -38,7 +40,9 @@ namespace TrappyKeepy.Test.End2End
             // ---------- ACT ----------
             using (var client = _webApplicationFactory.CreateDefaultClient())
             {
-                response = await client.PostAsync("/v1/sessions", content);
+                var token = await _db.AuthenticateAdmin(client);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                response = await client.PostAsync("/v1/users", content);
             }
 
             // ---------- ASSERT ----------
@@ -50,8 +54,11 @@ namespace TrappyKeepy.Test.End2End
             Assert.NotNull(controllerResponse.Status);
             Assert.Equal("success", controllerResponse.Status);
             Assert.NotNull(controllerResponse.Data);
-            var token = controllerResponse.Data.ToString();
-            Assert.NotNull(token);
+            var dataString = controllerResponse.Data.ToString();
+            Assert.NotNull(dataString);
+            var newUser = JsonSerializer.Deserialize<UserDto>(dataString, _jsonOpts);
+            Assert.NotNull(newUser);
+            Assert.NotNull(newUser.Id);
         }
     }
 }

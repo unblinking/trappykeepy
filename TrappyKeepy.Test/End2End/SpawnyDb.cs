@@ -1,8 +1,13 @@
-using Npgsql;
+﻿using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using TrappyKeepy.Domain.Models;
+using TrappyKeepy.Test.TestObjects;
 
 namespace TrappyKeepy.Test.End2End
 {
@@ -29,7 +34,7 @@ namespace TrappyKeepy.Test.End2End
             // Set the TKDB_CONN_STRING env var that the UnitOfWork class will use to connect to the database.
             // This way when the WebApplicationFactory creates the API in memory for the e2e tests, the UnitOfWork
             // class will connect to the temporary testing database instead of the development database.
-            Environment.SetEnvironmentVariable("TKDB_CONN_STRING", $"Host=localhost;Database={_testDbName};Port=15432;Username=dbowner;Password=dbpass;Pooling=false");
+            Environment.SetEnvironmentVariable("TKDB_CONN_STRING", $"Host=localhost;Database={_testDbName};Port=15432;Username=dbuser;Password=dbpass;Pooling=false");
         }
 
         public async Task RecycleDb()
@@ -46,6 +51,28 @@ namespace TrappyKeepy.Test.End2End
             await SeedAdminUser();
             await _connectionUseTestDb.CloseAsync();
             await _connectionUseTestDb.DisposeAsync();
+        }
+
+        public async Task<string> AuthenticateAdmin(HttpClient client)
+        {
+            var dto = new DtoTestObjects();
+            var user = dto.TestUserSessionAdminDto;
+            var json = JsonSerializer.Serialize(user);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("/v1/sessions", content);
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var jsonOpts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var controllerResponse = JsonSerializer.Deserialize<ControllerResponse>(responseJson, jsonOpts);
+            if (controllerResponse is null || controllerResponse.Data is null)
+            {
+                throw new Exception("Could not authenticate for e2e tests. No controller response data.");
+            }
+            var token = controllerResponse.Data.ToString();
+            if (token is null)
+            {
+                throw new Exception("Could not authenticate for e2e tests. No token.");
+            }
+            return token;
         }
 
         private async Task Drop()
@@ -74,7 +101,7 @@ namespace TrappyKeepy.Test.End2End
         {
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = "SELECT * FROM tk.users_create('foo', 'passwordfoo', 'foo@trappykeepy.com', 'admin');";
+                command.CommandText = "SELECT * FROM tk.users_create('admin', 'passwordadmin', 'admin@trappykeepy.com', 'admin');";
                 command.Connection = _connectionUseTestDb;
                 await command.PrepareAsync();
                 await command.ExecuteReaderAsync();

@@ -13,9 +13,10 @@ namespace TrappyKeepy.Test.TestObjects
                 return new UserDto()
                 {
                     Id = Guid.NewGuid(),
-                    Name = "foo",
-                    Password = "passwordfoo",
-                    Email = "foo@trappykeepy.com",
+                    Name = "basic",
+                    Password = "passwordbasic",
+                    Email = "basic@trappykeepy.com",
+                    Role = "basic",
                     DateCreated = DateTime.Now.AddDays(-7),
                     DateActivated = DateTime.Now.AddDays(-6),
                     DateLastLogin = DateTime.Now.AddDays(-1)
@@ -29,7 +30,21 @@ namespace TrappyKeepy.Test.TestObjects
             {
                 return new UserDto()
                 {
-                    Name = "foo",
+                    Name = "incomplete",
+                };
+            }
+        }
+
+        public IUserDto TestUserNewBasic
+        {
+            get
+            {
+                return new UserDto()
+                {
+                    Name = "newbasic",
+                    Password = "passwordnewbasic",
+                    Email = "newbasic@trappykeepy.com",
+                    Role = "basic"
                 };
             }
         }
@@ -51,6 +66,14 @@ namespace TrappyKeepy.Test.TestObjects
             get
             {
                 return new UserSessionDto("foo@trappykeepy.com", "passwordfoo");
+            }
+        }
+
+        public IUserSessionDto TestUserSessionAdminDto
+        {
+            get
+            {
+                return new UserSessionDto("admin@trappykeepy.com", "passwordadmin");
             }
         }
 
