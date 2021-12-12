@@ -1,5 +1,5 @@
-﻿using System.Text;
-using Npgsql;
+﻿using Npgsql;
+using System.Text;
 using TrappyKeepy.Domain.Models;
 
 namespace TrappyKeepy.Domain.Maps
