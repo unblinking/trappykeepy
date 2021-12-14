@@ -47,7 +47,10 @@ namespace TrappyKeepy.Service
             var response = new UserServiceResponse();
 
             // Verify required parameters.
-            if (request.Item?.Name is null || request.Item?.Email is null || request.Item?.Password is null)
+            if (
+                request.Item?.Name is null || string.IsNullOrWhiteSpace(request.Item.Name) ||
+                request.Item?.Email is null || string.IsNullOrWhiteSpace(request.Item.Email) ||
+                request.Item?.Password is null || string.IsNullOrWhiteSpace(request.Item.Password))
             {
                 response.Outcome = OutcomeType.Fail;
                 response.ErrorMessage = "Name (TEXT), Email (TEXT), Password (TEXT), and Role (basic, manager, or admin) are required to create a user.";
