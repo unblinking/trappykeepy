@@ -40,7 +40,7 @@ namespace TrappyKeepy.Test
         {
             // ---------- ARRANGE ----------
             RefreshMocks();
-            var user = _dto.TestUserDto;
+            var user = _dto.TestUserBasicDto;
             var response = new UserServiceResponse() { Outcome = OutcomeType.Success, Item = user };
             _userService.Setup(u => u.Create(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
             var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
@@ -73,7 +73,7 @@ namespace TrappyKeepy.Test
         {
             // ---------- ARRANGE ----------
             RefreshMocks();
-            var user = _dto.TestUserDto;
+            var user = _dto.TestUserBasicDto;
             var response = new UserServiceResponse() { Outcome = OutcomeType.Fail, ErrorMessage = "Requested user name is already in use." };
             _userService.Setup(u => u.Create(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
             var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
@@ -103,7 +103,7 @@ namespace TrappyKeepy.Test
         {
             // ---------- ARRANGE ----------
             RefreshMocks();
-            var user = _dto.TestUserDto;
+            var user = _dto.TestUserBasicDto;
             var response = new UserServiceResponse() { Outcome = OutcomeType.Error };
             _userService.Setup(u => u.Create(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
             var userController = new UserController(_membershipService.Object, _permitService.Object, _userService.Object);
