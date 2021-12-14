@@ -1,5 +1,6 @@
 ﻿using Npgsql;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -7,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TrappyKeepy.Domain.Models;
+using TrappyKeepy.Domain.Maps;
 using TrappyKeepy.Test.TestObjects;
 
 namespace TrappyKeepy.Test.End2End
@@ -20,6 +22,9 @@ namespace TrappyKeepy.Test.End2End
 
         // Connection to use when running queries in the temporary testing database.
         private NpgsqlConnection _connectionUseTestDb;
+        private User? _userAdmin;
+        private User? _userManager;
+        private User? _userBasic;
 
         public SpawnyDb()
         {
@@ -49,6 +54,9 @@ namespace TrappyKeepy.Test.End2End
             // Seed test data into the temporary testing database for the next e2e test.
             await _connectionUseTestDb.OpenAsync();
             await SeedAdminUser();
+            await SeedManagerUser();
+            await SeedBasicUser();
+            await SeedKeeperTrappyKeepyApiDll();
             await _connectionUseTestDb.CloseAsync();
             await _connectionUseTestDb.DisposeAsync();
         }
@@ -57,6 +65,29 @@ namespace TrappyKeepy.Test.End2End
         {
             var dto = new DtoTestObjects();
             var user = dto.TestUserSessionAdminDto;
+            var token = await GetSessionToken(client, user);
+            return token;
+        }
+
+        public async Task<string> AuthenticateManager(HttpClient client)
+        {
+            var dto = new DtoTestObjects();
+            var user = dto.TestUserSessionManagerDto;
+            var token = await GetSessionToken(client, user);
+            return token;
+        }
+
+        public async Task<string> AuthenticateBasic(HttpClient client)
+        {
+            var dto = new DtoTestObjects();
+            var user = dto.TestUserSessionBasicDto;
+            var token = await GetSessionToken(client, user);
+            return token;
+        }
+
+        private async Task<string> GetSessionToken(HttpClient client, IUserSessionDto user)
+        {
+            
             var json = JsonSerializer.Serialize(user);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await client.PostAsync("/v1/sessions", content);
@@ -104,7 +135,87 @@ namespace TrappyKeepy.Test.End2End
                 command.CommandText = "SELECT * FROM tk.users_create('admin', 'passwordadmin', 'admin@trappykeepy.com', 'admin');";
                 command.Connection = _connectionUseTestDb;
                 await command.PrepareAsync();
-                await command.ExecuteReaderAsync();
+                var reader = await command.ExecuteReaderAsync();
+                var newUser = new User();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    newUser = map.User(reader);
+                }
+                await reader.CloseAsync();
+                _userAdmin = newUser;
+            }
+        }
+
+        private async Task SeedManagerUser()
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = "SELECT * FROM tk.users_create('manager', 'passwordmanager', 'manager@trappykeepy.com', 'manager');";
+                command.Connection = _connectionUseTestDb;
+                await command.PrepareAsync();
+                var reader = await command.ExecuteReaderAsync();
+                var userManager = new User();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    userManager = map.User(reader);
+                }
+                await reader.CloseAsync();
+                _userManager = userManager;
+            }
+        }
+
+        private async Task SeedBasicUser()
+        {
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = "SELECT * FROM tk.users_create('basic', 'passwordbasic', 'basic@trappykeepy.com', 'basic');";
+                command.Connection = _connectionUseTestDb;
+                await command.PrepareAsync();
+                var reader = await command.ExecuteReaderAsync();
+                var userBasic = new User();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    userBasic = map.User(reader);
+                }
+                await reader.CloseAsync();
+                _userBasic = userBasic;
+            }
+        }
+
+        private async Task SeedKeeperTrappyKeepyApiDll()
+        {
+            var filename = "TrappyKeepy.Api.dll";
+            var contentType = "application/octet-stream";
+            byte[] binaryData = await File.ReadAllBytesAsync(filename);
+            var adminId = Guid.Empty;
+            if (_userAdmin?.Id is not null && _userAdmin.Id != Guid.Empty) adminId = _userAdmin.Id;
+            var keeperId = Guid.Empty;
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.keepers_create('{filename}', '{contentType}', '{adminId}', 'The {filename} library', 'DLLs');";
+                command.Connection = _connectionUseTestDb;
+                await command.PrepareAsync();
+                var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var map = new PgsqlReaderMap();
+                    var keeper = map.Keeper(reader);
+                    keeperId = keeper.Id;
+                }
+                await reader.CloseAsync();
+            }
+            using (var command = new NpgsqlCommand())
+            {
+                command.CommandText = $"SELECT * FROM tk.filedatas_create('{keeperId}', :binary_data );";
+                var npgsqlParameter = new NpgsqlParameter("binary_data", NpgsqlTypes.NpgsqlDbType.Bytea);
+                npgsqlParameter.Value = binaryData;
+                command.Parameters.Add(npgsqlParameter);
+                command.Connection = _connectionUseTestDb;
+                await command.PrepareAsync();
+                await command.ExecuteScalarAsync();
             }
         }
     }

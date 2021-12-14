@@ -27,13 +27,15 @@ namespace TrappyKeepy.Test.End2End
             _jsonOpts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
+        #region CREATE USER
+
         [Fact]
         [Trait("TestType", "End2End")]
-        public async Task EndpointPostUsersAsAdminWithNewBasicUserDtoShouldCreateNewUser()
+        public async Task PostUsersAsAdminRoleWithNewBasicUserDtoShouldCreateNewUserReturn200Ok()
         {
             // ---------- ARRANGE ----------
             await _db.RecycleDb();
-            var user = _dto.TestUserNewBasic;
+            var user = _dto.TestUserNewBasicDto;
             var json = JsonSerializer.Serialize(user);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             HttpResponseMessage? response;
@@ -47,7 +49,8 @@ namespace TrappyKeepy.Test.End2End
             }
 
             // ---------- ASSERT ----------
-            Assert.NotNull(response);
+            Assert.NotNull(response.ReasonPhrase);
+            Assert.Equal("OK", response.ReasonPhrase.ToString());
             var responseJson = await response.Content.ReadAsStringAsync();
             Assert.NotNull(responseJson);
             var controllerResponse = JsonSerializer.Deserialize<ControllerResponse>(responseJson, _jsonOpts);
@@ -61,5 +64,177 @@ namespace TrappyKeepy.Test.End2End
             Assert.NotNull(newUser);
             Assert.NotNull(newUser.Id);
         }
+
+        [Fact]
+        [Trait("TestType", "End2End")]
+        public async Task PostUsersAsManagerRoleWithNewBasicUserDtoShouldReturn403Forbidden()
+        {
+            // ---------- ARRANGE ----------
+            await _db.RecycleDb();
+            var user = _dto.TestUserNewBasicDto;
+            var json = JsonSerializer.Serialize(user);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage? response;
+
+            // ---------- ACT ----------
+            using (var client = _webApplicationFactory.CreateDefaultClient())
+            {
+                var token = await _db.AuthenticateManager(client);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                response = await client.PostAsync("/v1/users", content);
+            }
+
+            // ---------- ASSERT ----------
+            Assert.NotNull(response.ReasonPhrase);
+            Assert.Equal("Forbidden", response.ReasonPhrase.ToString());
+        }
+
+        [Fact]
+        [Trait("TestType", "End2End")]
+        public async Task PostUsersAsBasicRoleWithNewBasicUserDtoShouldReturn403Forbidden()
+        {
+            // ---------- ARRANGE ----------
+            await _db.RecycleDb();
+            var user = _dto.TestUserNewBasicDto;
+            var json = JsonSerializer.Serialize(user);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage? response;
+
+            // ---------- ACT ----------
+            using (var client = _webApplicationFactory.CreateDefaultClient())
+            {
+                var token = await _db.AuthenticateBasic(client);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                response = await client.PostAsync("/v1/users", content);
+            }
+
+            // ---------- ASSERT ----------
+            Assert.NotNull(response.ReasonPhrase);
+            Assert.Equal("Forbidden", response.ReasonPhrase.ToString());
+        }
+
+        [Fact]
+        [Trait("TestType", "End2End")]
+        public async Task PostUsersAsAdminRoleWithIncompleteUserDtoShouldReturn400BadRequest()
+        {
+            // ---------- ARRANGE ----------
+            await _db.RecycleDb();
+            var user = _dto.TestUserIncompleteDto;
+            var json = JsonSerializer.Serialize(user);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage? response;
+
+            // ---------- ACT ----------
+            using (var client = _webApplicationFactory.CreateDefaultClient())
+            {
+                var token = await _db.AuthenticateAdmin(client);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                response = await client.PostAsync("/v1/users", content);
+            }
+
+            // ---------- ASSERT ----------
+            Assert.NotNull(response.ReasonPhrase);
+            Assert.Equal("Bad Request", response.ReasonPhrase.ToString());
+            var responseJson = await response.Content.ReadAsStringAsync();
+            Assert.NotNull(responseJson);
+            var controllerResponse = JsonSerializer.Deserialize<ControllerResponse>(responseJson, _jsonOpts);
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(controllerResponse.Status);
+            Assert.Equal("fail", controllerResponse.Status);
+        }
+
+        [Fact]
+        [Trait("TestType", "End2End")]
+        public async Task PostUsersAsAdminRoleWithExistingBasicUserDtoShouldReturn400BadRequest()
+        {
+            // ---------- ARRANGE ----------
+            await _db.RecycleDb();
+            var user = _dto.TestUserBasicDto;
+            var json = JsonSerializer.Serialize(user);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage? response;
+
+            // ---------- ACT ----------
+            using (var client = _webApplicationFactory.CreateDefaultClient())
+            {
+                var token = await _db.AuthenticateAdmin(client);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                response = await client.PostAsync("/v1/users", content);
+            }
+
+            // ---------- ASSERT ----------
+            Assert.NotNull(response.ReasonPhrase);
+            Assert.Equal("Bad Request", response.ReasonPhrase.ToString());
+            var responseJson = await response.Content.ReadAsStringAsync();
+            Assert.NotNull(responseJson);
+            var controllerResponse = JsonSerializer.Deserialize<ControllerResponse>(responseJson, _jsonOpts);
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(controllerResponse.Status);
+            Assert.Equal("fail", controllerResponse.Status);
+        }
+
+        [Fact]
+        [Trait("TestType", "End2End")]
+        public async Task PostUsersAsAdminRoleWithEmptyStringsUserDtoShouldReturn400BadRequest()
+        {
+            // ---------- ARRANGE ----------
+            await _db.RecycleDb();
+            var user = _dto.TestUserEmptyStringsDto;
+            var json = JsonSerializer.Serialize(user);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage? response;
+
+            // ---------- ACT ----------
+            using (var client = _webApplicationFactory.CreateDefaultClient())
+            {
+                var token = await _db.AuthenticateAdmin(client);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                response = await client.PostAsync("/v1/users", content);
+            }
+
+            // ---------- ASSERT ----------
+            Assert.NotNull(response.ReasonPhrase);
+            Assert.Equal("Bad Request", response.ReasonPhrase.ToString());
+            var responseJson = await response.Content.ReadAsStringAsync();
+            Assert.NotNull(responseJson);
+            var controllerResponse = JsonSerializer.Deserialize<ControllerResponse>(responseJson, _jsonOpts);
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(controllerResponse.Status);
+            Assert.Equal("fail", controllerResponse.Status);
+        }
+
+        [Fact]
+        [Trait("TestType", "End2End")]
+        public async Task PostUsersAsAdminRoleWithoutUserDtoShouldReturn400BadRequest()
+        {
+            // ---------- ARRANGE ----------
+            await _db.RecycleDb();
+            var json = JsonSerializer.Serialize("");
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage? response;
+
+            // ---------- ACT ----------
+            using (var client = _webApplicationFactory.CreateDefaultClient())
+            {
+                var token = await _db.AuthenticateAdmin(client);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                response = await client.PostAsync("/v1/users", content);
+            }
+
+            // ---------- ASSERT ----------
+            Assert.NotNull(response.ReasonPhrase);
+            Assert.Equal("Bad Request", response.ReasonPhrase.ToString());
+        }
+
+        #endregion CREATE USER
+
+        #region CREATE USER MEMBERSHIP
+
+
+
+        #endregion CREATE USER MEMBERSHIP
+
+
+
     }
 }

@@ -6,7 +6,43 @@ namespace TrappyKeepy.Test.TestObjects
 {
     public class DtoTestObjects
     {
-        public IUserDto TestUserDto
+        public IUserDto TestUserAdminDto
+        {
+            get
+            {
+                return new UserDto()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "admin",
+                    Password = "passwordadmin",
+                    Email = "admin@trappykeepy.com",
+                    Role = "admin",
+                    DateCreated = DateTime.Now.AddDays(-7),
+                    DateActivated = DateTime.Now.AddDays(-6),
+                    DateLastLogin = DateTime.Now.AddDays(-1)
+                };
+            }
+        }
+
+        public IUserDto TestUserManagerDto
+        {
+            get
+            {
+                return new UserDto()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "manager",
+                    Password = "passwordmanager",
+                    Email = "manager@trappykeepy.com",
+                    Role = "manager",
+                    DateCreated = DateTime.Now.AddDays(-7),
+                    DateActivated = DateTime.Now.AddDays(-6),
+                    DateLastLogin = DateTime.Now.AddDays(-1)
+                };
+            }
+        }
+
+        public IUserDto TestUserBasicDto
         {
             get
             {
@@ -24,7 +60,7 @@ namespace TrappyKeepy.Test.TestObjects
             }
         }
 
-        public IUserDto TestUserDtoIncomplete
+        public IUserDto TestUserIncompleteDto
         {
             get
             {
@@ -35,7 +71,21 @@ namespace TrappyKeepy.Test.TestObjects
             }
         }
 
-        public IUserDto TestUserNewBasic
+        public IUserDto TestUserEmptyStringsDto
+        {
+            get
+            {
+                return new UserDto()
+                {
+                    Name = "",
+                    Password = "",
+                    Email = "",
+                    Role = ""
+                };
+            }
+        }
+
+        public IUserDto TestUserNewBasicDto
         {
             get
             {
@@ -55,17 +105,10 @@ namespace TrappyKeepy.Test.TestObjects
             {
                 return new List<IUserDto>()
                 {
-                    TestUserDto,
-                    TestUserDto
+                    TestUserBasicDto,
+                    TestUserManagerDto,
+                    TestUserAdminDto
                 };
-            }
-        }
-
-        public IUserSessionDto TestUserSessionDto
-        {
-            get
-            {
-                return new UserSessionDto("foo@trappykeepy.com", "passwordfoo");
             }
         }
 
@@ -74,6 +117,22 @@ namespace TrappyKeepy.Test.TestObjects
             get
             {
                 return new UserSessionDto("admin@trappykeepy.com", "passwordadmin");
+            }
+        }
+
+        public IUserSessionDto TestUserSessionManagerDto
+        {
+            get
+            {
+                return new UserSessionDto("manager@trappykeepy.com", "passwordmanager");
+            }
+        }
+
+        public IUserSessionDto TestUserSessionBasicDto
+        {
+            get
+            {
+                return new UserSessionDto("basic@trappykeepy.com", "passwordbasic");
             }
         }
 
@@ -99,6 +158,18 @@ namespace TrappyKeepy.Test.TestObjects
                     KeeperId = Guid.NewGuid(),
                     UserId = Guid.NewGuid(),
                     GroupId = Guid.NewGuid()
+                };
+            }
+        }
+
+        public IGroupDto TestGroupNewDto
+        {
+            get
+            {
+                return new GroupDto()
+                {
+                    Name = "New Group",
+                    Description = "A new group for users to join.",
                 };
             }
         }
