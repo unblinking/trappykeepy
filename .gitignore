@@ -461,3 +461,6 @@ flyway*/
 
 # Codecov.io
 codecov
+
+# Compiled distributable
+dist/
