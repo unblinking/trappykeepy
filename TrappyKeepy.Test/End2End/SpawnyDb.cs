@@ -1,15 +1,10 @@
 ﻿using Npgsql;
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
-using TrappyKeepy.Domain.Models;
 using TrappyKeepy.Domain.Maps;
-using TrappyKeepy.Test.TestObjects;
+using TrappyKeepy.Domain.Models;
+using TrappyKeepy.Service;
 
 namespace TrappyKeepy.Test.End2End
 {
@@ -56,53 +51,45 @@ namespace TrappyKeepy.Test.End2End
             await SeedAdminUser();
             await SeedManagerUser();
             await SeedBasicUser();
-            await SeedKeeperTrappyKeepyApiDll();
+            await SeedKeeperApiDll();
+            await SeedKeeperDataDll();
+            await SeedKeeperDomainDll();
+            await SeedKeeperServiceDll();
+            await SeedKeeperTestDll();
             await _connectionUseTestDb.CloseAsync();
             await _connectionUseTestDb.DisposeAsync();
         }
 
-        public async Task<string> AuthenticateAdmin(HttpClient client)
+        public string AuthenticateAdmin()
         {
-            var dto = new DtoTestObjects();
-            var user = dto.TestUserSessionAdminDto;
-            var token = await GetSessionToken(client, user);
-            return token;
-        }
-
-        public async Task<string> AuthenticateManager(HttpClient client)
-        {
-            var dto = new DtoTestObjects();
-            var user = dto.TestUserSessionManagerDto;
-            var token = await GetSessionToken(client, user);
-            return token;
-        }
-
-        public async Task<string> AuthenticateBasic(HttpClient client)
-        {
-            var dto = new DtoTestObjects();
-            var user = dto.TestUserSessionBasicDto;
-            var token = await GetSessionToken(client, user);
-            return token;
-        }
-
-        private async Task<string> GetSessionToken(HttpClient client, IUserSessionDto user)
-        {
-            
-            var json = JsonSerializer.Serialize(user);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await client.PostAsync("/v1/sessions", content);
-            var responseJson = await response.Content.ReadAsStringAsync();
-            var jsonOpts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var controllerResponse = JsonSerializer.Deserialize<ControllerResponse>(responseJson, jsonOpts);
-            if (controllerResponse is null || controllerResponse.Data is null)
+            if (_userAdmin is null)
             {
-                throw new Exception("Could not authenticate for e2e tests. No controller response data.");
+                throw new Exception("Could not encode admin user token.");
             }
-            var token = controllerResponse.Data.ToString();
-            if (token is null)
+            var tokenService = new TokenService();
+            var token = tokenService.Encode(_userAdmin.Id, _userAdmin.Role);
+            return token;
+        }
+
+        public string AuthenticateManager()
+        {
+            if (_userManager is null)
             {
-                throw new Exception("Could not authenticate for e2e tests. No token.");
+                throw new Exception("Could not encode manager user token.");
             }
+            var tokenService = new TokenService();
+            var token = tokenService.Encode(_userManager.Id, _userManager.Role);
+            return token;
+        }
+
+        public string AuthenticateBasic()
+        {
+            if (_userBasic is null)
+            {
+                throw new Exception("Could not encode basic user token.");
+            }
+            var tokenService = new TokenService();
+            var token = tokenService.Encode(_userBasic.Id, _userBasic.Role);
             return token;
         }
 
@@ -185,9 +172,8 @@ namespace TrappyKeepy.Test.End2End
             }
         }
 
-        private async Task SeedKeeperTrappyKeepyApiDll()
+        private async Task SeedKeeper(string filename)
         {
-            var filename = "TrappyKeepy.Api.dll";
             var contentType = "application/octet-stream";
             byte[] binaryData = await File.ReadAllBytesAsync(filename);
             var adminId = Guid.Empty;
@@ -195,7 +181,7 @@ namespace TrappyKeepy.Test.End2End
             var keeperId = Guid.Empty;
             using (var command = new NpgsqlCommand())
             {
-                command.CommandText = $"SELECT * FROM tk.keepers_create('{filename}', '{contentType}', '{adminId}', 'The {filename} library', 'DLLs');";
+                command.CommandText = $"SELECT * FROM tk.keepers_create('{filename}', '{contentType}', '{adminId}', 'The {filename} file.', 'Files');";
                 command.Connection = _connectionUseTestDb;
                 await command.PrepareAsync();
                 var reader = await command.ExecuteReaderAsync();
@@ -217,6 +203,31 @@ namespace TrappyKeepy.Test.End2End
                 await command.PrepareAsync();
                 await command.ExecuteScalarAsync();
             }
+        }
+
+        private async Task SeedKeeperApiDll()
+        {
+            await SeedKeeper("TrappyKeepy.Api.dll");
+        }
+
+        private async Task SeedKeeperDataDll()
+        {
+            await SeedKeeper("TrappyKeepy.Data.dll");
+        }
+
+        private async Task SeedKeeperDomainDll()
+        {
+            await SeedKeeper("TrappyKeepy.Domain.dll");
+        }
+
+        private async Task SeedKeeperServiceDll()
+        {
+            await SeedKeeper("TrappyKeepy.Service.dll");
+        }
+
+        private async Task SeedKeeperTestDll()
+        {
+            await SeedKeeper("TrappyKeepy.Test.dll");
         }
     }
 }

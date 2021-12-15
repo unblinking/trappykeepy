@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -35,6 +35,7 @@ namespace TrappyKeepy.Test.End2End
         {
             // ---------- ARRANGE ----------
             await _db.RecycleDb();
+            var token = _db.AuthenticateAdmin();
             var group = _dto.TestGroupNewDto;
             var json = JsonSerializer.Serialize(group);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -43,7 +44,6 @@ namespace TrappyKeepy.Test.End2End
             // ---------- ACT ----------
             using (var client = _webApplicationFactory.CreateDefaultClient())
             {
-                var token = await _db.AuthenticateAdmin(client);
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 response = await client.PostAsync("/v1/groups", content);
             }

@@ -1,9 +1,7 @@
-using System;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
 using System.IO;
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TrappyKeepy.Domain.Models;
@@ -37,25 +35,26 @@ namespace TrappyKeepy.Test.End2End
         {
             // ---------- ARRANGE ----------
             await _db.RecycleDb();
-
+            var token = _db.AuthenticateAdmin();
             var filename = "TrappyKeepy.Test.pdb";
+            var description = "A symbol file.";
+            var category = "Symbols";
             FileStream fs = File.OpenRead(filename);
-
             HttpContent fileStreamContent = new StreamContent(fs);
             fileStreamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             HttpContent filenameContent = new StringContent(filename);
-
+            HttpContent descriptionContent = new StringContent(description);
+            HttpContent categoryContent = new StringContent(category);
             MultipartFormDataContent formdata = new MultipartFormDataContent();
             formdata.Add(fileStreamContent, "file", filename);
             formdata.Add(filenameContent, "filename");
-
+            formdata.Add(descriptionContent, "description");
+            formdata.Add(categoryContent, "category");
             HttpResponseMessage? response;
 
             // ---------- ACT ----------
             using (var client = _webApplicationFactory.CreateDefaultClient())
             {
-                var token = await _db.AuthenticateAdmin(client);
-                
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 response = await client.PostAsync("/v1/keepers", formdata);
             }
