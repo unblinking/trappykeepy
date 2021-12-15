@@ -76,3 +76,12 @@ run:
 	# ----------
 	# Running the TrappyKeepy.Api project
 	dotnet run --project TrappyKeepy.Api
+
+.PHONY: publish
+publish:
+	@# This will compile the application.
+	# ----------
+	# Compiling the application for release.
+	make -C TrappyKeepy.Api publish
+	mkdir dist
+	mv TrappyKeepy.Api/TrappyKeepy.Api dist/

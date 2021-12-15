@@ -17,4 +17,9 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.14.1" />
   </ItemGroup>
 
+  <Target Name="PostClean" AfterTargets="Clean">
+      <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
+      <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
+  </Target>
+
 </Project>

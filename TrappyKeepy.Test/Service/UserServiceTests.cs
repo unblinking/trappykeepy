@@ -40,7 +40,7 @@ namespace TrappyKeepy.Test.Service
             // ---------- ARRANGE ----------
             RefreshMocks();
             var userDomain = _domain.TestUser;
-            var userDto = _dto.TestUserDto;
+            var userDto = _dto.TestUserNewBasicDto;
             _mapper.Setup(m => m.Map<User>(It.IsAny<UserDto>())).Returns(userDomain);
             _uow.Setup(u => u.Begin()).Verifiable();
             _uow.Setup(u => u.users.CountByColumnValue(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(0);
@@ -68,7 +68,7 @@ namespace TrappyKeepy.Test.Service
             // ---------- ARRANGE ----------
             RefreshMocks();
             var userDomain = _domain.TestUser;
-            var userDto = _dto.TestUserDtoIncomplete;
+            var userDto = _dto.TestUserIncompleteDto;
             _mapper.Setup(m => m.Map<User>(It.IsAny<UserDto>())).Returns(userDomain);
             _uow.Setup(u => u.Begin()).Verifiable();
             _uow.Setup(u => u.users.CountByColumnValue(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(0);
@@ -95,7 +95,7 @@ namespace TrappyKeepy.Test.Service
             // ---------- ARRANGE ----------
             RefreshMocks();
             var userDomain = _domain.TestUser;
-            var userDto = _dto.TestUserDto;
+            var userDto = _dto.TestUserNewBasicDto;
             _mapper.Setup(m => m.Map<User>(It.IsAny<UserDto>())).Returns(userDomain);
             _uow.Setup(u => u.Begin()).Verifiable();
             _uow.Setup(u => u.users.CountByColumnValue(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(1);
@@ -122,7 +122,7 @@ namespace TrappyKeepy.Test.Service
             // ---------- ARRANGE ----------
             RefreshMocks();
             var userDomain = _domain.TestUser;
-            var userDto = _dto.TestUserDto;
+            var userDto = _dto.TestUserNewBasicDto;
             _mapper.Setup(m => m.Map<User>(It.IsAny<UserDto>())).Returns(userDomain);
             _uow.Setup(u => u.Begin()).Verifiable();
             _uow.Setup(u => u.users.CountByColumnValue(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(0);

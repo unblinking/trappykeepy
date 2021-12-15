@@ -32,7 +32,7 @@ namespace TrappyKeepy.Test.Controller
         {
             // ---------- ARRANGE ----------
             RefreshMocks();
-            var userSessionDto = _dto.TestUserSessionDto;
+            var userSessionDto = _dto.TestUserSessionBasicDto;
             var token = "faketokenstring";
             var response = new UserServiceResponse() { Outcome = OutcomeType.Success, Token = token };
             _userService.Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
@@ -63,7 +63,7 @@ namespace TrappyKeepy.Test.Controller
         {
             // ---------- ARRANGE ----------
             RefreshMocks();
-            var userSessionDto = _dto.TestUserSessionDto;
+            var userSessionDto = _dto.TestUserSessionBasicDto;
             var response = new UserServiceResponse() { Outcome = OutcomeType.Fail, ErrorMessage = "No match found for Email and Password." };
             _userService.Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
             var sessionController = new SessionController(_userService.Object);
@@ -93,7 +93,7 @@ namespace TrappyKeepy.Test.Controller
         {
             // ---------- ARRANGE ----------
             RefreshMocks();
-            var userSessionDto = _dto.TestUserSessionDto;
+            var userSessionDto = _dto.TestUserSessionBasicDto;
             var response = new UserServiceResponse() { Outcome = OutcomeType.Error };
             _userService.Setup(u => u.CreateSession(It.IsAny<UserServiceRequest>())).ReturnsAsync(response);
             var sessionController = new SessionController(_userService.Object);
