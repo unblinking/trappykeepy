@@ -96,7 +96,14 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHttpsRedirection();
+if (app.Environment.EnvironmentName != "Testing")
+{
+    // If this is set during testing, the following warning will show up when using WebApplicationFactory
+    // warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3] Failed to determine the https port for redirect.
+    // So, we only set this when we aren't in the "Testing" environment.
+    app.UseHttpsRedirection();
+}
+
 app.MapControllers();
 app.Run();
 
