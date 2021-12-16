@@ -28,54 +28,50 @@ Below is a simplified list of the available endpoints.
 ### Groups  
 
 ```
-POST /v1/groups
-GET /v1/groups
-POST /v1/groups/{id}/permits
-GET /v1/groups/{id}/permits
-DELETE /v1/groups/{id}/permits
-GET /v1/groups/{id}
-PUT /v1/groups/{id}
+POST   /v1/groups
+GET    /v1/groups
+GET    /v1/groups/{id}
+PUT    /v1/groups/{id}
 DELETE /v1/groups/{id}
-GET /v1/groups/{id}/memberships
 DELETE /v1/groups/{id}/memberships
-DELETE /v1/groups/{gid}/permits/{pid}
+POST   /v1/groups/{id}/permits
+DELETE /v1/groups/{id}/permits
+DELETE /v1/groups/{id}/permits/{id}
 ```
 
 ### Keepers  
 
 ```
-POST /v1/keepers
-GET /v1/keepers
-GET /v1/keepers/{id}
-PUT /v1/keepers/{id}
+POST   /v1/keepers
+GET    /v1/keepers
+GET    /v1/keepers/{id}
+PUT    /v1/keepers/{id}
 DELETE /v1/keepers/{id}
-GET /v1/keepers/{id}/permits
+GET    /v1/keepers/{id}/permits
 DELETE /v1/keepers/{id}/permits
 ```
 
 ### Sessions  
 
 ```
-POST /v1/sessions
+POST   /v1/sessions
 ```
 
 ### Users  
 
 ```
-POST /v1/users
-GET /v1/users
-POST /v1/users/{id}/memberships
-GET /v1/users/{id}/memberships
-DELETE /v1/users/{id}/memberships
-POST /v1/users/{id}/permits
-GET /v1/users/{id}/permits
-DELETE /v1/users/{id}/permits
-GET /v1/users/{id}
-PUT /v1/users/{id}
+POST   /v1/users
+GET    /v1/users
+GET    /v1/users/{id}
+PUT    /v1/users/{id}
 DELETE /v1/users/{id}
-PUT /v1/users/{id}/password
-DELETE /v1/users/{uid}/memberships/{mid}
-DELETE /v1/users/{uid}/permits/{pid}
+PUT    /v1/users/{id}/password
+POST   /v1/users/{id}/memberships
+DELETE /v1/users/{id}/memberships
+DELETE /v1/users/{id}/memberships/{id}
+POST   /v1/users/{id}/permits
+DELETE /v1/users/{id}/permits
+DELETE /v1/users/{id}/permits/{id}
 ```
 
 ### Requests  
