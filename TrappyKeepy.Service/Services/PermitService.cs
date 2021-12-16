@@ -124,36 +124,6 @@ namespace TrappyKeepy.Service
         }
 
         /// <summary>
-        /// Read all permits from the database.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<IPermitServiceResponse> ReadAll(IPermitServiceRequest request)
-        {
-            var response = new PermitServiceResponse();
-
-            try
-            {
-                // Read the permit records now.
-                var permits = await _uow.permits.ReadAll();
-
-                // Map the repository's domain objects to DTOs for the response to the controller.
-                var permitDtos = new List<IPermitDto>();
-                foreach (var permit in permits) permitDtos.Add(_mapper.Map<PermitDto>(permit));
-                response.List = permitDtos;
-
-                // Success if we made it this far.
-                response.Outcome = OutcomeType.Success;
-            }
-            catch (Exception)
-            {
-                response.Outcome = OutcomeType.Error;
-            }
-
-            return response;
-        }
-
-        /// <summary>
         /// Read all permits from the database by keeper id.
         /// </summary>
         /// <param name="request"></param>

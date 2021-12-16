@@ -38,24 +38,6 @@ namespace TrappyKeepy.Data.Repositories
             }
         }
 
-        public async Task<List<Permit>> ReadAll()
-        {
-            using (var command = new NpgsqlCommand())
-            {
-                command.CommandText = "SELECT * FROM tk.permits_read_all();";
-
-                var reader = await RunQuery(command);
-                var permits = new List<Permit>();
-                while (await reader.ReadAsync())
-                {
-                    var map = new PgsqlReaderMap();
-                    permits.Add(map.Permit(reader));
-                }
-                reader.Close();
-                return permits;
-            }
-        }
-
         public async Task<Permit> ReadById(Guid id)
         {
             using (var command = new NpgsqlCommand())

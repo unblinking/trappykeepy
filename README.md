@@ -50,6 +50,7 @@ GET /v1/keepers/{id}
 PUT /v1/keepers/{id}
 DELETE /v1/keepers/{id}
 GET /v1/keepers/{id}/permits
+DELETE /v1/keepers/{id}/permits
 ```
 
 ### Sessions  

@@ -5,7 +5,6 @@ namespace TrappyKeepy.Domain.Interfaces
     public interface IMembershipRepository
     {
         Task<Membership> Create(Membership membership);
-        Task<List<Membership>> ReadAll();
         Task<Membership> ReadById(Guid id);
         Task<List<Membership>> ReadByGroupId(Guid id);
         Task<List<Membership>> ReadByUserId(Guid id);

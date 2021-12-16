@@ -289,6 +289,46 @@ namespace TrappyKeepy.Api.Controllers
             return StatusCode(500);
         }
 
+        /// <summary>
+        /// Delete all existing permits for one keeper.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <example>
+        /// <code>
+        /// curl --location --request DELETE 'https://api.trappykeepy.com/v1/keepers/00000000-0000-0000-0000-000000000000/permits' \
+        /// --header 'Authorization: Bearer <token>'
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        [HttpDelete("/v1/keepers/{id}/permits")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> DeletePermitsByKeeperId(Guid id)
+        {
+            try
+            {
+                var serviceRequest = new PermitServiceRequest(id);
+                var serviceResponse = await _permitService.DeleteByKeeperId(serviceRequest);
+                var response = new ControllerResponse();
+                switch (serviceResponse.Outcome)
+                {
+                    case OutcomeType.Error:
+                        response.Error();
+                        return StatusCode(500, response);
+                    case OutcomeType.Fail:
+                        response.Fail(serviceResponse.ErrorMessage);
+                        return BadRequest(response);
+                    case OutcomeType.Success:
+                        response.Success("Permits deleted.");
+                        return Ok(response);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+            return StatusCode(500);
+        }
+
         #endregion DELETE
     }
 }

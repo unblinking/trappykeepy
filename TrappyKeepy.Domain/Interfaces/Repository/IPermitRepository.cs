@@ -5,7 +5,6 @@ namespace TrappyKeepy.Domain.Interfaces
     public interface IPermitRepository
     {
         Task<Permit> Create(Permit permit);
-        Task<List<Permit>> ReadAll();
         Task<Permit> ReadById(Guid id);
         Task<List<Permit>> ReadByKeeperId(Guid id);
         Task<List<Permit>> ReadByUserId(Guid id);

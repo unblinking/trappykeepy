@@ -89,36 +89,6 @@ namespace TrappyKeepy.Service
         }
 
         /// <summary>
-        /// Read all memberships from the database.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<IMembershipServiceResponse> ReadAll(IMembershipServiceRequest request)
-        {
-            var response = new MembershipServiceResponse();
-
-            try
-            {
-                // Read the membership records now.
-                var memberships = await _uow.memberships.ReadAll();
-
-                // Map the repository's domain objects to DTOs for the response to the controller.
-                var membershipDtos = new List<IMembershipDto>();
-                foreach (var membership in memberships) membershipDtos.Add(_mapper.Map<MembershipDto>(membership));
-                response.List = membershipDtos;
-
-                // Success if we made it this far.
-                response.Outcome = OutcomeType.Success;
-            }
-            catch (Exception)
-            {
-                response.Outcome = OutcomeType.Error;
-            }
-
-            return response;
-        }
-
-        /// <summary>
         /// Read all memberships from the database for a specified group.
         /// </summary>
         /// <param name="request"></param>
