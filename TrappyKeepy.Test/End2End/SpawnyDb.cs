@@ -36,6 +36,7 @@ namespace TrappyKeepy.Test.End2End
         private Group? _groupAdmins;
         private Group? _groupManagers;
         private Group? _groupBasics;
+        private Group? _groupLaughingstocks;
 
         public SpawnyDb()
         {
@@ -51,6 +52,7 @@ namespace TrappyKeepy.Test.End2End
             // This way when the WebApplicationFactory creates the API in memory for the e2e tests, the UnitOfWork
             // class will connect to the temporary testing database instead of the development database.
             Environment.SetEnvironmentVariable("TKDB_CONN_STRING", $"Host=localhost;Database={_testDbName};Port=15432;Username=dbuser;Password=dbpass;Pooling=false");
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
         }
 
         public async Task RecycleDb()
@@ -75,6 +77,7 @@ namespace TrappyKeepy.Test.End2End
             await SeedGroupAdmins();
             await SeedGroupManagers();
             await SeedGroupBasics();
+            await SeedGroupLaughingstocks();
             await SeedMembershipAdmin();
             await SeedMembershipManager();
             await SeedMembershipBasic();
@@ -111,6 +114,24 @@ namespace TrappyKeepy.Test.End2End
 
         #region PUBLIC METHODS
 
+        public User GetUserAdmin()
+        {
+            if (_userAdmin is null) throw new Exception("Could not return admin user.");
+            return _userAdmin;
+        }
+
+        public User GetUserManager()
+        {
+            if (_userManager is null) throw new Exception("Could not return manager user.");
+            return _userManager;
+        }
+
+        public User GetUserBasic()
+        {
+            if (_userBasic is null) throw new Exception("Could not return basic user.");
+            return _userBasic;
+        }
+
         public string AuthenticateAdmin()
         {
             if (_userAdmin is null)
@@ -142,6 +163,60 @@ namespace TrappyKeepy.Test.End2End
             var tokenService = new TokenService();
             var token = tokenService.Encode(_userBasic.Id, _userBasic.Role);
             return token;
+        }
+
+        public Keeper GetKeeperApiDll()
+        {
+            if (_keeperApiDll is null) throw new Exception("Could not return Api dll keeper");
+            return _keeperApiDll;
+        }
+
+        public Keeper GetKeeperDataDll()
+        {
+            if (_keeperDataDll is null) throw new Exception("Could not return Data dll keeper");
+            return _keeperDataDll;
+        }
+
+        public Keeper GetKeeperDominaDll()
+        {
+            if (_keeperDomainDll is null) throw new Exception("Could not return Domain dll keeper");
+            return _keeperDomainDll;
+        }
+
+        public Keeper GetKeeperServiceDll()
+        {
+            if (_keeperServiceDll is null) throw new Exception("Could not return Service dll keeper");
+            return _keeperServiceDll;
+        }
+
+        public Keeper GetKeeperTestDll()
+        {
+            if (_keeperTestDll is null) throw new Exception("Could not return Test dll keeper");
+            return _keeperTestDll;
+        }
+
+        public Group GetGroupAdmins()
+        {
+            if (_groupAdmins is null) throw new Exception("Could not return group Admins.");
+            return _groupAdmins;
+        }
+
+        public Group GetGroupManagers()
+        {
+            if (_groupManagers is null) throw new Exception("Could not return group Managers.");
+            return _groupManagers;
+        }
+
+        public Group GetGroupBasics()
+        {
+            if (_groupBasics is null) throw new Exception("Could not return group Basics.");
+            return _groupBasics;
+        }
+
+        public Group GetGroupLaughingstocks()
+        {
+            if (_groupLaughingstocks is null) throw new Exception("Could not return group Laughingstocks.");
+            return _groupLaughingstocks;
         }
 
         #endregion PUBLIC METHODS
@@ -281,6 +356,11 @@ namespace TrappyKeepy.Test.End2End
         private async Task SeedGroupBasics()
         {
             _groupBasics = await SeedGroup("Basics", "Group for all basic users.");
+        }
+
+        private async Task SeedGroupLaughingstocks()
+        {
+            _groupLaughingstocks = await SeedGroup("Laughingstocks", "The infamous nothingworksright laughingstocks.");
         }
 
         #endregion GROUPS

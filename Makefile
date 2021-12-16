@@ -65,9 +65,10 @@ build:
 
 .PHONY: test
 test:
-	@# This will execute unit tests.
+	@# This will execute unit tests, after making sure the development database is up to date with migrations.
 	# ----------
 	# Running unit tests.
+	make migrate
 	dotnet test --verbosity quiet /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
 .PHONY: run

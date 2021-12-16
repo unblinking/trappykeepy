@@ -359,6 +359,22 @@ namespace TrappyKeepy.Service
                     }
                 }
 
+                // Delete any existing user permits next.
+                var permitsCount = await _uow.permits.CountByColumnValue("user_id", (Guid)request.Id);
+                if (permitsCount > 0)
+                {
+                    var successfulDeletePermits = await _uow.permits.DeleteByUserId((Guid)request.Id);
+
+                    // If the user had permits that couldn't be deleted, rollback and return to the controller.
+                    if (!successfulDeletePermits)
+                    {
+                        _uow.Rollback();
+                        response.Outcome = OutcomeType.Fail;
+                        response.ErrorMessage = "User was not deleted because existing permits could not be deleted.";
+                        return response;
+                    }
+                }
+
                 // Delete the user record now.
                 var successfulDeleteUser = await _uow.users.DeleteById((Guid)request.Id);
 
