@@ -1,6 +1,6 @@
 # TrappyKeepy  
 
-[![Build & Test](https://github.com/jmg1138/TrappyKeepy/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/jmg1138/TrappyKeepy/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/jmg1138/trappykeepy/branch/main/graph/badge.svg?token=ARrGqDcKhD)](https://codecov.io/gh/jmg1138/trappykeepy)  
+[![Build & Test](https://github.com/nothingworksright/TrappyKeepy/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/nothingworksright/TrappyKeepy/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/nothingworksright/trappykeepy/branch/main/graph/badge.svg?token=ARrGqDcKhD)](https://codecov.io/gh/nothingworksright/trappykeepy)  
 
 A Simple Document Storage Web API  
 
