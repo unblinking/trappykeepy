@@ -181,6 +181,20 @@ To view all currently stored development secrets, run the following command:
 dotnet user-secrets list --project TrappyKeepy.Api
 ```
 
+## Constraints  
+
+Why did I do it this way? Here are some of the project constraints:  
+
+### Database first approach  
+
+Schema, types, tables, and functions are all written in SQL or PL/pgSQL first. In this project I wrote this into SQL migration files and applied those migrations to the database using Flyway. After the database had been migrated, I used `dotnet ef dbcontext scaffold` with the Npgsql.EntityFrameworkCore.PostgreSQL package to reverse engineer the .NET domain models from the database.  
+
+### No LINQ, No DbContext  
+
+Every database interaction happens through a stored function in PostgreSQL. Using the Npgsql package, connections and transactions are managed from the `UnitOfWork` class, which manages the repository classes. The Repository classes create Npgsql commands to query the stored functions. User input it handled through paramertized queries in the stored procedures.  
+
+There is a DbContext file (KeepyDbContext.cs) only because that has to be generated while reverse engineering the domain models, but it doesn't get used. Some methods provided by DbContext, such as `.FromSqlRaw()`, create a LINQ query based on that raw SQL. To guarantee there was absolutely no LINQ query magic happening, DbContext was not used.  
+
 ## Thank you  
 
 Thanks for taking a look at this project.  
