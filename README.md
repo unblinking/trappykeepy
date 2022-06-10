@@ -1,6 +1,6 @@
 # TrappyKeepy  
 
-[![Build & Test](https://github.com/nothingworksright/TrappyKeepy/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/nothingworksright/TrappyKeepy/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/nothingworksright/trappykeepy/branch/main/graph/badge.svg?token=ARrGqDcKhD)](https://codecov.io/gh/nothingworksright/trappykeepy)  
+[![Build & Test](https://github.com/unblinking/TrappyKeepy/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/unblinking/TrappyKeepy/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/unblinking/trappykeepy/branch/main/graph/badge.svg?token=ARrGqDcKhD)](https://codecov.io/gh/unblinking/trappykeepy)  
 
 A document storage web API  
 
@@ -21,7 +21,7 @@ Relationships are represented through nested endpoints. To `GET` all memberships
 
 Endpoints that retrieve many records will return simple objects. So, `GET /v1/users` will return an array of simple user objects with basic information for each user record, but no nested objects. Endpoints that retrieve a specific record may return complex objects. So, `GET /v1/users/{id}` will return a single complex user object including nested objects that may contain arrays of relational data such as the user's posted documents, group memberships, and document access permits.  
 
-You can [review the Swagger/OpenApi style documentation on SwaggerHub](https://app.swaggerhub.com/apis/nothingworksright/trappykeepy/v0.1.0).  
+You can [review the Swagger/OpenApi style documentation on SwaggerHub](https://app.swaggerhub.com/apis/unblinking/trappykeepy/v0.1.0).  
 
 Below is a simplified list of the available endpoints. 
 
